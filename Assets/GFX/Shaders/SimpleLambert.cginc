@@ -25,19 +25,16 @@ float4 LightingSimpleLambertLight  (SurfaceOutput s, float3 lightDir, half atten
 inline float4 LightingSimpleLambertLight  (SurfaceOutput s, UnityLight light)
 {
 	float NdotL = dot (light.dir, s.Normal);
-	fixed diff = max (0, dot (s.Normal, light.dir));
 						 
 	float4 c;
 	float R = light.dir - 2.0f * NdotL * s.Normal;
 	float3 viewDirection = light.dir;
 	float specular = pow(saturate(dot(R, viewDirection)), 80);// * specAmount;
-	float3 spec = float3(0,0,0);
 
-	float3 lighting = light.color * saturate(NdotL) + specular;
-	lighting = _LightingMultiplier * lighting + _ShadowColor.rgb * 2 * (1 - lighting);
+    float3 lighting = light.color * saturate(NdotL) + _SunAmbience + specular;
+	lighting = _LightingMultiplier * lighting + _ShadowColor.rgb * (1 - lighting);
 
-
-	c.rgb = (s.Albedo + spec) * lighting;
+	c.rgb = s.Albedo * lighting;
 	c.a = s.Alpha;
 	return c;
 }
