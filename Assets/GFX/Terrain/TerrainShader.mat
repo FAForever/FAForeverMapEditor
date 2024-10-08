@@ -8,15 +8,12 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: TerrainShader
-  m_Shader: {fileID: 4800000, guid: 07332981e20e66d40a9ee102d13a9be8, type: 3}
+  m_Shader: {fileID: 4800000, guid: 2b7108100f2d8114ba6c1122bb206d4f, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
   m_InvalidKeywords:
   - _AREA_ON
-  - _BRUSH_ON
-  - _HIDETERRAINTYPE_ON
-  - _USESLOPETEX_ON
   m_LightmapFlags: 5
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
@@ -27,6 +24,30 @@ Material:
   m_SavedProperties:
     serializedVersion: 3
     m_TexEnvs:
+    - LowerAlbedoSampler:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - LowerNormalSampler:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - UpperAlbedoSampler:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - UtilitySamplerA:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - UtilitySamplerB:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - UtilitySamplerC:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     - _BrushTex:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
@@ -251,8 +272,48 @@ Material:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
-    m_Ints: []
+    m_Ints:
+    - _Brush: 0
+    - _BrushPainting: 0
+    - _GeneratingNormal: 0
+    - _Grid: 0
+    - _GridType: 0
+    - _HideStratum0: 0
+    - _HideStratum1: 0
+    - _HideStratum2: 0
+    - _HideStratum3: 0
+    - _HideStratum4: 0
+    - _HideStratum5: 0
+    - _HideStratum6: 0
+    - _HideStratum7: 0
+    - _HideStratum8: 0
+    - _HideTerrainType: 0
+    - _Slope: 0
+    - _UseSlopeTex: 0
     m_Floats:
+    - LightingMultiplier: 1
+    - LowerAlbedoTile: 5.375328
+    - LowerNormalTile: 37.236362
+    - Stratum0AlbedoTile: 4.5919285
+    - Stratum0NormalTile: 4.404301
+    - Stratum1AlbedoTile: 70.62069
+    - Stratum1NormalTile: 68.26667
+    - Stratum2AlbedoTile: 13.837838
+    - Stratum2NormalTile: 9.846154
+    - Stratum3AlbedoTile: 12.880503
+    - Stratum3NormalTile: 31.507692
+    - Stratum4AlbedoTile: 128
+    - Stratum4NormalTile: 128
+    - Stratum5AlbedoTile: 128
+    - Stratum5NormalTile: 128
+    - Stratum6AlbedoTile: 128
+    - Stratum6NormalTile: 128
+    - Stratum7AlbedoTile: 128
+    - Stratum7NormalTile: 128
+    - TerrainScale: 0
+    - UpperAlbedoTile: 4
+    - UpperNormalTile: 1
+    - WaterElevation: 0
     - _AbyssLevel: 0.25
     - _Area: 1
     - _AreaHeight: 128
@@ -314,6 +375,11 @@ Material:
     - _WaterScaleX: 1024
     - _WaterScaleZ: 1024
     m_Colors:
+    - ShadowFillColor: {r: 0, g: 0, b: 0, a: 1}
+    - SpecularColor: {r: 0, g: 0, b: 0, a: 1}
+    - SunAmbience: {r: 0, g: 0, b: 0, a: 1}
+    - SunColor: {r: 0, g: 0, b: 0, a: 1}
+    - SunDirection: {r: 0, g: -1, b: 0, a: 1}
     - _Abyss: {r: 0.005190316, g: 0.051962737, b: 0.2352941, a: 1}
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _Deep: {r: 0.22577855, g: 0.4590157, b: 0.5294118, a: 1}

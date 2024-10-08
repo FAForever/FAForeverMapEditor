@@ -293,15 +293,15 @@ namespace EditMap
 		#region Stratums
 		public void VisibleStratums()
 		{
-			ScmapEditor.Current.TerrainMaterial.SetInt("_HideSplat0", StratumHide[1]?1:0);
-			ScmapEditor.Current.TerrainMaterial.SetInt("_HideSplat1", StratumHide[2] ? 1 : 0);
-			ScmapEditor.Current.TerrainMaterial.SetInt("_HideSplat2", StratumHide[3] ? 1 : 0);
-			ScmapEditor.Current.TerrainMaterial.SetInt("_HideSplat3", StratumHide[4] ? 1 : 0);
-			ScmapEditor.Current.TerrainMaterial.SetInt("_HideSplat4", StratumHide[5] ? 1 : 0);
-			ScmapEditor.Current.TerrainMaterial.SetInt("_HideSplat5", StratumHide[6] ? 1 : 0);
-			ScmapEditor.Current.TerrainMaterial.SetInt("_HideSplat6", StratumHide[7] ? 1 : 0);
-			ScmapEditor.Current.TerrainMaterial.SetInt("_HideSplat7", StratumHide[8] ? 1 : 0);
-			ScmapEditor.Current.TerrainMaterial.SetInt("_HideSplat8", StratumHide[9] ? 1 : 0);
+			ScmapEditor.Current.TerrainMaterial.SetInteger("_HideStratum0", StratumHide[1] ? 1 : 0);
+			ScmapEditor.Current.TerrainMaterial.SetInteger("_HideStratum1", StratumHide[2] ? 1 : 0);
+			ScmapEditor.Current.TerrainMaterial.SetInteger("_HideStratum2", StratumHide[3] ? 1 : 0);
+			ScmapEditor.Current.TerrainMaterial.SetInteger("_HideStratum3", StratumHide[4] ? 1 : 0);
+			ScmapEditor.Current.TerrainMaterial.SetInteger("_HideStratum4", StratumHide[5] ? 1 : 0);
+			ScmapEditor.Current.TerrainMaterial.SetInteger("_HideStratum5", StratumHide[6] ? 1 : 0);
+			ScmapEditor.Current.TerrainMaterial.SetInteger("_HideStratum6", StratumHide[7] ? 1 : 0);
+			ScmapEditor.Current.TerrainMaterial.SetInteger("_HideStratum7", StratumHide[8] ? 1 : 0);
+			ScmapEditor.Current.TerrainMaterial.SetInteger("_HideStratum8", StratumHide[9] ? 1 : 0);
 
 
 			const string TextVisible = "V";
@@ -440,7 +440,7 @@ namespace EditMap
 			if (!BrusheshLoaded) LoadBrushesh();
 			UpdateStratumMenu();
 
-			TerrainMaterial.SetInt("_Brush", 1);
+			TerrainMaterial.SetInteger("_Brush", 1);
 			BrushGenerator.SetFalloff(SelectedFalloff, LastRotation);
 			TerrainMaterial.SetTexture("_BrushTex", (Texture)BrushGenerator.Current.Brushes[SelectedFalloff]);
 		}
@@ -682,7 +682,7 @@ namespace EditMap
 			set
 			{
 				_Painting = value;
-				TerrainMaterial.SetInt("_BrushPainting", _Painting ? (1) : (0));
+				TerrainMaterial.SetInteger("_BrushPainting", _Painting ? (1) : (0));
 
 			}
 			get

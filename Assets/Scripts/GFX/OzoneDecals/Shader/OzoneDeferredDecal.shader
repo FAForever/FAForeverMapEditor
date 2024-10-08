@@ -49,14 +49,14 @@ Shader "Ozone/Deferred Decal"
 
 			sampler2D _Mask;
 			sampler2D _Glow;
-			uniform sampler2D _WaterRam;
-			uniform sampler2D _UtilitySamplerC;
+			uniform sampler2D WaterRampSampler;
+			uniform sampler2D UtilitySamplerC;
 			uniform int _Water;
 			uniform float _WaterScaleX, _WaterScaleZ;
 
 			
 			float3 ApplyWaterColor( float depth, float3  inColor){
-				float4 wcolor = tex2D(_WaterRam, float2(depth,0));
+				float4 wcolor = tex2D(WaterRampSampler, float2(depth,0));
 				return lerp( inColor.rgb, wcolor.rgb, wcolor.a );
 			}
 
@@ -73,7 +73,7 @@ Shader "Ozone/Deferred Decal"
 				float4 color = tex2D(_MainTex, texUV);// * _Color;
 
 				
-				float4 waterTexture = tex2D( _UtilitySamplerC, (wpos.xz -float2(-0.1, 0.1)) * half2(0.009765 / (_WaterScaleX / 1024.0), -0.009765 / (_WaterScaleZ / 1024.0)));
+				float4 waterTexture = tex2D( UtilitySamplerC, (wpos.xz -float2(-0.1, 0.1)) * half2(0.009765 / (_WaterScaleX / 1024.0), -0.009765 / (_WaterScaleZ / 1024.0)));
 				if(_Water > 0)
 				color.rgb = ApplyWaterColor( waterTexture.g, color.rgb);	
 

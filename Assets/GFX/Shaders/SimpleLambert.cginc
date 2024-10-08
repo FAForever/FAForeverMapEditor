@@ -1,64 +1,11 @@
-﻿uniform half _LightingMultiplier;
-uniform fixed4 _SunColor;
-uniform fixed4 _SunAmbience;
-uniform fixed4 _ShadowColor;
-uniform half _SpecularAmmount;
-
-/*
-float4 LightingSimpleLambertLight  (SurfaceOutput s, float3 lightDir, half atten) {
-	float NdotL = dot (lightDir, s.Normal);
-			              
-	float4 c;
-	float3 spec = float3(0,0,0);
-
-	float3 light =  _SunColor.rgb * 2 * saturate(NdotL) * atten + _SunAmbience.rgb * 2;
-	light = _LightingMultiplier * light + _ShadowColor.rgb * 2 * (1 - light);
-
-
-	c.rgb = (s.Albedo + spec) * light;
-	c.a = s.Alpha;
-	return c;
-}*/
-
-
+﻿
 			
-inline float4 LightingSimpleLambertLight  (SurfaceOutput s, UnityLight light)
-{
-	float NdotL = dot (light.dir, s.Normal);
-	fixed diff = max (0, dot (s.Normal, light.dir));
-						 
-	float4 c;
-	float R = light.dir - 2.0f * NdotL * s.Normal;
-	float3 viewDirection = light.dir;
-	float specular = pow(saturate(dot(R, viewDirection)), 80);// * specAmount;
-	float3 spec = float3(0,0,0);
-
-	float3 lighting = light.color * saturate(NdotL) + specular;
-	lighting = _LightingMultiplier * lighting + _ShadowColor.rgb * 2 * (1 - lighting);
-
-
-	c.rgb = (s.Albedo + spec) * lighting;
-	c.a = s.Alpha;
-	return c;
-}
-
-inline fixed4 LightingSimpleLambert_PrePass (SurfaceOutput s, half4 light)
-{
-	fixed4 c;
-	c.rgb = s.Albedo * light.rgb;
-	c.rgb = s.Albedo;
-	c.a = s.Alpha;
-	return c;
-}
 
 inline fixed4 LightingSimpleLambert (SurfaceOutput s, UnityGI gi)
 {
 	fixed4 c;
-	c = LightingSimpleLambertLight (s, gi.light);
-
-	//#ifdef UNITY_LIGHT_FUNCTION_APPLY_INDIRECT
-	//	c.rgb += s.Albedo * gi.indirect.diffuse;
-	//#endif
+    c.rgb = s.Albedo;
+    c.a = s.Alpha;
 
 	return c;
 }
