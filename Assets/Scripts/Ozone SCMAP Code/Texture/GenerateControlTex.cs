@@ -175,7 +175,7 @@ public class GenerateControlTex : MonoBehaviour
 			BufforNormalTex = false;
 			Current.StopCoroutine(NormalCoroutine);
 			NormalCoroutine = null;
-			ScmapEditor.Current.TerrainMaterial.SetFloat("_GeneratingNormal", 0);
+			ScmapEditor.Current.TerrainMaterial.SetInteger("_GeneratingNormal", 0);
 
 		}
 	}
@@ -193,7 +193,7 @@ public class GenerateControlTex : MonoBehaviour
 	public IEnumerator GeneratingNormal()
 	{
 		//Debug.Log("Begin Generate Normals");
-		ScmapEditor.Current.TerrainMaterial.SetFloat("_GeneratingNormal", 1);
+		ScmapEditor.Current.TerrainMaterial.SetInteger("_GeneratingNormal", 1);
 		Color[] AllColors = ScmapEditor.Current.map.UncompressedNormalmapTex.GetPixels();
 
 		float Width = ScmapEditor.Current.map.UncompressedNormalmapTex.width;
@@ -234,7 +234,7 @@ public class GenerateControlTex : MonoBehaviour
 		//Debug.Log("Success Generate Normals");
 		ScmapEditor.Current.map.UncompressedNormalmapTex.SetPixels(AllColors);
 		ScmapEditor.Current.map.UncompressedNormalmapTex.Apply(false);
-		ScmapEditor.Current.TerrainMaterial.SetFloat("_GeneratingNormal", 0);
+		ScmapEditor.Current.TerrainMaterial.SetInteger("_GeneratingNormal", 0);
 		ScmapEditor.Current.TerrainMaterial.SetTexture("_TerrainNormal", ScmapEditor.Current.map.UncompressedNormalmapTex);
 
 		yield return null;

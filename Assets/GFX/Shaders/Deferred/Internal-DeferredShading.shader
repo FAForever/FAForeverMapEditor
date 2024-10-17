@@ -40,13 +40,158 @@ CGPROGRAM
 sampler2D _CameraGBufferTexture0;
 sampler2D _CameraGBufferTexture1;
 sampler2D _CameraGBufferTexture2;
+sampler1D WaterRampSampler;
 
-uniform int _TTerrainXP;
-uniform half _LightingMultiplier;
-uniform fixed4 _SunColor;
-uniform fixed4 _SunAmbience;
-uniform fixed4 _ShadowColor;
-uniform fixed4 _SpecularColor;
+uniform int _Area;
+uniform half4 _AreaRect;
+half _GridScale;
+uniform int _ShaderID;
+uniform half LightingMultiplier;
+uniform fixed4 SunColor;
+uniform fixed4 SunDirection;
+uniform fixed4 SunAmbience;
+uniform fixed4 ShadowFillColor;
+uniform fixed4 SpecularColor;
+uniform float WaterElevation;
+
+
+float3 ApplyWaterColor(float waterDepth, float3 color)
+{
+    if (waterDepth > 0) {
+        float4 waterColor = tex1D(WaterRampSampler, waterDepth);
+        color = lerp(color.xyz, waterColor.rgb, waterColor.a);
+    }
+    return color;
+}
+
+float3 ApplyWaterColorExponentially(float3 viewDirection, float waterDepth, float3 color)
+{
+    if (waterDepth > 0) {
+        float3 up = float3(0,1,0);
+        // this is the length that the light travels underwater back to the camera
+        float oneOverCosV = 1 / max(dot(up, normalize(viewDirection)), 0.0001);
+        // Light gets absorbed exponentially,
+        // to simplify, we assume that the light enters vertically into the water.
+        // We need to multiply by 2 to reach 98% absorption as the waterDepth can't go over 1.
+        float waterAbsorption = 1 - saturate(exp(-waterDepth * 2 * (1 + oneOverCosV)));
+        // darken the color first to simulate the light absorption on the way in and out
+        color *= 1 - waterAbsorption;
+        // lerp in the watercolor to simulate the scattered light from the dirty water
+        float4 waterColor = tex1D(WaterRampSampler, waterAbsorption);
+        color = lerp(color, waterColor.rgb, waterAbsorption);
+    }
+    return color;
+}
+
+float4 CalculateLighting( float3 inNormal, float3 viewDirection, float3 inAlbedo, float specAmount, float shadow)
+{
+    float4 color = float4( 0, 0, 0, 0 );
+
+    float SunDotNormal = dot( SunDirection, inNormal);
+    float3 R = SunDirection - 2.0f * SunDotNormal * inNormal;
+    float specular = pow( saturate( dot(R, viewDirection) ), 80) * SpecularColor.x * specAmount;
+
+    float3 light = SunColor * saturate( SunDotNormal) * shadow + SunAmbience + specular;
+    light = LightingMultiplier * light + ShadowFillColor * ( 1 - light );
+    color.rgb = light * inAlbedo;
+                
+    color.a = 0.01f + (specular*SpecularColor.w);
+    return color;
+}
+
+float4 CalculateXPLighting( float3 normal, float3 viewDirection, float4 albedo, float shadow)
+{
+    float3 r = reflect(viewDirection,normal);
+    float3 specular = pow(saturate(dot(r,SunDirection)),80)*albedo.aaa*SpecularColor.a*SpecularColor.rgb;
+
+    float dotSunNormal = dot(SunDirection,normal);
+
+    float3 light = SunColor*saturate(dotSunNormal)*shadow + SunAmbience;
+    light = LightingMultiplier*light + ShadowFillColor*(1-light);
+    albedo.rgb = light * ( albedo.rgb + specular.rgb );
+
+    return albedo;
+}
+
+float3 FresnelSchlick(float hDotN, float3 F0)
+{
+    return F0 + (1.0 - F0) * pow(1.0 - hDotN, 5.0);
+}
+
+float NormalDistribution(float3 n, float3 h, float roughness)
+{
+    float a2 = roughness*roughness;
+    float nDotH = max(dot(n, h), 0.0);
+    float nDotH2 = nDotH*nDotH;
+
+    float num = a2;
+    float denom = nDotH2 * (a2 - 1.0) + 1.0;
+    denom = 3.14159265359 * denom * denom;
+
+    return num / denom;
+}
+
+float GeometrySchlick(float nDotV, float roughness)
+{
+    float r = (roughness + 1.0);
+    float k = (r*r) / 8.0;
+
+    float num = nDotV;
+    float denom = nDotV * (1.0 - k) + k;
+
+    return num / denom;
+}
+
+float GeometrySmith(float3 n, float nDotV, float3 l, float roughness)
+{
+    float nDotL = max(dot(n, l), 0.0);
+    float gs2 = GeometrySchlick(nDotV, roughness);
+    float gs1 = GeometrySchlick(nDotL, roughness);
+
+    return gs1 * gs2;
+}
+
+float3 PBR(float3 wpos, float3 viewDirection, float3 albedo, float3 n, float roughness, float shadow) {
+    // See https://blog.selfshadow.com/publications/s2013-shading-course/
+
+    float facingSpecular = 0.04;
+    float underwater = step(wpos, WaterElevation);
+    facingSpecular *= 1 - 0.9 * underwater;
+
+    float3 v = -viewDirection;
+    float3 F0 = float3(facingSpecular, facingSpecular, facingSpecular);
+    float3 l = SunDirection;
+    float3 h = normalize(v + l);
+    float nDotL = max(dot(n, l), 0.0);
+    // Normal maps can cause an angle > 90° betweeen n and v which would 
+    // cause artifacts if we don't take some countermeasures
+    float nDotV = abs(dot(n, v)) + 0.001;
+    float3 sunLight = SunColor * LightingMultiplier * shadow;
+
+    // Cook-Torrance BRDF
+    float3 F = FresnelSchlick(max(dot(h, v), 0.0), F0);
+    float NDF = NormalDistribution(n, h, roughness);
+    float G = GeometrySmith(n, nDotV, l, roughness);
+
+    // For point lights we need to multiply with Pi
+    float3 numerator = 3.14159265359 * NDF * G * F;
+    // add 0.0001 to avoid division by zero
+    float denominator = 4.0 * nDotV * nDotL + 0.0001;
+    float3 reflected = numerator / denominator;
+    
+    float3 kD = float3(1.0, 1.0, 1.0) - F;	
+    float3 refracted = kD * albedo;
+    float3 irradiance = sunLight * nDotL;
+    float3 color = (refracted + reflected) * irradiance;
+
+    float3 shadowColor = (1 - (SunColor * shadow * nDotL + SunAmbience)) * ShadowFillColor;
+    float3 ambient = SunAmbience * LightingMultiplier + shadowColor;
+
+    // we simplify here for the ambient lighting
+    color += albedo * ambient;
+
+    return color;
+}
 
 half4 CalculateLight (unity_v2f_deferred i)
 {
@@ -59,73 +204,58 @@ half4 CalculateLight (unity_v2f_deferred i)
 
     light.color = _LightColor.rgb * atten;
 
-
-
     // unpack Gbuffer
     half4 gbuffer0 = tex2D (_CameraGBufferTexture0, uv);
     half4 gbuffer1 = tex2D (_CameraGBufferTexture1, uv);
     half4 gbuffer2 = tex2D (_CameraGBufferTexture2, uv);
-    UnityStandardData data = UnityStandardDataFromGbuffer(gbuffer0, gbuffer1, gbuffer2);
-
-    data.diffuseColor.rgb   = gbuffer0.rgb;
 
     float3 eyeVec = normalize(wpos-_WorldSpaceCameraPos);
-    half oneMinusReflectivity = 1 - SpecularStrength(data.specularColor.rgb);
 
-    UnityIndirect ind;
-    UNITY_INITIALIZE_OUTPUT(UnityIndirect, ind);
-    ind.diffuse = 0;
-    ind.specular = 0;
+    float3 albedo = gbuffer0.rgb;
+    float alpha = gbuffer0.a;
+    float mapShadow = gbuffer1.r;
+    float waterDepth = gbuffer1.g;
+    float roughness = gbuffer1.b;
+    float3 worldNormal = gbuffer2.rgb;
 
-   // if (light.ndotl <= 0.0) 
-   //  light.ndotl = 0;
-   // else 
-   //  light.ndotl = 1;
+    worldNormal = worldNormal * 2 - 1;
+    // The game is using a different coordinate system, so we need to correct for that
+    worldNormal.z = worldNormal.z * -1;
 
-    //half4 res = UNITY_BRDF_PBS (data.diffuseColor, data.specularColor, oneMinusReflectivity, data.smoothness, data.normalWorld, -eyeVec, light, ind);
-	 float4 c;
-	 float3 spec = float3(0,0,0);
-	 float AlbedoAlpha = gbuffer1.a;
-	 fixed3 SunColor = _SunColor.rgb * 2;
-	 fixed3 SunAmbience = _SunAmbience.rgb * 2;
-	 fixed3 ShadowFillColor = _ShadowColor.rgb * 2;
-	 fixed4 SpecularColor = _SpecularColor.rgba * 2;
+	float4 color;
 
-	if(_TTerrainXP <= 0){ // Normal lighting
-		float NdotL = dot (light.dir, data.normalWorld);
+    if (_ShaderID == 0) {
+        color.rgb = CalculateLighting(worldNormal, eyeVec, albedo, 1-alpha, atten);
+    } else if (_ShaderID == 1) {
+        color.rgb = CalculateXPLighting(worldNormal, eyeVec, float4(albedo, alpha), atten);
+    } else if (_ShaderID == 2) {
+        color.rgb = PBR(wpos, eyeVec, albedo, worldNormal, roughness, mapShadow * atten);
+    }
 
-		float3 R = light.dir - 2.0f * NdotL * data.normalWorld;
-		float specular = pow( saturate( dot(R, eyeVec) ), 8) * SpecularColor.r * AlbedoAlpha * 2;
-		float3 lighting = SunColor * saturate(NdotL) * atten + SunAmbience + specular;
-		lighting = _LightingMultiplier * lighting + ShadowFillColor * (1 - lighting);
-		c.rgb = (data.diffuseColor + spec) * lighting;
-		c.a = 1;
-	}
-	else{ // XP lighting
+    // Trigger for exponential water absorption
+    if (LightingMultiplier > 2.1) {
+        color.rgb = ApplyWaterColorExponentially(-eyeVec, waterDepth, color.rgb);
+    } else {
+        color.rgb = ApplyWaterColor(waterDepth, color.rgb);
+    }
 
-		float NdotL = dot (light.dir, data.normalWorld);
-
-		float3 r = reflect(eyeVec, data.normalWorld);
-
-		float3 specular = (pow(saturate(dot(r, light.dir)), 80) * AlbedoAlpha * SpecularColor.a) * SpecularColor.rgb;
-
-		float dotSunNormal = dot(light.dir, data.normalWorld);
-
-		//float shadow = tex2D(ShadowSampler, pixel.mShadow.xy).g;
-		float3 light = SunColor * saturate(dotSunNormal) * atten + SunAmbience;
-		light = _LightingMultiplier * light + ShadowFillColor * (1 - light);
-		c.rgb = light * (data.diffuseColor + specular.rgb);
-
-		//float waterDepth = tex2Dproj(UtilitySamplerC, pixel.mTexWT*TerrainScale).g;
-		//float4 water = tex1D(WaterRampSampler, waterDepth);
-		//c.rgb = lerp(albedo.rgb, water.rgb, water.a);
-
+    color.a = 1;
+    if(_Area > 0){
+		if(wpos.x < _AreaRect.x){
+            color.rgb = 0;
+		}
+		else if(wpos.x > _AreaRect.z){
+			color.rgb = 0;
+		}
+		else if(wpos.z < _AreaRect.y - _GridScale){
+			color.rgb = 0;
+		}
+		else if(wpos.z > _AreaRect.w - _GridScale){
+			color.rgb = 0;
+		}
 	}
 
-
-	//half4 res = data.diffuseColor;
-
-    return c;
+    return color;
 }
 
 #ifdef UNITY_HDR_ON

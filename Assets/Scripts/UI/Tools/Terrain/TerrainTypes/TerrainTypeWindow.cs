@@ -413,11 +413,11 @@ namespace EditMap.TerrainTypes
 
 			RebuildBrush(BrushSize);
 
-			ScmapEditor.Current.TerrainMaterial.SetInt("_Brush", 1);
+			ScmapEditor.Current.TerrainMaterial.SetInteger("_Brush", 1);
 			ScmapEditor.Current.TerrainMaterial.SetTexture("_BrushTex", brushTexture);
 			ScmapEditor.Current.TerrainMaterial.SetFloat("_BrushSize", BrushSizeRecalc);
 			ScmapEditor.Current.TerrainMaterial.SetTexture("_TerrainTypeAlbedo", TerrainTypeTexture);
-			ScmapEditor.Current.TerrainMaterial.SetInt("_HideTerrainType", 0);
+			ScmapEditor.Current.TerrainMaterial.SetInteger("_HideTerrainType", 0);
 
 			layerCapacityField.SetValue(0.228f * 100);
 			CreateUILayerSettings();
@@ -580,8 +580,8 @@ namespace EditMap.TerrainTypes
 			ApplyTerrainTypeChanges();
 			HideMoreLayerInfo();
 
-			ScmapEditor.Current.TerrainMaterial.SetInt("_Brush", 0);
-			ScmapEditor.Current.TerrainMaterial.SetInt("_HideTerrainType", 1);
+			ScmapEditor.Current.TerrainMaterial.SetInteger("_Brush", 0);
+			ScmapEditor.Current.TerrainMaterial.SetInteger("_HideTerrainType", 1);
 			ScmapEditor.Current.TerrainMaterial.SetTexture("_TerrainTypeAlbedo", null);
 
 			TerrainTypeTexture = null;
