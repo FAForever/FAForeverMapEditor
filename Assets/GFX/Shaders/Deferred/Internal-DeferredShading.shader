@@ -59,7 +59,19 @@ uniform fixed4 SunAmbience;
 uniform fixed4 ShadowFillColor;
 uniform fixed4 SpecularColor;
 uniform float WaterElevation;
+uniform fixed4 FogColor;
+uniform float FogStart;
+uniform float FogEnd;
 
+float3 ApplyFog(float3 color, float3 wpos, float3 viewDirection)
+{
+    float a = 1 / (FogEnd - FogStart);
+    float b = - FogStart * a;
+    float x = length(wpos.xz - _WorldSpaceCameraPos.xz);
+    float fogamount = a * x + b;
+    float attunement = 1 - dot(float3(0,1,0), viewDirection);
+    return lerp(color, FogColor, saturate(fogamount * attunement));
+}
 
 float3 ApplyWaterColor(float3 wpos, float3 viewDirection, float waterDepth, float3 color)
 {
@@ -250,6 +262,8 @@ half4 CalculateLight (unity_v2f_deferred i)
     if (_ShowRoughness) color.rgb = roughness.xxx;
     if (_ShowAO) color.rgb = ambientOcclusion.xxx;
     if (_ShowMask) color.rgb = albedo.rgb;
+
+    color.rgb = ApplyFog(color.rgb, wpos, -eyeVec);
 
     color.a = 1;
     if(_Area > 0){

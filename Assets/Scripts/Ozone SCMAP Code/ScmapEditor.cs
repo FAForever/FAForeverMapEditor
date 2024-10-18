@@ -92,9 +92,10 @@ public partial class ScmapEditor : MonoBehaviour
 		BloomOpt.intensity = map.Bloom * 4;
 		BloomOptPreview.intensity = map.Bloom * 4;
 
-		RenderSettings.fogColor = new Color(map.FogColor.x, map.FogColor.y, map.FogColor.z, 1);
-		RenderSettings.fogStartDistance = map.FogStart * 4f;
-		RenderSettings.fogEndDistance = map.FogEnd * 4f;
+		RenderSettings.fog = false;
+        Shader.SetGlobalVector("FogColor", map.FogColor);
+        Shader.SetGlobalFloat("FogStart", map.FogStart * 0.1f);
+        Shader.SetGlobalFloat("FogEnd", map.FogEnd * 0.1f);
 
         Shader.SetGlobalVector("ShadowFillColor", map.ShadowFillColor);
         Shader.SetGlobalFloat("LightingMultiplier", map.LightingMultiplier);
