@@ -1,366 +1,554 @@
-﻿// Upgrade NOTE: replaced 'mul(UNITY_MATRIX_MVP,*)' with 'UnityObjectToClipPos(*)'
+﻿Shader "FAShaders/Terrain"
+{
+    Properties
+    {
+        // It is conventional to begin all property names with an underscore.
+        // However, to be as close to the FA shader code as possible, we ignore this here.
+        // We use underscores only for variables that are introduced by the editor.
 
-Shader "MapEditor/FaTerrainShader" {
-Properties {
-	_SpecColor ("Specular Color", Color) = (0.5, 0.5, 0.5, 1)
-	_Shininess ("Shininess", Range (0.03, 1)) = 0.078125
-	[MaterialToggle] _Grid("Grid", Int) = 0
-	_GridType("Grid type", Int) = 0
-	[MaterialToggle] _Slope("Slope", Int) = 0
-	[MaterialToggle] _UseSlopeTex("Use Slope Data", Int) = 0
-	_SlopeTex ("Slope data", 2D) = "black" {}
-		
-	// set by terrain engine
-	_Control ("Control (RGBA)", 2D) = "black" {}
-	_ControlXP ("ControlXP (RGBA)", 2D) = "black" {}
-	_Control2XP ("Control2XP (RGBA)", 2D) = "black" {}
+        LowerAlbedoTile ("Lower Albedo Tile", Float) = 1
+        LowerNormalTile ("Lower Normal Tile", Float) = 1
+        Stratum0AlbedoTile ("Stratum 0 Albedo Tile", Float) = 1
+        Stratum1AlbedoTile ("Stratum 1 Albedo Tile", Float) = 1
+        Stratum2AlbedoTile ("Stratum 2 Albedo Tile", Float) = 1
+        Stratum3AlbedoTile ("Stratum 3 Albedo Tile", Float) = 1
+        Stratum4AlbedoTile ("Stratum 4 Albedo Tile", Float) = 1
+        Stratum5AlbedoTile ("Stratum 5 Albedo Tile", Float) = 1
+        Stratum6AlbedoTile ("Stratum 6 Albedo Tile", Float) = 1
+        Stratum7AlbedoTile ("Stratum 7 Albedo Tile", Float) = 1
+        Stratum0NormalTile ("Stratum 0 Normal Tile", Float) = 1
+        Stratum1NormalTile ("Stratum 1 Normal Tile", Float) = 1
+        Stratum2NormalTile ("Stratum 2 Normal Tile", Float) = 1
+        Stratum3NormalTile ("Stratum 3 Normal Tile", Float) = 1
+        Stratum4NormalTile ("Stratum 4 Normal Tile", Float) = 1
+        Stratum5NormalTile ("Stratum 5 Normal Tile", Float) = 1
+        Stratum6NormalTile ("Stratum 6 Normal Tile", Float) = 1
+        Stratum7NormalTile ("Stratum 7 Normal Tile", Float) = 1
+        UpperAlbedoTile ("Upper Albedo Tile", Float) = 1
+        UpperNormalTile ("Upper Normal Tile", Float) = 1
 
-	
-	[MaterialToggle] _HideSplat0("Hide splat 2", Int) = 0
-	[MaterialToggle] _HideSplat1("Hide splat 2", Int) = 0
-	[MaterialToggle] _HideSplat2("Hide splat 3", Int) = 0
-	[MaterialToggle] _HideSplat3("Hide splat 4", Int) = 0
-	[MaterialToggle] _HideSplat4("Hide splat 5", Int) = 0
-	[MaterialToggle] _HideSplat5("Hide splat 6", Int) = 0
-	[MaterialToggle] _HideSplat6("Hide splat 7", Int) = 0
-	[MaterialToggle] _HideSplat7("Hide splat 8", Int) = 0
-	[MaterialToggle] _HideSplat8("Hide splat Upper", Int) = 0
-	[MaterialToggle] _HideTerrainType("Hide Terrain Type", Int) = 0
+        // used to generate texture coordinates
+        // this is 1/mapresolution
+        TerrainScale ("Terrain Scale", Range (0, 1)) = 1
 
-	_SplatAlbedoArray ("Albedo array", 2DArray) = "" {}
-	_SplatNormalArray ("Normal array", 2DArray) = "" {}
+        UtilitySamplerA ("masks of stratum layers 0 - 3", 2D) = "black" {}
+        UtilitySamplerB ("masks of stratum layers 4 - 7", 2D) = "black" {}
+        UtilitySamplerC ("water properties", 2D) = "black" {}  // not set?
 
+    	LowerAlbedoSampler ("Layer Lower (R)", 2D) = "white" {}
+	    LowerNormalSampler ("Normal Lower (R)", 2D) = "bump" {}
+    	UpperAlbedoSampler ("Layer Lower (R)", 2D) = "white" {}
 
-	_Splat0Scale ("Splat1 Level", Range (1, 1024)) = 10
-	_Splat1Scale ("Splat2 Level", Range (1, 1024)) = 10
-	_Splat2Scale ("Splat3 Level", Range (1, 1024)) = 10
-	_Splat3Scale ("Splat4 Level", Range (1, 1024)) = 10
-	_Splat4Scale ("Splat5 Level", Range (1, 1024)) = 10
-	_Splat5Scale ("Splat6 Level", Range (1, 1024)) = 10
-	_Splat6Scale ("Splat7 Level", Range (1, 1024)) = 10
-	_Splat7Scale ("Splat8 Level", Range (1, 1024)) = 10
+        _StratumAlbedoArray ("Albedo array", 2DArray) = "" {}
+	    _StratumNormalArray ("Normal array", 2DArray) = "" {}
 
-	// set by terrain engine
-	[MaterialToggle] _GeneratingNormal("Generating Normal", Int) = 0
-	_TerrainNormal ("Terrain Normal", 2D) = "bump" {}
-	
+        [MaterialToggle] _HideStratum0("Hide stratum 0", Integer) = 0
+	    [MaterialToggle] _HideStratum1("Hide stratum 1", Integer) = 0
+	    [MaterialToggle] _HideStratum2("Hide stratum 2", Integer) = 0
+	    [MaterialToggle] _HideStratum3("Hide stratum 3", Integer) = 0
+	    [MaterialToggle] _HideStratum4("Hide stratum 4", Integer) = 0
+	    [MaterialToggle] _HideStratum5("Hide stratum 5", Integer) = 0
+	    [MaterialToggle] _HideStratum6("Hide stratum 6", Integer) = 0
+	    [MaterialToggle] _HideStratum7("Hide stratum 7", Integer) = 0
+	    [MaterialToggle] _HideStratum8("Hide upper stratum", Integer) = 0
 
-	_Splat0ScaleNormal ("Splat1 Normal Level", Range (1, 1024)) = 10
-	_Splat1ScaleNormal ("Splat2 Normal Level", Range (1, 1024)) = 10
-	_Splat2ScaleNormal ("Splat3 Normal Level", Range (1, 1024)) = 10
-	_Splat3ScaleNormal ("Splat4 Normal Level", Range (1, 1024)) = 10
-	_Splat4ScaleNormal ("Splat5 Normal Level", Range (1, 1024)) = 10
-	_Splat5ScaleNormal ("Splat6 Normal Level", Range (1, 1024)) = 10
-	_Splat6ScaleNormal ("Splat7 Normal Level", Range (1, 1024)) = 10
-	_Splat7ScaleNormal ("Splat8 Normal Level", Range (1, 1024)) = 10
+	    [MaterialToggle] _HideTerrainType("Hide Terrain Type", Integer) = 0
+       	_TerrainTypeAlbedo ("Terrain Type Albedo", 2D) = "black" {}
+	    _TerrainTypeCapacity ("Terrain Type Capacity", Range(0,1)) = 0.228
 
-	// used in fallback on old cards & base map
-	[HideInInspector] _MainTex ("BaseMap (RGB)", 2D) = "white" {}
-	[HideInInspector] _Color ("Main Color", Color) = (1,1,1,1)
+        [MaterialToggle] _Grid("Grid", Integer) = 0
+        _GridType("Grid type", Integer) = 0
+        // This should be refactored so we can use TerrainScale instead
+        _GridScale ("Grid Scale", Range (0, 2048)) = 512
+	    _GridTexture ("Grid Texture", 2D) = "white" {}
 
-	[MaterialToggle] _Brush ("Brush", Int) = 0
-	[MaterialToggle] _BrushPainting ("Brush painting", Int) = 0
-	_BrushTex ("Brush (RGB)", 2D) = "white" {}
-	_BrushSize ("Brush Size", Range (0, 128)) = 0
-	_BrushUvX ("Brush X", Range (0, 1)) = 0
-	_BrushUvY ("Brush Y", Range (0, 1)) = 0
+        [MaterialToggle] _Slope("Slope", Integer) = 0
+	    [MaterialToggle] _UseSlopeTex("Use Slope Data", Integer) = 0
+        _SlopeTex ("Slope data", 2D) = "black" {}
 
-	//Lower Stratum
-	_SplatLower ("Layer Lower (R)", 2D) = "white" {}
-	_NormalLower ("Normal Lower (R)", 2D) = "bump" {}
-	_LowerScale ("Lower Level", Range (1, 128)) = 1
-	_LowerScaleNormal ("Lower Normal Level", Range (1, 128)) = 1
+      	[MaterialToggle] _Brush ("Brush", Integer) = 0
+	    [MaterialToggle] _BrushPainting ("Brush painting", Integer) = 0
+	    _BrushTex ("Brush (RGB)", 2D) = "white" {}
+	    _BrushSize ("Brush Size", Range (0, 128)) = 0
+	    _BrushUvX ("Brush X", Range (0, 1)) = 0
+	    _BrushUvY ("Brush Y", Range (0, 1)) = 0
 
-	//Upper Stratum
-	_SplatUpper ("Layer Lower (R)", 2D) = "white" {}
-	_NormalUpper ("Normal Lower (R)", 2D) = "bump" {}
-	_UpperScale ("Upper Level", Range (1, 128)) = 1
-	_UpperScaleNormal ("Upper Normal Level", Range (1, 128)) = 1
+        // Is this still needed?
+        [MaterialToggle] _GeneratingNormal("Generating Normal", Integer) = 0
+	    _TerrainNormal ("Terrain Normal", 2D) = "bump" {}
 
-	_GridScale ("Grid Scale", Range (0, 2048)) = 512
-	_GridTexture ("Grid Texture", 2D) = "white" {}
+    }
+    SubShader
+    {
 
-	_TerrainTypeAlbedo ("Terrain Type Albedo", 2D) = "black" {}
-	_TerrainTypeCapacity ("Terrain Type Capacity", Range(0,1)) = 0.228
-}
-	
-	SubShader {
-
-			CGPROGRAM
-			#define UNITY_BRDF_PBS BRDF3_Unity_PBS
-
-			#pragma surface surf SimpleLambert vertex:vert  fullforwardshadows addshadow nometa
-#pragma multi_compile_fog
-			//#pragma debug
+            CGPROGRAM
+			#pragma surface surf SimpleLambert vertex:TerrainVS exclude_path:forward nometa
+            #pragma multi_compile_fog
 			#pragma target 3.5
-			#pragma exclude_renderers gles
-			#include "UnityLightingCommon.cginc"
-			#include "UnityGBuffer.cginc"
-			#include "UnityGlobalIllumination.cginc"
 			#include "Assets/GFX/Shaders/SimpleLambert.cginc"
-			#pragma multi_compile PREVIEW_OFF PREVIEW_ON
 
-			struct Input {
-				float2 uv_Control : TEXCOORD0;
-				float3 worldPos;
-				float SlopeLerp;
-				float4 grabUV;
-				half fog;
-			};
-
-			half _GeneratingNormal;
-			uniform half4 unity_FogStart;
-			uniform half4 unity_FogEnd;
+            // include file that contains UnityObjectToWorldNormal helper function
+            #include "UnityCG.cginc"
 
 
-			void vert (inout appdata_full v, out Input o){
-				UNITY_INITIALIZE_OUTPUT(Input,o);
-
-				o.SlopeLerp = dot(v.normal, half3(0,1,0));
-
-				if(_GeneratingNormal == 0)
-					v.normal = float3(0,1,0);
-				v.tangent.xyz = cross(v.normal, float3(0,0,1));
-				v.tangent.w = -1;
-				 float4 hpos = UnityObjectToClipPos (v.vertex);
-		         o.grabUV = ComputeGrabScreenPos(hpos);
-
-				 float pos = length(UnityObjectToViewPos(v.vertex).xyz);
-				 float diff = unity_FogEnd.x - unity_FogStart.x;
-				 float invDiff = 1.0f / diff;
-				 o.fog = saturate((unity_FogEnd.x - pos) * invDiff);
-			}
-
-			sampler2D _MyGrabTexture3;
-			sampler2D _WaterRam;
-			half _Shininess;
-			fixed4 _Abyss;
-			fixed4 _Deep;
-			int _Water;
-			float _WaterLevel;
-
-			int _Slope, _UseSlopeTex;
+			int _Slope;
+            int _UseSlopeTex;
 			sampler2D _SlopeTex;
 
 			int _Grid, _GridType;
-			half _GridScale;
+            half _GridScale;
 			half _GridCamDist;
 			sampler2D _GridTexture;
 
-			//uniform
-			sampler2D _ControlXP;
-			sampler2D _Control2XP;
-			uniform sampler2D _UtilitySamplerC;
 			sampler2D _TerrainNormal;
-			sampler2D _SplatLower, _SplatUpper;
 			sampler2D _TerrainTypeAlbedo;
-			sampler2D  _NormalLower;
-			half _Splat0Scale, _Splat1Scale, _Splat2Scale, _Splat3Scale, _Splat4Scale, _Splat5Scale, _Splat6Scale, _Splat7Scale;
-			half _Splat0ScaleNormal, _Splat1ScaleNormal, _Splat2ScaleNormal, _Splat3ScaleNormal, _Splat4ScaleNormal, _Splat5ScaleNormal, _Splat6ScaleNormal, _Splat7ScaleNormal;
 
-			UNITY_DECLARE_TEX2DARRAY(_SplatAlbedoArray);
-			 UNITY_DECLARE_TEX2DARRAY(_SplatNormalArray);
-
-			int _HideSplat0, _HideSplat1, _HideSplat2, _HideSplat3, _HideSplat4, _HideSplat5, _HideSplat6, _HideSplat7, _HideSplat8;
+			int _HideStratum0;
+            int _HideStratum1;
+            int _HideStratum2;
+            int _HideStratum3;
+            int _HideStratum4;
+            int _HideStratum5;
+            int _HideStratum6;
+            int _HideStratum7;
+            int _HideStratum8;
 			int _HideTerrainType;
 			float _TerrainTypeCapacity;
-		
-			half _LowerScale, _UpperScale;
-			half _LowerScaleNormal, _UpperScaleNormal;
-			uniform int _TTerrainXP;
-			uniform float _WaterScaleX, _WaterScaleZ;
 
-			int _Brush, _BrushPainting;
+			int _Brush;
+            int _BrushPainting;
 			sampler2D _BrushTex;
 			half _BrushSize;
 			half _BrushUvX;
 			half _BrushUvY;
 
-			uniform int _Area;
-			uniform half4 _AreaRect;
+            uniform int _ShaderID;
 
+            // Most light values are already defined in SimpleLambert
+            float4 SpecularColor;
+            float WaterElevation;
 
+            float LowerAlbedoTile;
+            float LowerNormalTile;
+            float Stratum0AlbedoTile;
+            float Stratum1AlbedoTile;
+            float Stratum2AlbedoTile;
+            float Stratum3AlbedoTile;
+            float Stratum4AlbedoTile;
+            float Stratum5AlbedoTile;
+            float Stratum6AlbedoTile;
+            float Stratum7AlbedoTile;
+            float Stratum0NormalTile;
+            float Stratum1NormalTile;
+            float Stratum2NormalTile;
+            float Stratum3NormalTile;
+            float Stratum4NormalTile;
+            float Stratum5NormalTile;
+            float Stratum6NormalTile;
+            float Stratum7NormalTile;
+            float UpperAlbedoTile;
+            float UpperNormalTile;
 
-			float3 ApplyWaterColor( float depth, float3  inColor){
-				float4 wcolor = tex2D(_WaterRam, float2(depth,0));
-				return lerp( inColor.rgb, wcolor.rgb, wcolor.a );
-			}
+            float TerrainScale;
 
-			float4 RenderGrid(sampler2D _GridTex, float2 uv_Control, float Offset, float GridScale) {
-				fixed4 GridColor = tex2D(_GridTex, uv_Control * GridScale + float2(-Offset, Offset));
-				fixed4 GridFinal = fixed4(0, 0, 0, GridColor.a);
-				if (_GridCamDist < 1) {
-					GridFinal.rgb = lerp(GridFinal.rgb, fixed3(1, 1, 1), GridColor.r * lerp(1, 0, _GridCamDist));
-					GridFinal.rgb = lerp(GridFinal.rgb, fixed3(0, 1, 0), GridColor.g * lerp(1, 0, _GridCamDist));
-					GridFinal.rgb = lerp(GridFinal.rgb, fixed3(0, 1, 0), GridColor.b * lerp(0, 1, _GridCamDist));
-				}
-				else {
-					GridFinal.rgb = lerp(GridFinal.rgb, fixed3(0, 1, 0), GridColor.b);
-				}
+            sampler2D UtilitySamplerA;
+            sampler2D UtilitySamplerB;
+            sampler2D UtilitySamplerC;
+            sampler1D WaterRampSampler;
 
-				GridFinal *= GridColor.a;
+            sampler2D LowerAlbedoSampler;
+            sampler2D UpperAlbedoSampler;
+            sampler2D LowerNormalSampler;
+       
+			UNITY_DECLARE_TEX2DARRAY(_StratumAlbedoArray);
+			UNITY_DECLARE_TEX2DARRAY(_StratumNormalArray);
 
-				half CenterGridSize = lerp(0.005, 0.015, _GridCamDist) / _GridScale;
-				if (uv_Control.x > 0.5 - CenterGridSize && uv_Control.x < 0.5 + CenterGridSize)
-					GridFinal.rgb = fixed3(0.4, 1, 0);
-				else if (uv_Control.y > 0.5 - CenterGridSize && uv_Control.y < 0.5 + CenterGridSize)
-					GridFinal.rgb = fixed3(0.4, 1, 0);
+            uniform half4 unity_FogStart;
+			uniform half4 unity_FogEnd;
 
-				return GridFinal;
-			}
+            // This struct has to be named 'Input'. Changing it to VS_OUTPUT does not compile.
+            struct Input
+            {
+                float4 mPos                    : POSITION0;
+                // These are absolute world coordinates
+                float3 mTexWT                : TEXCOORD1;
+                // these three vectors will hold a 3x3 rotation matrix
+                // that transforms from tangent to world space
+                half3 tspace0 : TEXCOORD2; // tangent.x, bitangent.x, normal.x
+                half3 tspace1 : TEXCOORD3; // tangent.y, bitangent.y, normal.y
+                half3 tspace2 : TEXCOORD4; // tangent.z, bitangent.z, normal.z
+                float3 mViewDirection        : TEXCOORD5;
+                float4 nearScales           : TEXCOORD6;
+                float4 farScales            : TEXCOORD7;
 
-			inline fixed3 UnpackNormalDXT5nmScaled (fixed4 packednormal, fixed scale)
-			{
-				fixed3 normal = 0;
-				normal.xz = packednormal.wx * 2 - 1;
-				normal.y = sqrt(1 - saturate(dot(normal.xz, normal.xz)));
-				normal.xz *= scale;
+                float SlopeLerp;
+                half fog;
+            };
 
-			   return normal.xzy;
-			}
+            float4 StratumAlbedoSampler(int layer, float2 uv) {
+                return UNITY_SAMPLE_TEX2DARRAY(_StratumAlbedoArray, float3(uv, layer));
+            }
 
-			#if defined(SHADER_API_D3D11) || defined(SHADER_API_XBOXONE) || defined(SHADER_API_GLES3) || defined(SHADER_API_GLCORE)
-			#define UNITY_SAMPLE_TEX2DARRAY_GRAD(tex,coord,dx,dy) tex.SampleGrad (sampler##tex,coord,dx,dy)
-			#else
-			#if defined(UNITY_COMPILER_HLSL2GLSL) || defined(SHADER_TARGET_SURFACE_ANALYSIS)
-			#define UNITY_SAMPLE_TEX2DARRAY_GRAD(tex,coord,dx,dy) float4(0,0,0,0) //tex2DArray(tex,coord,dx,dy)
-			#endif
-			#endif
+            float4 StratumNormalSampler(int layer, float2 uv) {
+                return UNITY_SAMPLE_TEX2DARRAY(_StratumNormalArray, float3(uv, layer));
+            }
 
-			void surf (Input IN, inout SurfaceOutput o) {
+            float3 TangentToWorldSpace(Input v, float3 tnormal) {
+                // transform normal from tangent to world space
+                float3 worldNormal;
+                worldNormal.x = dot(v.tspace0, tnormal);
+                worldNormal.y = dot(v.tspace1, tnormal);
+                worldNormal.z = dot(v.tspace2, tnormal);
+                return worldNormal;
+            }
 
-				float4 waterTexture = tex2D( _UtilitySamplerC, IN.uv_Control * float2(1, -1) + float2(1 / (_WaterScaleX * 1), 1 / (_WaterScaleZ * 1) + 1));
+            // Because the underlying engine is different, the vertex shader has to differ considerably from fa.
+            // Still, we try to set up things in a way that we only have to minimally modify the fa pixel shaders
+            void TerrainVS(inout appdata_full v, out Input result)
+            {
+                result.nearScales = float4(Stratum0AlbedoTile.x, Stratum1AlbedoTile.x, Stratum2AlbedoTile.x, Stratum3AlbedoTile.x);
+                result.farScales =  float4(Stratum0NormalTile.x, Stratum1NormalTile.x, Stratum2NormalTile.x, Stratum3NormalTile.x);
 
-				float WaterDepth = waterTexture.g;
+                // calculate output position
+                result.mPos = UnityObjectToClipPos(v.vertex);
 
-				float2 UVCtrl = IN.uv_Control * fixed2(1, -1) + half2(0, 1);
-				float2 UV = IN.uv_Control * fixed2(1, -1) + half2(0, 1);
-				float4 splat_control = saturate(tex2D (_ControlXP, UVCtrl) * 2 - 1);
-				float4 splat_control2 = saturate(tex2D (_Control2XP, UVCtrl) * 2 - 1);
+                // Unity uses lower left origin, fa uses upper left, so we need to invert the y axis
+                // and for some ungodly reason we have a scale factor of 10. I don't know where this comes from.
+                result.mTexWT = v.vertex.xzy * float3(10, -10, 10);
+                // We also need to move the origin from the bottom corner to the top corner
+                result.mTexWT.y += 1.0 / TerrainScale;
+                
+                result.mViewDirection = normalize(v.vertex.xyz - _WorldSpaceCameraPos.xyz);
 
+                half3 worldNormal = UnityObjectToWorldNormal(v.normal);
+                half3 worldTangent = UnityObjectToWorldDir(v.tangent.xyz);
+                // compute bitangent from cross product of normal and tangent
+                half tangentSign = v.tangent.w * unity_WorldTransformParams.w;
+                half3 worldBitangent = cross(worldNormal, worldTangent) * tangentSign;
+                // output the tangent space matrix
+                result.tspace0 = half3(worldTangent.x, worldBitangent.x, worldNormal.x);
+                result.tspace1 = half3(worldTangent.y, worldBitangent.y, worldNormal.y);
+                result.tspace2 = half3(worldTangent.z, worldBitangent.z, worldNormal.z);
 
-				float4 col = tex2D(_SplatLower, UV * _LowerScale);
+                result.SlopeLerp = dot(v.normal, half3(0,1,0));
+                float pos = length(UnityObjectToViewPos(v.vertex).xyz);
+				float diff = unity_FogEnd.x - unity_FogStart.x;
+			    float invDiff = 1.0f / diff;
+		    	result.fog = saturate((unity_FogEnd.x - pos) * invDiff);
+            }
 
-				if(_HideSplat0 == 0)
-					col = lerp(col, UNITY_SAMPLE_TEX2DARRAY(_SplatAlbedoArray, float3(UV * _Splat0Scale, 0)), splat_control.r);
-				if(_HideSplat1 == 0)
-					col = lerp(col, UNITY_SAMPLE_TEX2DARRAY(_SplatAlbedoArray, float3(UV * _Splat1Scale, 1)), splat_control.g);
-				if(_HideSplat2 == 0)
-					col = lerp(col, UNITY_SAMPLE_TEX2DARRAY(_SplatAlbedoArray, float3(UV * _Splat2Scale, 2)), splat_control.b);
-				if(_HideSplat3 == 0)
-					col = lerp(col, UNITY_SAMPLE_TEX2DARRAY(_SplatAlbedoArray, float3(UV * _Splat3Scale, 3)), splat_control.a);
+            float4 TerrainNormalsPS( Input inV )
+            {
+                // sample all the textures we'll need
+                float4 mask = saturate(tex2D( UtilitySamplerA, inV.mTexWT * TerrainScale));
 
-				if (_TTerrainXP > 0) {
-					if(_HideSplat4 == 0)
-					col = lerp(col, UNITY_SAMPLE_TEX2DARRAY(_SplatAlbedoArray, float3(UV * _Splat4Scale, 4)), splat_control2.r);
-					if(_HideSplat5 == 0)
-					col = lerp(col, UNITY_SAMPLE_TEX2DARRAY(_SplatAlbedoArray, float3(UV * _Splat5Scale, 5)), splat_control2.g);
-					if(_HideSplat6 == 0)
-					col = lerp(col, UNITY_SAMPLE_TEX2DARRAY(_SplatAlbedoArray, float3(UV * _Splat6Scale, 6)), splat_control2.b);
-					if(_HideSplat7 == 0)
-					col = lerp(col, UNITY_SAMPLE_TEX2DARRAY(_SplatAlbedoArray, float3(UV * _Splat7Scale, 7)), splat_control2.a);
-				}
+                float4 lowerNormal = normalize(tex2D( LowerNormalSampler, inV.mTexWT * TerrainScale * LowerNormalTile ) * 2 - 1);
+                float4 stratum0Normal = normalize(StratumNormalSampler(0, inV.mTexWT * TerrainScale * Stratum0NormalTile) * 2 - 1);
+                float4 stratum1Normal = normalize(StratumNormalSampler(1, inV.mTexWT * TerrainScale * Stratum1NormalTile) * 2 - 1);
+                float4 stratum2Normal = normalize(StratumNormalSampler(2, inV.mTexWT * TerrainScale * Stratum2NormalTile) * 2 - 1);
+                float4 stratum3Normal = normalize(StratumNormalSampler(3, inV.mTexWT * TerrainScale * Stratum3NormalTile) * 2 - 1);
 
-				if(_HideSplat8 == 0){
-					float4 UpperAlbedo = tex2D (_SplatUpper, UV * _UpperScale);
-					col = lerp(col, UpperAlbedo, UpperAlbedo.a);
-				}
+                // blend all normals together
+                float4 normal = lowerNormal;
+                if(_HideStratum0 == 0)
+                normal = lerp( normal, stratum0Normal, mask.x );
+                if(_HideStratum1 == 0)
+                normal = lerp( normal, stratum1Normal, mask.y );
+                if(_HideStratum2 == 0)
+                normal = lerp( normal, stratum2Normal, mask.z );
+                if(_HideStratum3 == 0)
+                normal = lerp( normal, stratum3Normal, mask.w );
+                normal.xyz = normalize( normal.xyz );
 
-#if defined(PREVIEW_ON)
-				
-#else
-				if(_HideTerrainType == 0) {
-					float4 TerrainTypeAlbedo = tex2D (_TerrainTypeAlbedo, UV);
-					col = lerp(col, TerrainTypeAlbedo, TerrainTypeAlbedo.a*_TerrainTypeCapacity);
-				}
-#endif
+                return normal;
+            }
 
-				half4 nrm;
-				nrm = tex2D (_NormalLower, UV * _LowerScaleNormal);
-				if(_HideSplat0 == 0)
-				nrm = lerp(nrm, UNITY_SAMPLE_TEX2DARRAY(_SplatNormalArray, float3(UV * _Splat0ScaleNormal, 0)), splat_control.r);
-				if(_HideSplat1 == 0)
-				nrm = lerp(nrm, UNITY_SAMPLE_TEX2DARRAY(_SplatNormalArray, float3(UV * _Splat1ScaleNormal, 1)), splat_control.g);
-				if(_HideSplat2 == 0)
-				nrm = lerp(nrm, UNITY_SAMPLE_TEX2DARRAY(_SplatNormalArray, float3(UV * _Splat2ScaleNormal, 2)), splat_control.b);
-				if(_HideSplat3 == 0)
-				nrm = lerp(nrm, UNITY_SAMPLE_TEX2DARRAY(_SplatNormalArray, float3(UV * _Splat3ScaleNormal, 3)), splat_control.a);
+            float4 TerrainPS( Input inV )
+            {
+                // sample all the textures we'll need
+                float4 mask = saturate(tex2D( UtilitySamplerA, inV.mTexWT * TerrainScale) * 2 - 1);
+                float4 upperAlbedo = tex2D( UpperAlbedoSampler, inV.mTexWT * TerrainScale * UpperAlbedoTile);
+                float4 lowerAlbedo = tex2D( LowerAlbedoSampler, inV.mTexWT * TerrainScale * LowerAlbedoTile);
+                float4 stratum0Albedo = StratumAlbedoSampler(0, inV.mTexWT * TerrainScale * Stratum0AlbedoTile);
+                float4 stratum1Albedo = StratumAlbedoSampler(1, inV.mTexWT * TerrainScale * Stratum1AlbedoTile);
+                float4 stratum2Albedo = StratumAlbedoSampler(2, inV.mTexWT * TerrainScale * Stratum2AlbedoTile);
+                float4 stratum3Albedo = StratumAlbedoSampler(3, inV.mTexWT * TerrainScale * Stratum3AlbedoTile);
 
-				if (_TTerrainXP > 0) {
-					if(_HideSplat4 == 0)
-					nrm = lerp(nrm, UNITY_SAMPLE_TEX2DARRAY(_SplatNormalArray, float3(UV * _Splat4ScaleNormal, 4)), splat_control2.r);
-					if(_HideSplat5 == 0)
-					nrm = lerp(nrm, UNITY_SAMPLE_TEX2DARRAY(_SplatNormalArray, float3(UV * _Splat5ScaleNormal, 5)), splat_control2.g);
-					if(_HideSplat6 == 0)
-					nrm = lerp(nrm, UNITY_SAMPLE_TEX2DARRAY(_SplatNormalArray, float3(UV * _Splat6ScaleNormal, 6)), splat_control2.b);
-					if(_HideSplat7 == 0)
-					nrm = lerp(nrm, UNITY_SAMPLE_TEX2DARRAY(_SplatNormalArray, float3(UV * _Splat7ScaleNormal, 7)), splat_control2.a);
-				}
+                // blend all albedos together
+                float4 albedo = lowerAlbedo;
+                if(_HideStratum0 == 0)
+                albedo = lerp( albedo, stratum0Albedo, mask.x );
+                if(_HideStratum1 == 0)
+                albedo = lerp( albedo, stratum1Albedo, mask.y );
+                if(_HideStratum2 == 0)
+                albedo = lerp( albedo, stratum2Albedo, mask.z );
+                if(_HideStratum3 == 0)
+                albedo = lerp( albedo, stratum3Albedo, mask.w );
+                albedo.xyz = lerp( albedo.xyz, upperAlbedo.xyz, upperAlbedo.w );
 
+                return albedo;
+            }
 
-				if(_GeneratingNormal == 0){
-					half4 TerrainNormal = tex2D(_TerrainNormal, UVCtrl );
-					half3 TerrainNormalVector = UnpackNormalDXT5nm( half4(TerrainNormal.r, 1 - TerrainNormal.g, TerrainNormal.b, TerrainNormal.a));
-					IN.SlopeLerp = dot(TerrainNormalVector, half3(0,0,1));
-					//o.Albedo = IN.SlopeLerp;
-					o.Normal = BlendNormals(TerrainNormalVector , UnpackNormalDXT5nmScaled(nrm.rgbg, 1));
+            float4 TerrainNormalsXP( Input pixel )
+            {
+                float4 mask0 = saturate(tex2D(UtilitySamplerA,pixel.mTexWT*TerrainScale));
+                float4 mask1 = saturate(tex2D(UtilitySamplerB,pixel.mTexWT*TerrainScale));
 
-				}
-				else
-					o.Normal = UnpackNormalDXT5nmScaled(nrm.rgbg, 1);
+                float4 lowerNormal = normalize(tex2D(LowerNormalSampler,pixel.mTexWT*TerrainScale*LowerNormalTile)*2-1);
+                float4 stratum0Normal = normalize(StratumNormalSampler(0,pixel.mTexWT*TerrainScale*Stratum0NormalTile)*2-1);
+                float4 stratum1Normal = normalize(StratumNormalSampler(1,pixel.mTexWT*TerrainScale*Stratum1NormalTile)*2-1);
+                float4 stratum2Normal = normalize(StratumNormalSampler(2,pixel.mTexWT*TerrainScale*Stratum2NormalTile)*2-1);
+                float4 stratum3Normal = normalize(StratumNormalSampler(3,pixel.mTexWT*TerrainScale*Stratum3NormalTile)*2-1);
+                float4 stratum4Normal = normalize(StratumNormalSampler(4,pixel.mTexWT*TerrainScale*Stratum4NormalTile)*2-1);
+                float4 stratum5Normal = normalize(StratumNormalSampler(5,pixel.mTexWT*TerrainScale*Stratum5NormalTile)*2-1);
+                float4 stratum6Normal = normalize(StratumNormalSampler(6,pixel.mTexWT*TerrainScale*Stratum6NormalTile)*2-1);
+                float4 stratum7Normal = normalize(StratumNormalSampler(7,pixel.mTexWT*TerrainScale*Stratum7NormalTile)*2-1);
 
+                float4 normal = lowerNormal;
+                if(_HideStratum0 == 0)
+                normal = lerp(normal,stratum0Normal,mask0.x);
+                if(_HideStratum1 == 0)
+                normal = lerp(normal,stratum1Normal,mask0.y);
+                if(_HideStratum2 == 0)
+                normal = lerp(normal,stratum2Normal,mask0.z);
+                if(_HideStratum3 == 0)
+                normal = lerp(normal,stratum3Normal,mask0.w);
+                if(_HideStratum4 == 0)
+                normal = lerp(normal,stratum4Normal,mask1.x);
+                if(_HideStratum5 == 0)
+                normal = lerp(normal,stratum5Normal,mask1.y);
+                if(_HideStratum6 == 0)
+                normal = lerp(normal,stratum6Normal,mask1.z);
+                if(_HideStratum7 == 0)
+                normal = lerp(normal,stratum7Normal,mask1.w);
+                normal.xyz = normalize( normal.xyz );
 
-				//				o.Normal.y *= 0.5f;
-				//o.Normal = normalize(o.Normal);
+                return normal;
+            }
+            
+            float4 TerrainAlbedoXP( Input pixel)
+            {
+                float3 position = TerrainScale*pixel.mTexWT;
 
-				//half3 Emit = _SunAmbience.rgb * 2;
-				half3 Emit = 0;
+                float4 mask0 = saturate(tex2D(UtilitySamplerA,position)*2-1);
+                float4 mask1 = saturate(tex2D(UtilitySamplerB,position)*2-1);
 
-#if defined(PREVIEW_ON)
-				if (_Water > 0) col.rgb = ApplyWaterColor(WaterDepth, col.rgb);
-#else
+                float4 lowerAlbedo = tex2D(LowerAlbedoSampler,position*LowerAlbedoTile);
+                float4 stratum0Albedo = StratumAlbedoSampler(0,position*Stratum0AlbedoTile);
+                float4 stratum1Albedo = StratumAlbedoSampler(1,position*Stratum1AlbedoTile);
+                float4 stratum2Albedo = StratumAlbedoSampler(2,position*Stratum2AlbedoTile);
+                float4 stratum3Albedo = StratumAlbedoSampler(3,position*Stratum3AlbedoTile);
+                float4 stratum4Albedo = StratumAlbedoSampler(4,position*Stratum4AlbedoTile);
+                float4 stratum5Albedo = StratumAlbedoSampler(5,position*Stratum5AlbedoTile);
+                float4 stratum6Albedo = StratumAlbedoSampler(6,position*Stratum6AlbedoTile);
+                float4 stratum7Albedo = StratumAlbedoSampler(7,position*Stratum7AlbedoTile);
+                float4 upperAlbedo = tex2D(UpperAlbedoSampler,position*UpperAlbedoTile);
 
-				if (_Slope > 0) {
-					o.Normal = half3(0, 0, 1);
-					half3 SlopeColor = 0;
-					if (_UseSlopeTex > 0) {
-						//col = 0;
-						float2 UV2 = IN.uv_Control * fixed2(1, 1) + half2(0, 0) - float2(-0.00, -0.00) / _GridScale;
-						float4 splat_control = tex2D(_SlopeTex, UV2);
-						SlopeColor = splat_control.rgb;
+                float4 albedo = lowerAlbedo;
+                if(_HideStratum0 == 0)
+                albedo = lerp(albedo,stratum0Albedo,mask0.x);
+                if(_HideStratum1 == 0)
+                albedo = lerp(albedo,stratum1Albedo,mask0.y);
+                if(_HideStratum2 == 0)
+                albedo = lerp(albedo,stratum2Albedo,mask0.z);
+                if(_HideStratum3 == 0)
+                albedo = lerp(albedo,stratum3Albedo,mask0.w);
+                if(_HideStratum4 == 0)
+                albedo = lerp(albedo,stratum4Albedo,mask1.x);
+                if(_HideStratum5 == 0)
+                albedo = lerp(albedo,stratum5Albedo,mask1.y);
+                if(_HideStratum6 == 0)
+                albedo = lerp(albedo,stratum6Albedo,mask1.z);
+                if(_HideStratum7 == 0)
+                albedo = lerp(albedo,stratum7Albedo,mask1.w);
+                if(_HideStratum8 == 0)
+                albedo.rgb = lerp(albedo.xyz,upperAlbedo.xyz,upperAlbedo.w);
 
-					}
-					else {
+                return albedo;
+            }
 
-						if (IN.worldPos.y < _WaterLevel) {
-							if (IN.SlopeLerp > 0.75) SlopeColor = half3(0, 0.4, 1);
-							else SlopeColor = half3(0.6, 0, 1);
-						}
-						else if (IN.SlopeLerp > 0.999) SlopeColor = half3(0, 0.8, 0);
-						else if (IN.SlopeLerp > 0.95) SlopeColor = half3(0.3, 0.89, 0);
-						else if (IN.SlopeLerp > 0.80) SlopeColor = half3(0.5, 0.8, 0);
-						else SlopeColor = half3(1, 0, 0);
+            float4 splatLerp(float4 t1, float4 t2, float t2height, float opacity, uniform float blurriness = 0.06) {
+                float height1 = 1;
+                float height2 = t2height * (1 - 2 * blurriness) + blurriness + opacity;
+                float ma = max(height1, height2) - blurriness;
+                float factor1 = max(height1 - ma, 0);
+                float factor2 = max(height2 - ma, 0);
+                return (t1 * factor1 + t2 * factor2) / (factor1 + factor2);
+            }
 
-					}
-					Emit = SlopeColor * 0.8;
-					col.rgb = lerp(col.rgb, 0, 0.8);
-				}
-				else if (_Water > 0) col.rgb = ApplyWaterColor(WaterDepth, col.rgb);
+            float3 splatBlendNormal(float3 n1, float3 n2, float t2height, float opacity, uniform float blurriness = 0.06) {
+                float height1 = 1;
+                float height2 = t2height * (1 - 2 * blurriness) + blurriness + opacity;
+                float ma = max(height1, height2) - blurriness;
+                float factor1 = max(height1 - ma, 0);
+                float factor2 = max(height2 - ma, 0);
+                // These factors are to make low opacity normal maps more visible,
+                // as we notice small changes to the albedo maps more easily.
+                // The value of 0.5 is just eyeballed.
+                float factor1modified = pow(factor1 / (factor1 + factor2), 0.6);
+                float factor2modified = pow(factor2 / (factor1 + factor2), 0.6);
+                // UDN blending
+                return normalize(float3((n1.xy * factor1modified + n2.xy * factor2modified), n1.z));
+            }
 
+            /* # Sample a 2D 2x2 texture atlas # */
+            /* To prevent bleeding from the neighboring tiles, we need to work with padding */
+            float4 atlas2D(float2 uv, uniform float2 offset) {
+                uv.x = frac(uv.x) / 4 + offset.x + 0.125;
+                uv.y = frac(uv.y) / 4 + offset.y + 0.125;
+                return StratumNormalSampler(7, uv);
+            }
 
-				if (_Grid > 0) {
-					if(_GridType == 1)
-						Emit += RenderGrid(_GridTexture, IN.uv_Control, 0, _GridScale);
-					else if (_GridType == 2)
-						Emit += RenderGrid(_GridTexture, IN.uv_Control, 0.0015, _GridScale / 5.12);
-					else if (_GridType == 3)
-						Emit += RenderGrid(_GridTexture, IN.uv_Control, 0.0015, 16);
-					else
-						Emit += RenderGrid(_GridTexture, IN.uv_Control, 0, _GridScale);
-				}
+            float4 sampleAlbedoStratum(int layer, float2 position, uniform float2 scale, uniform float2 offset, uniform bool firstBatch) {
+                float4 albedo = StratumAlbedoSampler(layer, position * scale);
+                // store roughness in albedo alpha so we get the roughness splatting for free
+                if (firstBatch) {
+                    albedo.a = atlas2D(position * scale, offset).y;
+                } else {
+                    albedo.a = atlas2D(position * scale, offset).w;
+                }
+                return albedo;
+            }
+            
+            float4 sampleAlbedo(sampler2D s, float2 position, uniform float2 scale, uniform float2 offset, uniform bool firstBatch) {
+                float4 albedo = tex2D(s, position * scale);
+                // store roughness in albedo alpha so we get the roughness splatting for free
+                if (firstBatch) {
+                    albedo.a = atlas2D(position * scale, offset).y;
+                } else {
+                    albedo.a = atlas2D(position * scale, offset).w;
+                }
+                return albedo;
+            }
 
-				if (_Brush > 0) {
-					float2 BrushUv = ((IN.uv_Control - float2(_BrushUvX, _BrushUvY)) * _GridScale) / (_BrushSize * _GridScale * 0.002);
+            float sampleHeight(float2 position, uniform float2 nearScale, uniform float2 farScale, uniform float2 offset, uniform bool firstBatch) {
+                float heightNear;
+                float heightFar;
+                if (firstBatch) {
+                    heightNear = atlas2D(position * nearScale, offset).x;
+                    heightFar = atlas2D(position * farScale, offset).x;
+                } else {
+                    heightNear = atlas2D(position * nearScale, offset).z;
+                    heightFar = atlas2D(position * farScale, offset).z;
+                }
+                return (heightNear + heightFar) / 2;
+            }
+            float3 Terrain301NormalsPS ( Input inV, uniform bool halfRange )
+            {
+                float4 position;
+                position.xy = TerrainScale * inV.mTexWT;
+                // 30° rotation
+                float2x2 rotationMatrix = float2x2(float2(0.866, -0.5), float2(0.5, 0.866));
+                position.zw = mul(position.xy, rotationMatrix);
+
+                float4 mask0 = tex2D(UtilitySamplerA, position.xy);
+                float4 mask1 = tex2D(UtilitySamplerB, position.xy);
+
+                if (halfRange) {
+                    mask0 = saturate(mask0 * 2 - 1);
+                    mask1 = saturate(mask1 * 2 - 1);
+                }
+
+                float3 lowerNormal    = normalize(tex2D(LowerNormalSampler,  position.xy * LowerAlbedoTile.xx).rgb * 2 - 1);
+                float3 stratum0Normal = normalize(StratumNormalSampler(0, position.zw * Stratum0AlbedoTile.xx).rgb * 2 - 1);
+                float3 stratum1Normal = normalize(StratumNormalSampler(1, position.xy * Stratum1AlbedoTile.xx).rgb * 2 - 1);
+                float3 stratum2Normal = normalize(StratumNormalSampler(2, position.zw * Stratum2AlbedoTile.xx).rgb * 2 - 1);
+                float3 stratum3Normal = normalize(StratumNormalSampler(3, position.xy * Stratum3AlbedoTile.xx).rgb * 2 - 1);
+                float3 stratum4Normal = normalize(StratumNormalSampler(4, position.zw * Stratum4AlbedoTile.xx).rgb * 2 - 1);
+                float3 stratum5Normal = normalize(StratumNormalSampler(5, position.xy * Stratum5AlbedoTile.xx).rgb * 2 - 1);
+                float3 stratum6Normal = normalize(StratumNormalSampler(6, position.zw * Stratum6AlbedoTile.xx).rgb * 2 - 1);
+
+                float stratum0Height = sampleHeight(position.zw, Stratum0AlbedoTile.xx, Stratum0NormalTile.xx, float2(0.5, 0.0), true);
+                float stratum1Height = sampleHeight(position.xy, Stratum1AlbedoTile.xx, Stratum1NormalTile.xx, float2(0.0, 0.5), true);
+                float stratum2Height = sampleHeight(position.zw, Stratum2AlbedoTile.xx, Stratum2NormalTile.xx, float2(0.5, 0.5), true);
+                float stratum3Height = sampleHeight(position.xy, Stratum3AlbedoTile.xx, Stratum3NormalTile.xx, float2(0.0, 0.0), false);
+                float stratum4Height = sampleHeight(position.zw, Stratum4AlbedoTile.xx, Stratum4NormalTile.xx, float2(0.5, 0.0), false);
+                float stratum5Height = sampleHeight(position.xy, Stratum5AlbedoTile.xx, Stratum5NormalTile.xx, float2(0.0, 0.5), false);
+                float stratum6Height = sampleHeight(position.zw, Stratum6AlbedoTile.xx, Stratum6NormalTile.xx, float2(0.5, 0.5), false);
+
+                float3 normal = lowerNormal;
+                if(_HideStratum0 == 0)
+                normal = splatBlendNormal(normal, stratum0Normal, stratum0Height, mask0.x, SpecularColor.r);
+                if(_HideStratum1 == 0)
+                normal = splatBlendNormal(normal, stratum1Normal, stratum1Height, mask0.y, SpecularColor.r);
+                if(_HideStratum2 == 0)
+                normal = splatBlendNormal(normal, stratum2Normal, stratum2Height, mask0.z, SpecularColor.r);
+                if(_HideStratum3 == 0)
+                normal = splatBlendNormal(normal, stratum3Normal, stratum3Height, mask0.w, SpecularColor.r);
+                if(_HideStratum4 == 0)
+                normal = splatBlendNormal(normal, stratum4Normal, stratum4Height, mask1.x, SpecularColor.r);
+                if(_HideStratum5 == 0)
+                normal = splatBlendNormal(normal, stratum5Normal, stratum5Height, mask1.y, SpecularColor.r);
+                if(_HideStratum6 == 0)
+                normal = splatBlendNormal(normal, stratum6Normal, stratum6Height, mask1.z, SpecularColor.r);
+
+                return normal;
+            }
+
+            float4 Terrain301AlbedoPS ( Input inV, uniform bool halfRange )
+            {
+                float4 position;
+                position.xy = TerrainScale * inV.mTexWT;
+                // 30° rotation
+                float2x2 rotationMatrix = float2x2(float2(0.866, -0.5), float2(0.5, 0.866));
+                position.zw = mul(position.xy, rotationMatrix);
+
+                float4 mask0 = tex2D(UtilitySamplerA, position.xy);
+                float4 mask1 = tex2D(UtilitySamplerB, position.xy);
+
+                if (halfRange) {
+                    mask0 = saturate(mask0 * 2 - 1);
+                    mask1 = saturate(mask1 * 2 - 1);
+                }
+
+                // This shader wouldn't compile because it would have to store too many variables if we didn't use this trick in the vertex shader
+                float4 lowerAlbedo =    sampleAlbedo(LowerAlbedoSampler, position.xy, LowerAlbedoTile.xx,    float2(0.0, 0.0), true);
+                float4 stratum0Albedo = sampleAlbedoStratum(0, position.zw, inV.nearScales.xx,     float2(0.5, 0.0), true);
+                float4 stratum1Albedo = sampleAlbedoStratum(1, position.xy, inV.nearScales.yy,     float2(0.0, 0.5), true);
+                float4 stratum2Albedo = sampleAlbedoStratum(2, position.zw, inV.nearScales.zz,     float2(0.5, 0.5), true);
+                float4 stratum3Albedo = sampleAlbedoStratum(3, position.xy, inV.nearScales.ww,     float2(0.0, 0.0), false);
+                float4 stratum4Albedo = sampleAlbedoStratum(4, position.zw, Stratum4AlbedoTile.xx, float2(0.5, 0.0), false);
+                float4 stratum5Albedo = sampleAlbedoStratum(5, position.xy, Stratum5AlbedoTile.xx, float2(0.0, 0.5), false);
+                float4 stratum6Albedo = sampleAlbedoStratum(6, position.zw, Stratum6AlbedoTile.xx, float2(0.5, 0.5), false);
+
+                float stratum0Height = sampleHeight(position.zw, inV.nearScales.xx,     inV.farScales.xx,      float2(0.5, 0.0), true);
+                float stratum1Height = sampleHeight(position.xy, inV.nearScales.yy,     inV.farScales.yy,      float2(0.0, 0.5), true);
+                float stratum2Height = sampleHeight(position.zw, inV.nearScales.zz,     inV.farScales.zz,      float2(0.5, 0.5), true);
+                float stratum3Height = sampleHeight(position.xy, inV.nearScales.ww,     inV.farScales.ww,      float2(0.0, 0.0), false);
+                float stratum4Height = sampleHeight(position.zw, Stratum4AlbedoTile.xx, Stratum4NormalTile.xx, float2(0.5, 0.0), false);
+                float stratum5Height = sampleHeight(position.xy, Stratum5AlbedoTile.xx, Stratum5NormalTile.xx, float2(0.0, 0.5), false);
+                float stratum6Height = sampleHeight(position.zw, Stratum6AlbedoTile.xx, Stratum6NormalTile.xx, float2(0.5, 0.5), false);
+
+                float4 albedo = lowerAlbedo;
+                if(_HideStratum0 == 0)
+                albedo = splatLerp(albedo, stratum0Albedo, stratum0Height, mask0.x, SpecularColor.r);
+                if(_HideStratum1 == 0)
+                albedo = splatLerp(albedo, stratum1Albedo, stratum1Height, mask0.y, SpecularColor.r);
+                if(_HideStratum2 == 0)
+                albedo = splatLerp(albedo, stratum2Albedo, stratum2Height, mask0.z, SpecularColor.r);
+                if(_HideStratum3 == 0)
+                albedo = splatLerp(albedo, stratum3Albedo, stratum3Height, mask0.w, SpecularColor.r);
+                if(_HideStratum4 == 0)
+                albedo = splatLerp(albedo, stratum4Albedo, stratum4Height, mask1.x, SpecularColor.r);
+                if(_HideStratum5 == 0)
+                albedo = splatLerp(albedo, stratum5Albedo, stratum5Height, mask1.y, SpecularColor.r);
+                if(_HideStratum6 == 0)
+                albedo = splatLerp(albedo, stratum6Albedo, stratum6Height, mask1.z, SpecularColor.r);
+                float4 mapwide = StratumAlbedoSampler(7, position.xy);
+                if(_HideStratum7 == 0)
+                albedo.rgb = lerp(albedo.rgb, mapwide.rgb, mapwide.a);
+
+                // We need to add 0.01 as the reflection disappears at 0
+                float roughness = saturate(albedo.a * mask1.w * 2 + 0.01);
+
+                return float4(albedo.rgb, roughness);
+            }
+
+            float3 renderBrush(float2 uv){
+                float3 Emit = 0;
+                if (_Brush > 0) {
+                    uv.y = 1-uv.y;
+					float2 BrushUv = ((uv - float2(_BrushUvX, _BrushUvY)) * _GridScale) / (_BrushSize * _GridScale * 0.002);
 					fixed4 BrushColor = tex2D(_BrushTex, BrushUv);
 
 					if (BrushUv.x >= 0 && BrushUv.y >= 0 && BrushUv.x <= 1 && BrushUv.y <= 1) {
@@ -390,55 +578,136 @@ Properties {
 							Emit += half3(0, BrushColor.r * 0.1, BrushColor.r * 0.2) * 0.2;
 					}
 				}
-#endif
+                return Emit;
+            }
 
-				//FOG
-				col.rgb = lerp(0, col.rgb, IN.fog);
-				Emit = lerp(unity_FogColor, Emit, IN.fog);
+            float3 renderSlope(Input IN){
+                float3 Emit = 0;
+                if (_Slope > 0) {
+					half3 SlopeColor = 0;
+					if (_UseSlopeTex > 0) {
+						float4 splat_control = tex2D(_SlopeTex, IN.mTexWT);
+						SlopeColor = splat_control.rgb;
 
+					}
+					else {
 
-				o.Albedo = col;
-				o.Emission = Emit;
+						if (IN.mTexWT.y * TerrainScale < WaterElevation) {
+							if (IN.SlopeLerp > 0.75) SlopeColor = half3(0, 0.4, 1);
+							else SlopeColor = half3(0.6, 0, 1);
+						}
+						else if (IN.SlopeLerp > 0.999) SlopeColor = half3(0, 0.8, 0);
+						else if (IN.SlopeLerp > 0.95) SlopeColor = half3(0.3, 0.89, 0);
+						else if (IN.SlopeLerp > 0.80) SlopeColor = half3(0.5, 0.8, 0);
+						else SlopeColor = half3(1, 0, 0);
 
-				if(_Area > 0){
-					fixed3 BlackEmit = -1;
-					fixed3 Albedo = 0;
-					if(IN.worldPos.x < _AreaRect.x){
-						o.Emission = BlackEmit;
-						o.Albedo = Albedo;
 					}
-					else if(IN.worldPos.x > _AreaRect.z){
-						o.Emission = BlackEmit;
-						o.Albedo = Albedo;
-					}
-					else if(IN.worldPos.z < _AreaRect.y - _GridScale){
-						o.Emission = BlackEmit;
-						o.Albedo = Albedo;
-					}
-					else if(IN.worldPos.z > _AreaRect.w - _GridScale){
-						o.Emission = BlackEmit;
-						o.Albedo = Albedo;
-					}
+					Emit = SlopeColor * 0.8;
+					// col.rgb = lerp(col.rgb, 0, 0.8);
 				}
+                return Emit;
+            }
 
-				if (_TTerrainXP > 0) {
-					o.Gloss = (1 - col.a);
-					o.Specular = col.a;
+            float3 renderTerrainType(float3 albedo, float2 uv){
+                if(_HideTerrainType == 0) {
+					float4 TerrainTypeAlbedo = tex2D (_TerrainTypeAlbedo, uv);
+					albedo = lerp(albedo, TerrainTypeAlbedo, TerrainTypeAlbedo.a*_TerrainTypeCapacity);
+				}
+                return albedo;
+            }
+
+            float4 RenderGrid(sampler2D _GridTex, float2 uv_Control, float Offset, float GridScale) {
+				fixed4 GridColor = tex2D(_GridTex, uv_Control * GridScale + float2(-Offset, Offset));
+				fixed4 GridFinal = fixed4(0, 0, 0, GridColor.a);
+				if (_GridCamDist < 1) {
+					GridFinal.rgb = lerp(GridFinal.rgb, fixed3(1, 1, 1), GridColor.r * lerp(1, 0, _GridCamDist));
+					GridFinal.rgb = lerp(GridFinal.rgb, fixed3(0, 1, 0), GridColor.g * lerp(1, 0, _GridCamDist));
+					GridFinal.rgb = lerp(GridFinal.rgb, fixed3(0, 1, 0), GridColor.b * lerp(0, 1, _GridCamDist));
 				}
 				else {
-					o.Gloss = (1 - col.a) + 0.01;
-					o.Specular = col.a + 0.01;
+					GridFinal.rgb = lerp(GridFinal.rgb, fixed3(0, 1, 0), GridColor.b);
 				}
 
+				GridFinal *= GridColor.a;
 
+				half CenterGridSize = lerp(0.005, 0.015, _GridCamDist) / _GridScale;
+				if (uv_Control.x > 0.5 - CenterGridSize && uv_Control.x < 0.5 + CenterGridSize)
+					GridFinal.rgb = fixed3(0.4, 1, 0);
+				else if (uv_Control.y > 0.5 - CenterGridSize && uv_Control.y < 0.5 + CenterGridSize)
+					GridFinal.rgb = fixed3(0.4, 1, 0);
 
-				o.Alpha = col.a;
+				return GridFinal;
 			}
-			ENDCG  
 
+            float3 renderGridOverlay(float2 uv){
+                float3 Emit = 0;
+                if (_Grid > 0) {
+					if(_GridType == 1)
+						Emit += RenderGrid(_GridTexture, uv, 0, _GridScale);
+					else if (_GridType == 2)
+						Emit += RenderGrid(_GridTexture, uv, 0.0015, _GridScale / 5.12);
+					else if (_GridType == 3)
+						Emit += RenderGrid(_GridTexture, uv, 0.0015, 16);
+					else
+						Emit += RenderGrid(_GridTexture, uv, 0, _GridScale);
+				}
+                return Emit;
+            }
 
-}
+            // The decals get written directly in the gBuffer, so here we only prepare all necessary terrain inputs.
+            // The actual lighting calculations happen in Assets\GFX\Shaders\Deferred\Internal-DeferredShading.shader
+            // This way the decals and the terrain have consistent lighting
+            void surf(Input inV, inout CustomSurfaceOutput o)
+            {
+                float3 position = TerrainScale * inV.mTexWT.xyz;
+                if (_ShaderID == 0)
+                {
+                    float4 albedo = TerrainPS(inV);
+                    o.Albedo = albedo.rgb;
+                    o.Alpha = albedo.a; // for specularity
 
+                    float3 normal = TangentToWorldSpace(inV, TerrainNormalsPS(inV).xyz);
+                    o.wNormal = normalize(normal);
 
-//FallBack "Diffuse"
+                    o.WaterDepth = tex2D(UtilitySamplerC, position.xy).g;
+                }
+                else if (_ShaderID == 1)
+                {
+                    float4 albedo = TerrainAlbedoXP(inV);
+                    o.Albedo = albedo.rgb;
+                    o.Alpha = albedo.a; // for specularity
+
+                    float3 normal = TangentToWorldSpace(inV, TerrainNormalsXP(inV).xyz);
+                    o.wNormal = normalize(normal);
+
+                    o.WaterDepth = tex2D(UtilitySamplerC, position.xy).g;
+                }
+                else if (_ShaderID == 2)
+                {
+                    float4 albedo = Terrain301AlbedoPS(inV, true);
+                    o.Albedo = albedo.rgb;
+                    o.Roughness = albedo.a;
+
+                    float3 normal = TangentToWorldSpace(inV, Terrain301NormalsPS(inV, true).xyz);
+                    o.wNormal = normalize(normal);
+
+                    o.WaterDepth = tex2D(UpperAlbedoSampler, position.xy).b;
+                 
+                    o.MapShadow = tex2D(UpperAlbedoSampler, position.xy).w;
+                }
+                else {
+                    o.Albedo = float3(1, 0, 1);
+                }
+
+                o.Emission = renderBrush(position.xy);
+                o.Emission += renderSlope(inV);
+                o.Albedo = renderTerrainType(o.Albedo, position.xy);
+                o.Emission += renderGridOverlay(position.xy);
+
+                // fog
+                o.Albedo = lerp(0, o.Albedo, inV.fog);
+				o.Emission = lerp(unity_FogColor, o.Emission, inV.fog);
+            }
+            ENDCG
+    }
 }

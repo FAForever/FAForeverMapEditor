@@ -16,11 +16,9 @@ Shader "Custom/PropShader" {
 		LOD 200
 		
 		CGPROGRAM
-		// Physically based Standard lighting model, and enable shadows on all light types
-		#pragma surface surf BlinnPhong addshadow noshadowmask halfasview interpolateview 
-
-		// Use shader model 3.0 target, to get nicer looking lighting
-		#pragma target 3.0
+		#pragma surface surf SimpleLambert addshadow noshadowmask halfasview interpolateview 
+		#include "Assets/GFX/Shaders/SimpleLambert.cginc"
+		#pragma target 3.5
 
 
 		CBUFFER_START(UnityPerMaterial)
@@ -72,9 +70,8 @@ Shader "Custom/PropShader" {
 			return normal.xzy;
 		}*/
 
-		void surf (Input IN, inout SurfaceOutput o) {
-			// Albedo comes from a texture tinted by color
-			half4 c = tex2D (_MainTex, IN.uv_MainTex) * 0.65;
+		void surf (Input IN, inout CustomSurfaceOutput o) {
+			half4 c = tex2D (_MainTex, IN.uv_MainTex);
 			o.Albedo = c.rgb;
 			//half4 n = tex2D(_BumpMap, IN.uv_MainTex);
 			o.Normal = UnpackNormalDXT5nm(tex2D(_BumpMap, IN.uv_MainTex));

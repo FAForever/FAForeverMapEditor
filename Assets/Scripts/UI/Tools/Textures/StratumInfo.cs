@@ -49,9 +49,9 @@ namespace EditMap
 		public UiTextField Scatter;
 
 		public Toggle LinearBrush;
-		public Toggle TTerrainXP;
+        public UiTextField ShaderName;
 
-		public LayerMask TerrainMask;
+        public LayerMask TerrainMask;
 		public List<Toggle> BrushToggles;
 		public ToggleGroup ToogleGroup;
 
@@ -293,15 +293,15 @@ namespace EditMap
 		#region Stratums
 		public void VisibleStratums()
 		{
-			ScmapEditor.Current.TerrainMaterial.SetInt("_HideSplat0", StratumHide[1]?1:0);
-			ScmapEditor.Current.TerrainMaterial.SetInt("_HideSplat1", StratumHide[2] ? 1 : 0);
-			ScmapEditor.Current.TerrainMaterial.SetInt("_HideSplat2", StratumHide[3] ? 1 : 0);
-			ScmapEditor.Current.TerrainMaterial.SetInt("_HideSplat3", StratumHide[4] ? 1 : 0);
-			ScmapEditor.Current.TerrainMaterial.SetInt("_HideSplat4", StratumHide[5] ? 1 : 0);
-			ScmapEditor.Current.TerrainMaterial.SetInt("_HideSplat5", StratumHide[6] ? 1 : 0);
-			ScmapEditor.Current.TerrainMaterial.SetInt("_HideSplat6", StratumHide[7] ? 1 : 0);
-			ScmapEditor.Current.TerrainMaterial.SetInt("_HideSplat7", StratumHide[8] ? 1 : 0);
-			ScmapEditor.Current.TerrainMaterial.SetInt("_HideSplat8", StratumHide[9] ? 1 : 0);
+			ScmapEditor.Current.TerrainMaterial.SetInteger("_HideStratum0", StratumHide[1] ? 1 : 0);
+			ScmapEditor.Current.TerrainMaterial.SetInteger("_HideStratum1", StratumHide[2] ? 1 : 0);
+			ScmapEditor.Current.TerrainMaterial.SetInteger("_HideStratum2", StratumHide[3] ? 1 : 0);
+			ScmapEditor.Current.TerrainMaterial.SetInteger("_HideStratum3", StratumHide[4] ? 1 : 0);
+			ScmapEditor.Current.TerrainMaterial.SetInteger("_HideStratum4", StratumHide[5] ? 1 : 0);
+			ScmapEditor.Current.TerrainMaterial.SetInteger("_HideStratum5", StratumHide[6] ? 1 : 0);
+			ScmapEditor.Current.TerrainMaterial.SetInteger("_HideStratum6", StratumHide[7] ? 1 : 0);
+			ScmapEditor.Current.TerrainMaterial.SetInteger("_HideStratum7", StratumHide[8] ? 1 : 0);
+			ScmapEditor.Current.TerrainMaterial.SetInteger("_HideStratum8", StratumHide[9] ? 1 : 0);
 
 
 			const string TextVisible = "V";
@@ -440,7 +440,7 @@ namespace EditMap
 			if (!BrusheshLoaded) LoadBrushesh();
 			UpdateStratumMenu();
 
-			TerrainMaterial.SetInt("_Brush", 1);
+			TerrainMaterial.SetInteger("_Brush", 1);
 			BrushGenerator.SetFalloff(SelectedFalloff, LastRotation);
 			TerrainMaterial.SetTexture("_BrushTex", (Texture)BrushGenerator.Current.Brushes[SelectedFalloff]);
 		}
@@ -454,15 +454,16 @@ namespace EditMap
 
 		public void RefreshLayerUI()
 		{
+			bool allLayers = ShaderName.text != "TTerrain";
 			for(int i = 0; i < StratumSettings.XpShaderLayers.Length; i++)
 			{
-				StratumSettings.XpShaderLayers[i].color = TTerrainXP.isOn ? Color.white : DisabledLayerColor;
+				StratumSettings.XpShaderLayers[i].color = allLayers ? Color.white : DisabledLayerColor;
 			}
 
-			StratumSettings.Stratum8_Mask.gameObject.SetActive(TTerrainXP.isOn);
-			StratumSettings.Stratum7_Mask.gameObject.SetActive(TTerrainXP.isOn);
-			StratumSettings.Stratum6_Mask.gameObject.SetActive(TTerrainXP.isOn);
-			StratumSettings.Stratum5_Mask.gameObject.SetActive(TTerrainXP.isOn);
+			StratumSettings.Stratum8_Mask.gameObject.SetActive(allLayers);
+			StratumSettings.Stratum7_Mask.gameObject.SetActive(allLayers);
+			StratumSettings.Stratum6_Mask.gameObject.SetActive(allLayers);
+			StratumSettings.Stratum5_Mask.gameObject.SetActive(allLayers);
 		}
 
 		public float Min = 0;
@@ -559,10 +560,10 @@ namespace EditMap
 				//TerrainMaterial.SetFloat("_BrushSize", BrushSize.value);
 			}
 		}
-		#endregion
+        #endregion
 
-		#region Load all brushesh
-		bool BrusheshLoaded = false;
+        #region Load all brushesh
+        bool BrusheshLoaded = false;
 		string StructurePath;
 		public void LoadBrushesh()
 		{
@@ -682,7 +683,7 @@ namespace EditMap
 			set
 			{
 				_Painting = value;
-				TerrainMaterial.SetInt("_BrushPainting", _Painting ? (1) : (0));
+				TerrainMaterial.SetInteger("_BrushPainting", _Painting ? (1) : (0));
 
 			}
 			get
@@ -1401,7 +1402,7 @@ namespace EditMap
 
 		class StratumTemplate
 		{
-			public bool TTerrainXP = false;
+			public string ShaderName;
 			public ScmapEditor.TerrainTexture Stratum0;
 			public ScmapEditor.TerrainTexture Stratum1;
 			public ScmapEditor.TerrainTexture Stratum2;
@@ -1428,7 +1429,7 @@ namespace EditMap
 			{
 
 				StratumTemplate NewTemplate = new StratumTemplate();
-				NewTemplate.TTerrainXP = TTerrainXP.isOn;
+				NewTemplate.ShaderName = ShaderName.text;
 				NewTemplate.Stratum0 = ScmapEditor.Current.Textures[0];
 				NewTemplate.Stratum1 = ScmapEditor.Current.Textures[1];
 				NewTemplate.Stratum2 = ScmapEditor.Current.Textures[2];
@@ -1463,8 +1464,8 @@ namespace EditMap
 
 				StratumTemplate NewTemplate = UnityEngine.JsonUtility.FromJson<StratumTemplate>(data);
 
-				TTerrainXP.isOn = NewTemplate.TTerrainXP;
 
+				ShaderName.SetValue(NewTemplate.ShaderName);
 				ScmapEditor.Current.Textures[0] = NewTemplate.Stratum0;
 				ScmapEditor.Current.Textures[1] = NewTemplate.Stratum1;
 				ScmapEditor.Current.Textures[2] = NewTemplate.Stratum2;

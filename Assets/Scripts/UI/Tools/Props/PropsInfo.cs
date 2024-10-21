@@ -175,7 +175,7 @@ namespace EditMap
 
 		void DisableBrush()
 		{
-			TerrainMaterial.SetInt("_Brush", 0);
+			TerrainMaterial.SetInteger("_Brush", 0);
 			TerrainMaterial.SetFloat("_BrushSize", 0);
 		}
 
@@ -207,7 +207,7 @@ namespace EditMap
 			SelectionManager.Current.SetAffectedGameObjects(new GameObject[0], SelectionManager.SelectionControlTypes.None);
 
 			BrushGenerator.Current.LoadBrushes();
-			TerrainMaterial.SetInt("_Brush", 1);
+			TerrainMaterial.SetInteger("_Brush", 1);
 
 			BrushGenerator.Current.Brushes[SelectedFalloff].wrapMode = TextureWrapMode.Clamp;
 			BrushGenerator.Current.Brushes[SelectedFalloff].mipMapBias = -1f;
@@ -662,7 +662,7 @@ namespace EditMap
 		{
 			set
 			{
-				TerrainMaterial.SetInt("_BrushPainting", _Painting ? (1) : (0));
+				TerrainMaterial.SetInteger("_BrushPainting", _Painting ? (1) : (0));
 				_Painting = value;
 			}
 			get

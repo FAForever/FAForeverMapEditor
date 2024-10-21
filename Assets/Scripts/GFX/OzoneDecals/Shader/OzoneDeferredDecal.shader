@@ -32,7 +32,7 @@ Shader "Ozone/Deferred Decal"
 		ZTest GEqual
 		ZWrite Off
 
-		// Pass 0: Albedo and emission/lighting
+		// Pass 0: Albedo
 		Pass
 		{
 			Blend One OneMinusSrcAlpha
@@ -45,37 +45,18 @@ Shader "Ozone/Deferred Decal"
 			#pragma multi_compile_instancing
 			#include "DecalsCommon.cginc"
 
-//			float4 _Color;
 
 			sampler2D _Mask;
 			sampler2D _Glow;
-			uniform sampler2D _WaterRam;
-			uniform sampler2D _UtilitySamplerC;
-			uniform int _Water;
-			uniform float _WaterScaleX, _WaterScaleZ;
 
-			
-			float3 ApplyWaterColor( float depth, float3  inColor){
-				float4 wcolor = tex2D(_WaterRam, float2(depth,0));
-				return lerp( inColor.rgb, wcolor.rgb, wcolor.a );
-			}
 
-			void frag(v2f i, out float4 outAlbedo : SV_Target0, out float4 outGlow : SV_Target1) // 
+			void frag(v2f i, out float4 outAlbedo : SV_Target0) // 
 			{
 				// Common header for all fragment shaders
 				DEFERRED_FRAG_HEADER
 
-				// Get normal from GBuffer
-				//float3 gbuffer_normal = tex2D(_CameraGBufferTexture2, uv) * 2.0f - 1.0f;
-				//clip(dot(gbuffer_normal, i.decalNormal) - _AngleLimit); // 60 degree clamp
-
 				// Get color from texture and property
 				float4 color = tex2D(_MainTex, texUV);// * _Color;
-
-				
-				float4 waterTexture = tex2D( _UtilitySamplerC, (wpos.xz -float2(-0.1, 0.1)) * half2(0.009765 / (_WaterScaleX / 1024.0), -0.009765 / (_WaterScaleZ / 1024.0)));
-				if(_Water > 0)
-				color.rgb = ApplyWaterColor( waterTexture.g, color.rgb);	
 
 				//color.a = saturate(color.a);
 				//color.a = 1;
@@ -83,43 +64,16 @@ Shader "Ozone/Deferred Decal"
 				color.a *= blend;
 				float RawAlpha = color.a;
 
-				//color.rgb = blend * 1000;
-
 
 				// Write albedo, premultiply for proper blending
 				outAlbedo = float4(color.rgb * color.a, color.a);
 
 				clip(color.a - 0.003);
-				//color *= 1 - float4(ShadeSH9(float4(gbuffer_normal, 1.0f)), 1.0f);
-
-				//color.rgb = 10000 * RawAlpha;
-
-				// Handle logarithmic encoding in Gamma space
-#ifndef UNITY_HDR_ON
-				//color *= float4(ShadeSH9(float4(gbuffer_normal, 1.0f)), 1.0f);
-				//color.rgb = exp2(-color.rgb);
-#endif
-
-				// Write emission, premultiply for proper blending
-				//outEmission = float4(color.rgb * color.a, color.a) + tex2D(_Glow, texUV);
-
-				//outAlbedo = tex2D(_CameraGBufferTexture4Copy, uv);
-				//outAlbedo.rgb = lerp(outAlbedo.rgb, color.rgb * color.a, color.a);
-
-				//outEmission = tex2D(_CameraGBufferTexture4Copy, uv);
-				//outEmission.rgb = lerp(outEmission.rgb, outAlbedo.rgb, outAlbedo.a);
-
-				//outEmission.rgb = 0.2;
-				//outEmission.a = 1;
-
-				//outEmission.rgb = color.rgb * tex2D(_Glow, texUV).rgb * (blend * 5 * RawAlpha);
-				//outEmission.a = RawAlpha;
-				outGlow = float4(RawAlpha,0,0,0);
 			}
 			ENDCG
 		}
 
-		// Pass 1: Normals and specular / smoothness
+		// Pass 1: Normals
 		Pass
 		{
 			// Manual blending
@@ -158,46 +112,24 @@ Shader "Ozone/Deferred Decal"
 					decalBitangent = cross(i.decalNormal, i.decalTangent);
 				}
 
-				// Get normal from normal map
-				//float3 normal = UnpackScaleNormal(tex2D(_NormalTex, texUV), _NormalMultiplier);
-				//float3 normal = UnpackNormalDXT5nm(tex2D(_NormalTex, texUV));
-				//float4 decalRaw = tex2D(_NormalTex, texUV);
 				float3 normal;
-				//normal.xz = decalRaw.ag * 2 - 1;
-				//normal.y = sqrt(1 - dot(normal.xz,normal.xz)) ;
-
 				
 				float4 NormalRaw = tex2D(_NormalTex, texUV);
 				normal = UnpackNormalDXT5nm(NormalRaw);
 
-				//float AlphaNormal = saturate((1 - normal.z) * 1) * NormalRaw.r;
 				float AlphaNormal =  NormalRaw.r;
 
-				//normal.z *= 1;
-				//normal.z = saturate(normal.z - 0.9);
-				//normal.z = 1 - blend;
 				normal.xy *= blend;
 
 				normal = normalize(normal);
-
 				
 				// Clip to blend it with other normal maps
-				//float AlphaNormal = clamp(dot(normal, half3(0,0,1)) * 10, 0, 1);
-				//clip(0.999 -  AlphaNormal);
-				//clip(0.5 - normal.y);
 				clip(AlphaNormal - 0.004);
 
 				normal = mul(normal, half3x3(i.decalTangent, decalBitangent, i.decalNormal));
 
-				// Simple alpha blending of normals
-				//float normalMask = _MaskNormals ? mask : UNITY_ACCESS_INSTANCED_PROP(_MaskMultiplier);
-				//float normalMask = 1;
-				//normal = (1.0f - normalMask) * gbuffer_normal + normalMask * normal;
-				//normal = normalize(normal);
-
-
 				// Write normal
-				outNormal = float4(normal * 0.5 + 0.5, saturate(AlphaNormal * blend));
+				outNormal = float4(normal * 0.5 + 0.5, 0);
 			}
 			ENDCG
 		}

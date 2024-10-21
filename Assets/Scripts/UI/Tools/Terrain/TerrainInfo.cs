@@ -68,7 +68,7 @@ namespace EditMap
 
 		void SetBrush()
 		{
-			TerrainMaterial.SetInt("_Brush", 1);
+			TerrainMaterial.SetInteger("_Brush", 1);
 			BrushGenerator.SetFalloff(SelectedFalloff, LastRotation);
 			TerrainMaterial.SetTexture("_BrushTex", (Texture)BrushGenerator.Current.Brushes[SelectedFalloff]);
 
@@ -81,7 +81,7 @@ namespace EditMap
 
 		void OnDisable()
 		{
-			TerrainMaterial.SetInt("_Brush", 0);
+			TerrainMaterial.SetInteger("_Brush", 0);
 		}
 
 		
@@ -99,10 +99,10 @@ namespace EditMap
 						SetBrush();
 						break;
 					case 2:
-						TerrainMaterial.SetInt("_Brush", 1);
+						TerrainMaterial.SetInteger("_Brush", 1);
 						break;
 					default:
-						TerrainMaterial.SetInt("_Brush", 0);
+						TerrainMaterial.SetInteger("_Brush", 0);
 						break;
 				}
 			}
@@ -283,7 +283,7 @@ namespace EditMap
 						{
 							ScmapEditor.Current.Teren.heightmapPixelError = 20;
 							GenerateControlTex.StopGenerateNormal();
-							ScmapEditor.Current.TerrainMaterial.SetFloat("_GeneratingNormal", 1);
+							ScmapEditor.Current.TerrainMaterial.SetInteger("_GeneratingNormal", 1);
 							PaintStarted = true;
 							RecalcTerrainClamp();
 							SymmetryPaint();
@@ -890,7 +890,7 @@ namespace EditMap
 			set
 			{
 				_Painting = value;
-				TerrainMaterial.SetInt("_BrushPainting", _Painting ? (1) : (0));
+				TerrainMaterial.SetInteger("_BrushPainting", _Painting ? (1) : (0));
 			}
 			get
 			{
