@@ -1,6 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.UI;
 
@@ -8,7 +6,6 @@ namespace Ozone.UI
 {
 	public class UiColor : MonoBehaviour
 	{
-		public float Clamp = 2;
 		public Image ColorPreview;
 		public Image AlphaPreview;
 
@@ -16,6 +13,7 @@ namespace Ozone.UI
 		public InputField Green;
 		public InputField Blue;
 		public InputField Alpha;
+		public InputField Multiplier;
 
 		public Slider RedSlider;
 		public Slider GreenSlider;
@@ -26,11 +24,13 @@ namespace Ozone.UI
 		public UnityEvent OnInputFinish;
 		public UnityEvent OnValueChanged;
 
-		//System.Action FieldChangedAction;
 		bool Loading = false;
 
-		void ClampValues()
+		Vector4 LastValue = Vector4.one;
+
+		void SetSliderMax()
 		{
+			float Clamp = 1;
 			RedSlider.maxValue = Clamp;
 			GreenSlider.maxValue = Clamp;
 			BlueSlider.maxValue = Clamp;
@@ -38,12 +38,11 @@ namespace Ozone.UI
 				AlphaSlider.maxValue = Clamp;
 		}
 
-		Vector4 LastValue = Vector4.one;
 		void UpdateLastValue()
 		{
-			LastValue.x = RedSlider.value;
-			LastValue.y = GreenSlider.value;
-			LastValue.z = BlueSlider.value;
+			LastValue.x = RedSlider.value * LuaParser.Read.StringToInt(Multiplier.text);
+			LastValue.y = GreenSlider.value * LuaParser.Read.StringToInt(Multiplier.text);
+			LastValue.z = BlueSlider.value * LuaParser.Read.StringToInt(Multiplier.text);
 			if (AlphaSlider)
 				LastValue.w = AlphaSlider.value;
 			else
@@ -67,18 +66,19 @@ namespace Ozone.UI
 
 		public void SetColorField(float R, float G, float B, float A = 1)
 		{
-			ClampValues();
+			SetSliderMax();
 			Loading = true;
-			//if(FieldChangedAction == null)
-			//	FieldChangedAction = ChangeAction;
 
-			RedSlider.value = FormatFloat(R);
-			GreenSlider.value = FormatFloat(G);
-			BlueSlider.value = FormatFloat(B);
+			int multiplier = Mathf.CeilToInt(Mathf.Max(R, G, B)); 
 
-			Red.text = RedSlider.value.ToString();
-			Green.text = GreenSlider.value.ToString();
-			Blue.text = BlueSlider.value.ToString();
+			RedSlider.value = FormatFloat(R / multiplier);
+			GreenSlider.value = FormatFloat(G / multiplier);
+			BlueSlider.value = FormatFloat(B / multiplier);
+
+			Red.text = R.ToString();
+			Green.text = G.ToString();
+			Blue.text = B.ToString();
+			Multiplier.text = multiplier.ToString();
 
 			if (AlphaSlider)
 			{
@@ -87,8 +87,6 @@ namespace Ozone.UI
 			}
 
 			UpdateLastValue();
-
-
 			UpdateGfx();
 
 			Loading = false;
@@ -96,28 +94,28 @@ namespace Ozone.UI
 
 
 		public void SetColorField(Color BeginColor)
-		{
-			ClampValues();
-			Loading = true;
-			//FieldChangedAction = ChangeAction;
+        {
+            SetSliderMax();
+            Loading = true;
 
-			RedSlider.value = BeginColor.r;
-			GreenSlider.value = BeginColor.g;
-			BlueSlider.value = BeginColor.b;
+            int multiplier = Mathf.CeilToInt(Mathf.Max(BeginColor.r, BeginColor.g, BeginColor.b));
 
-			Red.text = RedSlider.value.ToString();
-			Green.text = GreenSlider.value.ToString();
-			Blue.text = BlueSlider.value.ToString();
+            RedSlider.value = BeginColor.r / multiplier;
+			GreenSlider.value = BeginColor.g / multiplier;
+			BlueSlider.value = BeginColor.b / multiplier;
 
-			if (AlphaSlider)
+			Red.text = BeginColor.r.ToString();
+			Green.text = BeginColor.r.ToString();
+			Blue.text = BeginColor.r.ToString();
+            Multiplier.text = multiplier.ToString();
+
+            if (AlphaSlider)
 			{
 				AlphaSlider.value = BeginColor.a;
 				Alpha.text = AlphaSlider.value.ToString();
 			}
 
 			UpdateLastValue();
-
-
 			UpdateGfx();
 
 			Loading = false;
@@ -129,25 +127,30 @@ namespace Ozone.UI
 			return Mathf.RoundToInt(value * FloatSteps) / FloatSteps;
 		}
 
-
 		public void InputFieldUpdate()
 		{
 			if (Loading)
 				return;
 
 			Loading = true;
+			float R = LuaParser.Read.StringToFloat(Red.text);
+			float G = LuaParser.Read.StringToFloat(Green.text);
+			float B = LuaParser.Read.StringToFloat(Blue.text);
 
-			RedSlider.value = FormatFloat(Mathf.Clamp(LuaParser.Read.StringToFloat(Red.text), 0, Clamp));
-			GreenSlider.value = FormatFloat(Mathf.Clamp(LuaParser.Read.StringToFloat(Green.text), 0, Clamp));
-			BlueSlider.value = FormatFloat(Mathf.Clamp(LuaParser.Read.StringToFloat(Blue.text), 0, Clamp));
+            int multiplier = Mathf.CeilToInt(Mathf.Max(R, G, B));
 
-			Red.text = RedSlider.value.ToString();
-			Green.text = GreenSlider.value.ToString();
-			Blue.text = BlueSlider.value.ToString();
+            RedSlider.value = FormatFloat(R / multiplier);
+            GreenSlider.value = FormatFloat(G / multiplier);
+            BlueSlider.value = FormatFloat(B / multiplier);
 
-			if (AlphaSlider)
+            Red.text = R.ToString();
+            Green.text = G.ToString();
+            Blue.text = B.ToString();
+            Multiplier.text = multiplier.ToString();
+
+            if (AlphaSlider)
 			{
-				AlphaSlider.value = FormatFloat(Mathf.Clamp(LuaParser.Read.StringToFloat(Alpha.text), 0, Clamp));
+				AlphaSlider.value = FormatFloat(LuaParser.Read.StringToFloat(Alpha.text));
 				Alpha.text = AlphaSlider.value.ToString();
 			}
 
@@ -156,7 +159,6 @@ namespace Ozone.UI
 			Loading = false;
 
 			UpdateGfx();
-			//FieldChangedAction();
 			Begin = false;
 			OnInputFinish.Invoke();
 		}
@@ -183,11 +185,11 @@ namespace Ozone.UI
 			GreenSlider.value = FormatFloat(GreenSlider.value);
 			BlueSlider.value = FormatFloat(BlueSlider.value);
 
-			Red.text = RedSlider.value.ToString();
-			Green.text = GreenSlider.value.ToString();
-			Blue.text = BlueSlider.value.ToString();
+			Red.text = (RedSlider.value * LuaParser.Read.StringToInt(Multiplier.text)).ToString();
+			Green.text = (GreenSlider.value * LuaParser.Read.StringToInt(Multiplier.text)).ToString();
+            Blue.text = (BlueSlider.value * LuaParser.Read.StringToInt(Multiplier.text)).ToString();
 
-			if (AlphaSlider)
+            if (AlphaSlider)
 			{
 				AlphaSlider.value = FormatFloat(AlphaSlider.value);
 				Alpha.text = AlphaSlider.value.ToString();
@@ -198,7 +200,6 @@ namespace Ozone.UI
 			UpdatingSlider = false;
 
 			UpdateGfx();
-			//FieldChangedAction();
 			if (Finish)
 			{
 				OnInputFinish.Invoke();
@@ -210,10 +211,10 @@ namespace Ozone.UI
 
 		void UpdateGfx()
 		{
-			ColorPreview.color = new Color(RedSlider.value / Clamp, GreenSlider.value / Clamp, BlueSlider.value / Clamp, 1);
+			ColorPreview.color = new Color(RedSlider.value, GreenSlider.value, BlueSlider.value, 1);
 			if (AlphaPreview)
 			{
-				AlphaPreview.color = Color.Lerp(Color.black, Color.white, AlphaSlider.value / Clamp);
+				AlphaPreview.color = Color.Lerp(Color.black, Color.white, AlphaSlider.value);
 			}
 		}
 	}
