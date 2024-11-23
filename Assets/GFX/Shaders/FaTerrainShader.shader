@@ -711,7 +711,18 @@
                     o.wNormal = normalize(normal);
 
                     o.WaterDepth = tex2D(UpperAlbedoSampler, position.xy).b;
-                 
+                    o.MapShadow = tex2D(UpperAlbedoSampler, position.xy).w;
+                }
+                else if (_ShaderID == 3)
+                {
+                    float4 albedo = Terrain301AlbedoPS(inV, false);
+                    o.Albedo = albedo.rgb;
+                    o.Roughness = albedo.a;
+
+                    float3 normal = TangentToWorldSpace(inV, Terrain301NormalsPS(inV, false).xyz);
+                    o.wNormal = normalize(normal);
+
+                    o.WaterDepth = tex2D(UpperAlbedoSampler, position.xy).b;
                     o.MapShadow = tex2D(UpperAlbedoSampler, position.xy).w;
                 }
                 else {

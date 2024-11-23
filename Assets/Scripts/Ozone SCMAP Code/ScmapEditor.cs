@@ -1096,8 +1096,13 @@ public partial class ScmapEditor : MonoBehaviour
 		else if (MapLuaParser.Current.EditMenu.TexturesMenu.ShaderName.text == "Terrain301")
 		{
 			Shader.SetGlobalInt("_ShaderID", 2);
-		} else
-		{
+		}
+        else if (MapLuaParser.Current.EditMenu.TexturesMenu.ShaderName.text == "Terrain351")
+        {
+            Shader.SetGlobalInt("_ShaderID", 3);
+        }
+        else
+        {
             Shader.SetGlobalInt("_ShaderID", -1);
         }
 	}

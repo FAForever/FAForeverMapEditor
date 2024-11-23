@@ -230,8 +230,10 @@ half4 CalculateLight (unity_v2f_deferred i)
         color.rgb = CalculateLighting(worldNormal, eyeVec, albedo, 1-alpha, atten);
     } else if (_ShaderID == 1) {
         color.rgb = CalculateXPLighting(worldNormal, eyeVec, float4(albedo, alpha), atten);
-    } else if (_ShaderID == 2) {
+    } else if (_ShaderID == 2 || _ShaderID == 3) {
         color.rgb = PBR(wpos, eyeVec, albedo, worldNormal, roughness, mapShadow * atten);
+    } else {
+        color.rgb = albedo;
     }
 
     if (_Water) {

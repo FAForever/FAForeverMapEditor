@@ -93,7 +93,7 @@ namespace Ozone.UI
 			if (ChangingValue)
 				return;
 			InvokeStart();
-			UpdateSliderValue(true);
+			UpdateSliderValue();
 			OnEndEdit.Invoke();
 			SetTextField();
 			Started = false;
@@ -148,7 +148,7 @@ namespace Ozone.UI
 		#endregion
 
 
-		void UpdateSliderValue(bool ClampText = false)
+		void UpdateSliderValue()
 		{
 			ChangingValue = true;
 			HasValue = true;
@@ -163,15 +163,7 @@ namespace Ozone.UI
 
 			if (SliderUi)
 			{
-				LastValue = Mathf.Clamp(LastValue, SliderUi.minValue, SliderUi.maxValue);
-
-				if (ClampText)
-				{
-					SetTextField();
-				}
-
 				SliderUi.value = LastValue;
-
 			}
 
 			ChangingValue = false;
@@ -194,7 +186,6 @@ namespace Ozone.UI
 			LastValue = value;
 			if (SliderUi)
 			{
-				LastValue = Mathf.Clamp(LastValue, SliderUi.minValue, SliderUi.maxValue);
 				SliderUi.value = LastValue;
 			}
 
@@ -209,7 +200,6 @@ namespace Ozone.UI
 			LastValue = value;
 			if (SliderUi)
 			{
-				LastValue = Mathf.Clamp(LastValue, SliderUi.minValue, SliderUi.maxValue);
 				SliderUi.value = LastValue;
 			}
 			SetTextField();
