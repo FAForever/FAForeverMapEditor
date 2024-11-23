@@ -199,11 +199,11 @@ public partial class AppMenu : MonoBehaviour
 					if (!FafEditorSettings.GetFogOfWar())
 						Arguments += " /nofog";
 
-					string GamePath = EnvPaths.GetInstalationPath() + "bin/SupremeCommander.exe";
+					string GamePath = EnvPaths.GetInstallationPath() + "bin/SupremeCommander.exe";
 
 					if (!System.IO.File.Exists(GamePath))
 					{
-						string OtherPath = EnvPaths.GetInstalationPath() + "bin/ForgedAlliance.exe";
+						string OtherPath = EnvPaths.GetInstallationPath() + "bin/ForgedAlliance.exe";
 						if (System.IO.File.Exists(OtherPath))
 						{
 							GamePath = OtherPath;
@@ -211,7 +211,7 @@ public partial class AppMenu : MonoBehaviour
 						else
 						{
 
-							Debug.LogWarning("Game executable not exist at given path: " + EnvPaths.GetInstalationPath() + "bin/");
+							Debug.LogWarning("Game executable not exist at given path: " + EnvPaths.GetInstallationPath() + "bin/");
 							return;
 						}
 					}

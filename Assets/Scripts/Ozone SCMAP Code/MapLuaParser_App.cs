@@ -9,24 +9,13 @@ public partial class MapLuaParser : MonoBehaviour
 	void Start () {
 		Args = System.Environment.GetCommandLineArgs();
 
-		/*
-		for(int i = 0; i < Args.Length; i++)
-		{
-			Debug.Log(Args[i]);
-		}
-		*/
-
 		if (Args.Length > 0)
 
-			if (Args.Length == 3 && Args[1] == "-setInstalationPath")
+			if (Args.Length == 3 && Args[1] == "-setInstallationPath")
 			{
-				EnvPaths.SetInstalationPath(Args[2]);
-				//Debug.Log("Success! Instalation path changed to: " + Args[2]);
+				EnvPaths.SetInstallationPath(Args[2]);
 			}
 
-
-		//Debug.Log(Args.Length);
-		//Debug.Log(Args[0]);
 		if (Args.Length >= 6)
 		{
 			if (Args[1] == "-renderPreviewImage" || Args[1] == "-renderPreviewImageNoProps" || Args[1] == "-renderPreviewImageNoDecals" || Args[1] == "-renderPreviewImageNoPropsDecals")

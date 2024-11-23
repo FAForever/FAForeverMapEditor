@@ -94,10 +94,10 @@ public partial class MapLuaParser : MonoBehaviour
 
 		EnvPaths.GenerateDefaultPaths();
 
-		if (string.IsNullOrEmpty(EnvPaths.GetInstalationPath()))
+		if (string.IsNullOrEmpty(EnvPaths.GetInstallationPath()))
 		{
 			EnvPaths.GenerateGamedataPath();
-			EnvPaths.SetInstalationPath(EnvPaths.DefaultGamedataPath);
+			EnvPaths.SetInstallationPath(EnvPaths.DefaultGamedataPath);
 		}
 
 		StructurePath = GetDataPath() + "/Structure/";

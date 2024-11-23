@@ -6,50 +6,76 @@ public class EnvPaths : MonoBehaviour {
 
 	public static string DefaultMapPath;
 	public static string DefaultGamedataPath;
+	public static string DefaultFafDataPath;
 
 	static Microsoft.Win32.RegistryKey regKey = Microsoft.Win32.Registry.LocalMachine.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Uninstall");
 	//static RegistryKey regKey = Registry. .OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Uninstall");
 
 
-	const string InstalationPath = "InstalationPath";
-	const string InstalationGamedata = "gamedata/";
-	const string InstalationMods = "mods/";
+	const string InstallationPath = "InstallationPath";
+	const string FafDataPath = "FafDataPath";
+	const string InstallationGamedata = "gamedata/";
+	const string InstallationMods = "mods/";
 	const string MapsPath = "MapsPath";
 	const string BackupPath = "BackupPath";
 
-	public static string GetInstalationPath() {
-		return PlayerPrefs.GetString(InstalationPath, EnvPaths.DefaultGamedataPath);
+	public static string GetInstallationPath() {
+		return PlayerPrefs.GetString(InstallationPath, EnvPaths.DefaultGamedataPath);
 	}
 
-	public static void SetInstalationPath(string value) {
+	public static void SetInstallationPath(string value) {
 		value = value.Replace("\\", "/");
 		if (value[value.Length - 1].ToString() != "/") value += "/";
 		if (value[0].ToString() == "/") value = value.Remove(0, 1);
 
-		if (value.ToLower().EndsWith(InstalationGamedata))
+		if (value.ToLower().EndsWith(InstallationGamedata))
 		{
-			value = value.Remove(value.Length - InstalationGamedata.Length);
+			value = value.Remove(value.Length - InstallationGamedata.Length);
 		}
 
-		PlayerPrefs.SetString(InstalationPath, value);
+		PlayerPrefs.SetString(InstallationPath, value);
 
 		if (!System.IO.Directory.Exists(value))
 		{
 			GenericInfoPopup.ShowInfo("Wrong game installation path!\nCheck preferences.");
 		}
-	}
+    }
 
-	/// <summary>
-	/// All directorys from where editor will load *.scd and *.nx2 files
-	/// </summary>
-	public static string[] LoadGamedataPaths
+    public static string GetFafDataPath()
+    {
+        return PlayerPrefs.GetString(FafDataPath, EnvPaths.DefaultFafDataPath);
+    }
+
+    public static void SetFafDataPath(string value)
+    {
+        value = value.Replace("\\", "/");
+        if (value[value.Length - 1].ToString() != "/") value += "/";
+        if (value[0].ToString() == "/") value = value.Remove(0, 1);
+
+        if (value.ToLower().EndsWith(InstallationGamedata))
+        {
+            value = value.Remove(value.Length - InstallationGamedata.Length);
+        }
+
+        PlayerPrefs.SetString(FafDataPath, value);
+
+        if (!System.IO.Directory.Exists(value))
+        {
+            GenericInfoPopup.ShowInfo("Wrong game installation path!\nCheck preferences.");
+        }
+    }
+
+    /// <summary>
+    /// All directorys from where editor will load *.scd and *.nx2 files
+    /// </summary>
+    public static string[] LoadGamedataPaths
 	{
 		get
 		{
 			if(AllowMods)
-				return new string[] { GamedataPath, FAFGamedataPath, GamedataModsPath, UserModsPath };
+				return new string[] { GamedataPath, FAFDataPath, GamedataModsPath, UserModsPath };
 
-			return new string[] { GamedataPath, FAFGamedataPath };
+			return new string[] { GamedataPath, FAFDataPath };
 		}
 	}
 
@@ -72,7 +98,7 @@ public class EnvPaths : MonoBehaviour {
 	public static string GamedataPath{
 		get
 		{
-			return GetInstalationPath() + InstalationGamedata;
+			return GetInstallationPath() + InstallationGamedata;
 		}
 	}
 
@@ -80,7 +106,7 @@ public class EnvPaths : MonoBehaviour {
 	{
 		get
 		{
-			return GetInstalationPath() + InstalationMods;
+			return GetInstallationPath() + InstallationMods;
 		}
 	}
 
@@ -92,12 +118,12 @@ public class EnvPaths : MonoBehaviour {
 		}
 	}
 
-	public static string FAFGamedataPath
+	public static string FAFDataPath
 	{
 		get
 		{
-			return EnvPaths.ProgramData + "/FAForever/gamedata/";
-		}
+            return GetFafDataPath() + InstallationGamedata;
+        }
 	}
 
 	public static string CurrentGamedataPath = "";
@@ -140,18 +166,28 @@ public class EnvPaths : MonoBehaviour {
 	#region Auto Generate
 	public static void GenerateDefaultPaths() {
 		GenerateMapPath();
+		GenerateFafDataPath();
 		GenerateGamedataPath();
 	}
 
 	public static void GenerateMapPath() {
 		DefaultMapPath = MyDocuments.Replace("\\", "/") + "/My Games/Gas Powered Games/Supreme Commander Forged Alliance/Maps/";
 		if (!System.IO.Directory.Exists(DefaultMapPath)) {
-			Debug.LogWarning("Default map directory not exist: " + DefaultMapPath);
+			Debug.LogWarning("Default map directory does not exist: " + DefaultMapPath);
 			DefaultMapPath = "maps/";
 		}
 	}
+    public static void GenerateFafDataPath()
+    {
+        DefaultFafDataPath = EnvPaths.ProgramData + "/FAForever/";
+        if (!System.IO.Directory.Exists(DefaultMapPath))
+        {
+            Debug.LogWarning("Default FAF directory does not exist: " + DefaultFafDataPath);
+            DefaultFafDataPath = "";
+        }
+    }
 
-	public static void GenerateGamedataPath() {
+    public static void GenerateGamedataPath() {
 		DefaultGamedataPath = FindByDisplayName(regKey, "Supreme Commander: Forged Alliance").Replace("\\", "/");
 
 
@@ -161,7 +197,7 @@ public class EnvPaths : MonoBehaviour {
 				DefaultGamedataPath += "/";
 
 			if (!System.IO.Directory.Exists(DefaultGamedataPath)) {
-				Debug.LogWarning("Instalation directory not exist: " + DefaultGamedataPath);
+				Debug.LogWarning("Installation directory does not exist: " + DefaultGamedataPath);
 				DefaultGamedataPath = "";
 			}
 		}
