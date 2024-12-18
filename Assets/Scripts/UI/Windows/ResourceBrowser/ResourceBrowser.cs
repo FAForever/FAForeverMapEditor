@@ -14,6 +14,7 @@ using System.IO;
 using ICSharpCode.SharpZipLib.Core;
 using ICSharpCode.SharpZipLib.Zip;
 using ICSharpCode.SharpZipLib.BZip2;
+using System.Linq;
 
 namespace FAF.MapEditor
 {
@@ -504,7 +505,7 @@ namespace FAF.MapEditor
 					if (Directory.Exists(LoadPath))
 					{
 
-						string[] AllFiles = Directory.GetFiles(LoadPath, "*", SearchOption.AllDirectories);
+						string[] AllFiles = Directory.GetFiles(LoadPath, "*", SearchOption.AllDirectories).OrderBy(filePath => filePath).ToArray();
 						//Debug.Log("Found " + AllFiles.Length + " files in map folder");
 
 						for (int i = 0; i < AllFiles.Length; i++)
@@ -675,7 +676,7 @@ namespace FAF.MapEditor
 
 				SelectedDirectory = ("env/" + EnvType.options[EnvType.value].text + "/" + CategoryPaths[LastLoadedType]).ToLower();
 
-				string[] files = GetGamedataFile.GetFilesInPath(SelectedDirectory);
+				string[] files = GetGamedataFile.GetFilesInPath(SelectedDirectory).OrderBy(filePath => filePath).ToArray();
 				bool Breaked = false;
 
 				for (int f = 0; f < files.Length; f++)
