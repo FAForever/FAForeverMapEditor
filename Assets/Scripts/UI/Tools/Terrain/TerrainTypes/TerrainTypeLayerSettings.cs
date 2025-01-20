@@ -10,6 +10,7 @@ namespace EditMap.TerrainTypes
         public byte index;
         public Color color;
         public bool blocking;
+        public bool recommended;
         public Style style;
         public string description;
 
@@ -19,6 +20,7 @@ namespace EditMap.TerrainTypes
             index = 0;
             color = new Color(0,0,0,1);
             blocking = false;
+            recommended = false;
             style = Style.Default;
             description = "";
         }

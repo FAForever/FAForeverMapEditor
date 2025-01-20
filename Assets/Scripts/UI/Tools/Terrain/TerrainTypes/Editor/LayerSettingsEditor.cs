@@ -15,6 +15,7 @@ namespace EditMap.TerrainTypes.Editor
         private float indexWidth = 50f;
         private float colorWidth = 100f;
         private float blockingWidth = 60f;
+        private float recommendedWidth = 100f;
         private float styleWidth = 110f;
         private float fieldHeight = 18f;
 
@@ -61,6 +62,7 @@ namespace EditMap.TerrainTypes.Editor
             var indexProperty = property.FindPropertyRelative("index"); //index
             var colorProperty = property.FindPropertyRelative("color"); //color
             var blockingProperty = property.FindPropertyRelative("blocking"); //blocking
+            var recommendedProperty = property.FindPropertyRelative("recommended");
             var styleProperty = property.FindPropertyRelative("style"); //style
             var descriptionProperty = property.FindPropertyRelative("description"); //description
 
@@ -78,7 +80,10 @@ namespace EditMap.TerrainTypes.Editor
                     shift += indexWidth + 2;
                     EditorGUI.PropertyField(
                         new Rect(shift, rect.y, blockingWidth, fieldHeight), blockingProperty, GUIContent.none);
-                    shift += blockingWidth;
+                    shift += blockingWidth + 2;
+                    EditorGUI.PropertyField(
+                            new Rect(shift, rect.y, recommendedWidth, fieldHeight), recommendedProperty, GUIContent.none);
+                    shift += recommendedWidth;
                     EditorGUI.PropertyField(
                         new Rect(shift, rect.y, styleWidth, fieldHeight), styleProperty, GUIContent.none);
                     shift += styleWidth;
@@ -87,7 +92,7 @@ namespace EditMap.TerrainTypes.Editor
                     shift += colorWidth;
 
                     descriptionProperty.stringValue = EditorGUI.TextArea(
-                        new Rect(rect.x, rect.y + fieldHeight + 3, rect.width, fieldHeight), descriptionProperty.stringValue);
+                        new Rect(rect.x + 20, rect.y + fieldHeight + 3, rect.width - 20, fieldHeight), descriptionProperty.stringValue);
                 
 
                 if (scope.changed)
@@ -106,11 +111,13 @@ namespace EditMap.TerrainTypes.Editor
         {
             float shift = rect.x + leftSpaceWidth;
             EditorGUI.LabelField(new Rect(shift, rect.y, rect.width, rect.height), "name");
-            shift += nameWidth;
+            shift += nameWidth + 2;
             EditorGUI.LabelField(new Rect(shift, rect.y, rect.width, rect.height), "index");
-            shift += indexWidth;
+            shift += indexWidth + 2;
             EditorGUI.LabelField(new Rect(shift, rect.y, rect.width, rect.height), "blocking");
-            shift += blockingWidth;
+            shift += blockingWidth + 2;
+            EditorGUI.LabelField(new Rect(shift, rect.y, rect.width, rect.height), "recommended");
+            shift += recommendedWidth;
             EditorGUI.LabelField(new Rect(shift, rect.y, rect.width, rect.height), "style");
             shift += styleWidth;
             EditorGUI.LabelField(new Rect(rect.xMax - colorWidth, rect.y, colorWidth, rect.height), "color");
