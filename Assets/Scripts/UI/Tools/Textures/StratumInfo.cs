@@ -1,11 +1,13 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
 using System.Collections.Generic;
+using System.Diagnostics;
 using Ozone.UI;
 using System.IO;
 using B83.Image.BMP;
 using SFB;
 using FAF.MapEditor;
+using Debug = UnityEngine.Debug;
 
 namespace EditMap
 {
@@ -57,6 +59,10 @@ namespace EditMap
 		public GameObject BrushListObject;
 		public Transform BrushListPivot;
 		public Material TerrainMaterial;
+
+		public InputField JavaPathField;
+		public InputField ImagePathField;
+		public Text JavaOutput;
 
 		[Header("State")]
 		public bool Invert;
@@ -116,6 +122,8 @@ namespace EditMap
 
 		void OnEnable()
 		{
+			JavaPathField.text = EnvPaths.GetJavaPath();
+			ImagePathField.text = EnvPaths.GetImagePath();
 			BrushGenerator.Current.LoadBrushes();
 			ReloadStratums();
 
@@ -1081,8 +1089,95 @@ namespace EditMap
 				color.a = channel;
 		}
 
-#endregion
+        #endregion
 
+        #region TextureGeneration
+        public void BrowseJavaPath()
+        {
+
+            var paths = StandaloneFileBrowser.OpenFolderPanel("Select folder containing java.exe.", EnvPaths.GetJavaPath(), false);
+
+            if (paths.Length > 0 && !string.IsNullOrEmpty(paths[0]))
+            {
+                JavaPathField.text = paths[0];
+                EnvPaths.SetJavaPath(paths[0]);
+            }
+        }
+        
+        public void UpdateJavaPath()
+        {
+	        if (!string.IsNullOrEmpty(JavaPathField.text))
+	        {
+		        EnvPaths.SetJavaPath(JavaPathField.text);
+	        }
+        }
+		
+        public void BrowseImagePath()
+        {
+
+	        var paths = StandaloneFileBrowser.OpenFolderPanel("Select folder for height and roughness images.", "C:\\", false);
+
+	        if (paths.Length > 0 && !string.IsNullOrEmpty(paths[0]))
+	        {
+		        ImagePathField.text = paths[0];
+		        EnvPaths.SetImagePath(paths[0]);
+	        }
+        }
+        
+        public void UpdateImagePath()
+        {
+	        if (!string.IsNullOrEmpty(ImagePathField.text))
+	        {
+		        EnvPaths.SetImagePath(ImagePathField.text);
+	        }
+        }
+
+        public void invokeToolsuite(string arguments)
+        {
+	        JavaOutput.text = "";
+	        Process neroxisToolsuite = new Process();
+            neroxisToolsuite.StartInfo.FileName = EnvPaths.GetJavaPath() + "/java.exe";
+            var jarPath = Application.dataPath + "/Plugins/NeroxisMapGenerator/neroxis-toolsuite.jar";
+            neroxisToolsuite.StartInfo.Arguments = "-jar \"" + jarPath + "\" " + arguments;
+            WriteOutput("Starting Java process: " + neroxisToolsuite.StartInfo.FileName + neroxisToolsuite.StartInfo.Arguments);
+            
+            neroxisToolsuite.StartInfo.CreateNoWindow = true;
+            neroxisToolsuite.StartInfo.UseShellExecute = false;
+            neroxisToolsuite.StartInfo.RedirectStandardOutput = true;
+            neroxisToolsuite.StartInfo.RedirectStandardError = true;
+            neroxisToolsuite.OutputDataReceived += (sender, args) => WriteOutput(args.Data);
+            neroxisToolsuite.ErrorDataReceived += (sender, args) => WriteOutput(args.Data);
+
+            neroxisToolsuite.Start();
+            neroxisToolsuite.BeginOutputReadLine();
+            neroxisToolsuite.BeginErrorReadLine();
+            neroxisToolsuite.WaitForExit();
+            WriteOutput("Java process exited with code: " + neroxisToolsuite.ExitCode);
+        }
+
+        private void WriteOutput(string text)
+        {
+	        JavaOutput.text += text + "\n";
+	        Debug.Log(text);
+        }
+
+        public void GenerateMapInfoTexture()
+        {
+	        var toolsuiteArguments = "export-env-map --map-path=\"" + EnvPaths.GetMapsPath() + MapLuaParser.Current.FolderName + "\"";
+	        invokeToolsuite(toolsuiteArguments);
+        }
+        
+        public void GenerateHeightRoughnessTexture()
+        {
+	        
+        }
+        
+        public void ResetRoughnessMask()
+        {
+	        
+        }
+
+        #endregion
 
 		#region Import/Export
 
