@@ -29,10 +29,12 @@ namespace EditMap
 		private Vector3 SunDirection;
 
 		public UiTextField SunShininess;
-
 		public UiTextField UnitReflection;
 		public UiTextField SkyReflection;
 		public UiTextField RefractionScale;
+
+		public InputField WaterRamp;
+		public InputField Cubemap;
 
 		bool Loading = false;
 		private void OnEnable()
@@ -79,10 +81,12 @@ namespace EditMap
             SunColor.SetColorField(ScmapEditor.Current.map.Water.SunColor.x, ScmapEditor.Current.map.Water.SunColor.y, ScmapEditor.Current.map.Water.SunColor.z);
 
 			SunShininess.SetValue(ScmapEditor.Current.map.Water.SunShininess);
-
 			UnitReflection.SetValue(ScmapEditor.Current.map.Water.UnitReflection);
 			SkyReflection.SetValue(ScmapEditor.Current.map.Water.SkyReflection);
 			RefractionScale.SetValue(ScmapEditor.Current.map.Water.RefractionScale);
+
+			WaterRamp.text = ScmapEditor.Current.map.Water.TexPathWaterRamp;
+			Cubemap.text = ScmapEditor.Current.map.Water.TexPathCubemap;
 
 			WaterSettings.interactable = HasWater.isOn;
 
@@ -96,6 +100,7 @@ namespace EditMap
 
 		void UpdateScmap(bool Maps)
 		{
+			ScmapEditor.Current.SetWaterTextures();
 			ScmapEditor.Current.SetWater();
 
 			if (Maps)
@@ -206,11 +211,12 @@ namespace EditMap
 				|| ScmapEditor.Current.map.Water.UnitReflection != UnitReflection.value
 				|| ScmapEditor.Current.map.Water.SkyReflection != SkyReflection.value
 				|| ScmapEditor.Current.map.Water.RefractionScale != RefractionScale.value
+				|| ScmapEditor.Current.map.Water.TexPathWaterRamp != WaterRamp.text
+				|| ScmapEditor.Current.map.Water.TexPathCubemap != Cubemap.text
 				;
 
 			if (!AnyChanged)
 				return;
-
 
 			if (!UndoRegistered)
 			{
@@ -223,9 +229,6 @@ namespace EditMap
 			if(!Slider)
 				UndoRegistered = false;
 
-
-
-
 			ScmapEditor.Current.map.Water.ColorLerp.x = ColorLerpXElevation.value;
 			ScmapEditor.Current.map.Water.ColorLerp.y = ColorLerpYElevation.value;
 
@@ -234,10 +237,12 @@ namespace EditMap
 			ScmapEditor.Current.map.Water.SunDirection = SunDirection;
 
 			ScmapEditor.Current.map.Water.SunShininess = SunShininess.value;
-
 			ScmapEditor.Current.map.Water.UnitReflection = UnitReflection.value;
 			ScmapEditor.Current.map.Water.SkyReflection = SkyReflection.value;
 			ScmapEditor.Current.map.Water.RefractionScale = RefractionScale.value;
+			
+			ScmapEditor.Current.map.Water.TexPathWaterRamp = WaterRamp.text;
+			ScmapEditor.Current.map.Water.TexPathCubemap = Cubemap.text;
 
 			UpdateScmap(false);
 		}
