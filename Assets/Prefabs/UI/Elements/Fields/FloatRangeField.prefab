@@ -757,9 +757,12 @@ MonoBehaviour:
   m_CharacterLimit: 8
   m_OnSubmit:
     m_PersistentCalls:
+      m_Calls: []
+  m_OnDidEndEdit:
+    m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 114716158341763642}
-        m_TargetAssemblyTypeName: 
+        m_TargetAssemblyTypeName: Ozone.UI.UiTextField, Assembly-CSharp
         m_MethodName: OnEndEditInvoke
         m_Mode: 1
         m_Arguments:
@@ -770,9 +773,6 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
-  m_OnDidEndEdit:
-    m_PersistentCalls:
-      m_Calls: []
   m_OnValueChanged:
     m_PersistentCalls:
       m_Calls:
