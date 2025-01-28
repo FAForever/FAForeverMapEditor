@@ -433,7 +433,6 @@ public class GenerateControlTex : MonoBehaviour
 		SlopeData.Apply(false);
 
 		ScmapEditor.Current.TerrainMaterial.SetTexture("_SlopeTex", SlopeData);
-		ScmapEditor.Current.TerrainMaterial.SetFloat("_UseSlopeTex", 1);
 		//yield return null;
 	}
 
