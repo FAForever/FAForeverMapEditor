@@ -63,7 +63,6 @@
 	    _GridTexture ("Grid Texture", 2D) = "white" {}
 
         [MaterialToggle] _Slope("Slope", Integer) = 0
-	    [MaterialToggle] _UseSlopeTex("Use Slope Data", Integer) = 0
         _SlopeTex ("Slope data", 2D) = "black" {}
 
       	[MaterialToggle] _Brush ("Brush", Integer) = 0
@@ -754,26 +753,13 @@
             float3 renderSlope(Input IN){
                 float3 Emit = 0;
                 if (_Slope > 0) {
-					half3 SlopeColor = 0;
-					if (_UseSlopeTex > 0) {
-						float4 splat_control = tex2D(_SlopeTex, IN.mTexWT);
-						SlopeColor = splat_control.rgb;
-
-					}
-					else {
-
-						if (IN.mTexWT.y * TerrainScale < WaterElevation) {
-							if (IN.SlopeLerp > 0.75) SlopeColor = half3(0, 0.4, 1);
-							else SlopeColor = half3(0.6, 0, 1);
-						}
-						else if (IN.SlopeLerp > 0.999) SlopeColor = half3(0, 0.8, 0);
-						else if (IN.SlopeLerp > 0.95) SlopeColor = half3(0.3, 0.89, 0);
-						else if (IN.SlopeLerp > 0.80) SlopeColor = half3(0.5, 0.8, 0);
-						else SlopeColor = half3(1, 0, 0);
-
-					}
-					Emit = SlopeColor * 0.8;
-					// col.rgb = lerp(col.rgb, 0, 0.8);
+					float2 uv = TerrainScale * IN.mTexWT;
+					uv.y = 1 - uv.y;
+					half3 SlopeColor = tex2D(_SlopeTex, uv).rgb * 0.8;
+                    if (IN.mTexWT.z < WaterElevation * 10) {
+                        SlopeColor += half3(0, 0, 0.1);
+                    }
+                    Emit = SlopeColor;
 				}
                 return Emit;
             }
