@@ -56,30 +56,28 @@ uniform fixed4 SpecularColor;
 uniform float WaterElevation;
 
 
-float3 ApplyWaterColor(float waterDepth, float3 color)
+float3 ApplyWaterColor(float3 wpos, float3 viewDirection, float waterDepth, float3 color)
 {
     if (waterDepth > 0) {
-        float4 waterColor = tex1D(WaterRampSampler, waterDepth);
-        color = lerp(color.xyz, waterColor.rgb, waterColor.a);
-    }
-    return color;
-}
-
-float3 ApplyWaterColorExponentially(float3 viewDirection, float waterDepth, float3 color)
-{
-    if (waterDepth > 0) {
-        float3 up = float3(0,1,0);
-        // this is the length that the light travels underwater back to the camera
-        float oneOverCosV = 1 / max(dot(up, normalize(viewDirection)), 0.0001);
-        // Light gets absorbed exponentially,
-        // to simplify, we assume that the light enters vertically into the water.
-        // We need to multiply by 2 to reach 98% absorption as the waterDepth can't go over 1.
-        float waterAbsorption = 1 - saturate(exp(-waterDepth * 2 * (1 + oneOverCosV)));
-        // darken the color first to simulate the light absorption on the way in and out
-        color *= 1 - waterAbsorption;
-        // lerp in the watercolor to simulate the scattered light from the dirty water
-        float4 waterColor = tex1D(WaterRampSampler, waterAbsorption);
-        color = lerp(color, waterColor.rgb, waterAbsorption);
+        float opacity = saturate(smoothstep(1, 20, _WorldSpaceCameraPos.y - WaterElevation) + step(wpos.y, WaterElevation));
+        // Trigger for exponential water absorption
+        if (LightingMultiplier > 2.1) {
+            float3 up = float3(0,1,0);
+            // this is the length that the light travels underwater back to the camera
+            float oneOverCosV = 1 / max(dot(up, normalize(viewDirection)), 0.0001);
+            // Light gets absorbed exponentially,
+            // to simplify, we assume that the light enters vertically into the water.
+            // We need to multiply by 2 to reach 98% absorption as the waterDepth can't go over 1.
+            float waterAbsorption = 1 - saturate(exp(-waterDepth * 2 * (1 + oneOverCosV)));
+            // darken the color first to simulate the light absorption on the way in and out
+            color *= 1 - waterAbsorption * opacity;
+            // lerp in the watercolor to simulate the scattered light from the dirty water
+            float4 waterColor = tex1D(WaterRampSampler, waterAbsorption);
+            color = lerp(color, waterColor.rgb, waterAbsorption * opacity);
+        } else {
+            float4 waterColor = tex1D(WaterRampSampler, waterDepth);
+            color = lerp(color, waterColor.rgb, waterColor.a * opacity);
+        }
     }
     return color;
 }
@@ -237,12 +235,7 @@ half4 CalculateLight (unity_v2f_deferred i)
     }
 
     if (_Water) {
-        // Trigger for exponential water absorption
-        if (LightingMultiplier > 2.1) {
-            color.rgb = ApplyWaterColorExponentially(-eyeVec, waterDepth, color.rgb);
-        } else {
-            color.rgb = ApplyWaterColor(waterDepth, color.rgb);
-        }
+        color.rgb = ApplyWaterColor(wpos, -eyeVec, waterDepth, color.rgb);
     }
 
     color.a = 1;

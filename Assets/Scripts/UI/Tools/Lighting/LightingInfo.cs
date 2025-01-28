@@ -51,8 +51,9 @@ namespace EditMap
 			Quaternion CheckRot = Scmap.Sun.transform.rotation;
 
 			float RaHold = CheckRot.eulerAngles.y;
-			if (RaHold > 180) RaHold -= 360;
-			if (RaHold < -180) RaHold += 360;
+			RaHold += 180;
+			if (RaHold > 360) RaHold -= 360;
+			if (RaHold < 0) RaHold += 360;
 			RaHold *= 10;
 			RaHold = (int)RaHold;
 			RaHold /= 10f;
@@ -171,12 +172,18 @@ namespace EditMap
 		{
 			if (Scmap.map == null) return;
 
-			Scmap.Sun.transform.rotation = Quaternion.Euler(new Vector3(DA.value, -360 + RA.value, 0));
+			Scmap.Sun.transform.rotation = Quaternion.Euler(new Vector3(DA.value, -180 + RA.value, 0));
 			Vector3 SunDir = Scmap.Sun.transform.rotation * Vector3.back;
 			SunDir.z *= -1;
 			Scmap.map.SunDirection = SunDir;
 
-			Scmap.map.LightingMultiplier = LightMultipiler.value;
+            if (MapLuaParser.Current.EditMenu.WaterMenu.AdvancedWaterToggle.isOn)
+            {
+				// Don't allow changing the multiplier when we need it for the water settings
+                LightMultipiler.SetValue(Scmap.map.LightingMultiplier);
+            } else {
+				Scmap.map.LightingMultiplier = LightMultipiler.value;
+			}
 
 			Scmap.map.SunColor = LightColor.GetVectorValue();
 			Scmap.map.SunAmbience = AmbienceColor.GetVectorValue();
@@ -200,28 +207,49 @@ namespace EditMap
 
 			Scmap.map.Bloom = Bloom.value;
 
+			if (MapLuaParser.Current.EditMenu.WaterMenu.UseLightingSettings.isOn)
+			{
+				MapLuaParser.Current.EditMenu.WaterMenu.WaterSettingsChanged(false);
+            }
+
 			Scmap.UpdateLighting();
 			Scmap.Skybox.LoadSkybox();
 
 		}
 
+		/* We transform the light values so that we set the shadowFill to
+		0 and the lightMultiplier to a given value, without changing the
+		visual appearance. Setting shadowFill to 0 makes it easier to
+		reason about the lighting, because now we have a physically
+		correct light setup.
+		A multiplier of 2.2 enables exponential water absorption. */
+        public void RecalculateLightSettings(float NewLightMultiplier)
+		{
+			Vector3 NewSunColor = new Vector3(
+				Scmap.map.SunColor.x * (Scmap.map.LightingMultiplier - Scmap.map.ShadowFillColor.x) / NewLightMultiplier,
+				Scmap.map.SunColor.y * (Scmap.map.LightingMultiplier - Scmap.map.ShadowFillColor.y) / NewLightMultiplier,
+                Scmap.map.SunColor.z * (Scmap.map.LightingMultiplier - Scmap.map.ShadowFillColor.z) / NewLightMultiplier);
+            Vector3 NewAmbienceColor = new Vector3(
+                (Scmap.map.SunAmbience.x * (Scmap.map.LightingMultiplier - Scmap.map.ShadowFillColor.x) + Scmap.map.ShadowFillColor.x) / NewLightMultiplier,
+                (Scmap.map.SunAmbience.y * (Scmap.map.LightingMultiplier - Scmap.map.ShadowFillColor.y) + Scmap.map.ShadowFillColor.y) / NewLightMultiplier,
+                (Scmap.map.SunAmbience.z * (Scmap.map.LightingMultiplier - Scmap.map.ShadowFillColor.z) + Scmap.map.ShadowFillColor.z) / NewLightMultiplier);
 
-		public void ResetSun()
+            Scmap.map.LightingMultiplier = NewLightMultiplier;
+            Scmap.map.SunColor = NewSunColor;
+            Scmap.map.SunAmbience = NewAmbienceColor;
+            Scmap.map.ShadowFillColor = new Vector3(0, 0, 0);
+
+			LoadValues();
+        }
+
+		public void ResetLight()
 		{
 			BeginUpdateMenu();
 
-			RA.SetValue(-48);
+			RA.SetValue(312);
 			DA.SetValue(34);
 			LightMultipiler.SetValue(1.54f);
 			LightColor.SetColorField(new Color(1.38f, 1.29f, 1.14f, 1));
-
-			UpdateMenu();
-		}
-
-		public void ResetAmbient()
-		{
-			BeginUpdateMenu();
-
 			AmbienceColor.SetColorField(Color.black);
 			ShadowColor.SetColorField(new Color(0.54f, 0.54f, 0.7f));
 

@@ -20,6 +20,7 @@ namespace EditMap
 		public MapInfo MapInfoMenu;
 		public StratumInfo TexturesMenu;
 		public LightingInfo LightingMenu;
+		public WaterInfo WaterMenu;
 
 		[Header("State")]
 		public bool MauseOnGameplay;

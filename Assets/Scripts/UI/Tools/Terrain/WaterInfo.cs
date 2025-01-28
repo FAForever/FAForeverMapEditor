@@ -1,10 +1,7 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.UI;
 using Ozone.UI;
 using System.IO;
-using System.Runtime.InteropServices;
 using SFB;
 
 namespace EditMap
@@ -22,22 +19,22 @@ namespace EditMap
 		public UiTextField WaterElevation;
 		public UiTextField DepthElevation;
 		public UiTextField AbyssElevation;
+		public Toggle AdvancedWaterToggle;
 
 		public UiTextField ColorLerpXElevation;
 		public UiTextField ColorLerpYElevation;
 		public UiColor WaterColor;
 		public UiColor SunColor;
+		public Toggle UseLightingSettings;
+		private Vector3 SunDirection;
 
-		public UiTextField SunStrength;
 		public UiTextField SunShininess;
-		public UiTextField SunReflection;
-
-		public UiTextField FresnelPower;
-		public UiTextField FresnelBias;
-
 		public UiTextField UnitReflection;
 		public UiTextField SkyReflection;
 		public UiTextField RefractionScale;
+
+		public InputField WaterRamp;
+		public InputField Cubemap;
 
 		bool Loading = false;
 		private void OnEnable()
@@ -56,6 +53,18 @@ namespace EditMap
 		{
 		}
 
+		public void OnWaterTogglePressed()
+		{
+			if (AdvancedWaterToggle.isOn)
+			{
+				MapLuaParser.Current.EditMenu.LightingMenu.RecalculateLightSettings(2.2f);
+            } 
+			else
+			{
+                MapLuaParser.Current.EditMenu.LightingMenu.RecalculateLightSettings(1.8f);
+            }
+		}
+
 		public void ReloadValues(bool Undo = false)
 		{
 			Loading = true;
@@ -68,19 +77,16 @@ namespace EditMap
 			ColorLerpXElevation.SetValue(ScmapEditor.Current.map.Water.ColorLerp.x);
 			ColorLerpYElevation.SetValue(ScmapEditor.Current.map.Water.ColorLerp.y);
 
-			WaterColor.SetColorField(ScmapEditor.Current.map.Water.SurfaceColor.x, ScmapEditor.Current.map.Water.SurfaceColor.y, ScmapEditor.Current.map.Water.SurfaceColor.z); // WaterSettingsChanged
-			SunColor.SetColorField(ScmapEditor.Current.map.Water.SunColor.x, ScmapEditor.Current.map.Water.SunColor.y, ScmapEditor.Current.map.Water.SunColor.z); // WaterSettingsChanged
+			WaterColor.SetColorField(ScmapEditor.Current.map.Water.SurfaceColor.x, ScmapEditor.Current.map.Water.SurfaceColor.y, ScmapEditor.Current.map.Water.SurfaceColor.z);
+            SunColor.SetColorField(ScmapEditor.Current.map.Water.SunColor.x, ScmapEditor.Current.map.Water.SunColor.y, ScmapEditor.Current.map.Water.SunColor.z);
 
-			SunStrength.SetValue(ScmapEditor.Current.map.Water.SunStrength);
 			SunShininess.SetValue(ScmapEditor.Current.map.Water.SunShininess);
-			SunReflection.SetValue(ScmapEditor.Current.map.Water.SunReflection);
-
-			FresnelPower.SetValue(ScmapEditor.Current.map.Water.FresnelPower);
-			FresnelBias.SetValue(ScmapEditor.Current.map.Water.FresnelBias);
-
 			UnitReflection.SetValue(ScmapEditor.Current.map.Water.UnitReflection);
 			SkyReflection.SetValue(ScmapEditor.Current.map.Water.SkyReflection);
 			RefractionScale.SetValue(ScmapEditor.Current.map.Water.RefractionScale);
+
+			WaterRamp.text = ScmapEditor.Current.map.Water.TexPathWaterRamp;
+			Cubemap.text = ScmapEditor.Current.map.Water.TexPathCubemap;
 
 			WaterSettings.interactable = HasWater.isOn;
 
@@ -94,6 +100,7 @@ namespace EditMap
 
 		void UpdateScmap(bool Maps)
 		{
+			ScmapEditor.Current.SetWaterTextures();
 			ScmapEditor.Current.SetWater();
 
 			if (Maps)
@@ -184,24 +191,32 @@ namespace EditMap
 			if (Loading)
 				return;
 
+            if (UseLightingSettings.isOn)
+            {
+				Map map = ScmapEditor.Current.map;
+                SunColor.SetColorField(map.SunColor.x * (map.LightingMultiplier - map.ShadowFillColor.x),
+                                       map.SunColor.y * (map.LightingMultiplier - map.ShadowFillColor.y), 
+									   map.SunColor.z * (map.LightingMultiplier - map.ShadowFillColor.z));
+                SunDirection = map.SunDirection;
+            } else {
+                SunDirection = new Vector3(0.09954818f, -0.9626309f, 0.2518569f);
+            }
 
-			bool AnyChanged = ScmapEditor.Current.map.Water.ColorLerp.x != ColorLerpXElevation.value
+            bool AnyChanged = ScmapEditor.Current.map.Water.ColorLerp.x != ColorLerpXElevation.value
 				|| ScmapEditor.Current.map.Water.ColorLerp.y != ColorLerpYElevation.value
 				|| ScmapEditor.Current.map.Water.SurfaceColor != WaterColor.GetVectorValue()
 				|| ScmapEditor.Current.map.Water.SunColor != SunColor.GetVectorValue()
-				|| ScmapEditor.Current.map.Water.SunStrength != SunStrength.value
+				|| ScmapEditor.Current.map.Water.SunDirection != SunDirection
 				|| ScmapEditor.Current.map.Water.SunShininess != SunShininess.value
-				|| ScmapEditor.Current.map.Water.SunReflection != SunReflection.value
-				|| ScmapEditor.Current.map.Water.FresnelPower != FresnelPower.value
-				|| ScmapEditor.Current.map.Water.FresnelBias != FresnelBias.value
 				|| ScmapEditor.Current.map.Water.UnitReflection != UnitReflection.value
 				|| ScmapEditor.Current.map.Water.SkyReflection != SkyReflection.value
 				|| ScmapEditor.Current.map.Water.RefractionScale != RefractionScale.value
+				|| ScmapEditor.Current.map.Water.TexPathWaterRamp != WaterRamp.text
+				|| ScmapEditor.Current.map.Water.TexPathCubemap != Cubemap.text
 				;
 
 			if (!AnyChanged)
 				return;
-
 
 			if (!UndoRegistered)
 			{
@@ -214,25 +229,20 @@ namespace EditMap
 			if(!Slider)
 				UndoRegistered = false;
 
-
-
-
 			ScmapEditor.Current.map.Water.ColorLerp.x = ColorLerpXElevation.value;
 			ScmapEditor.Current.map.Water.ColorLerp.y = ColorLerpYElevation.value;
 
 			ScmapEditor.Current.map.Water.SurfaceColor = WaterColor.GetVectorValue();
 			ScmapEditor.Current.map.Water.SunColor = SunColor.GetVectorValue();
+			ScmapEditor.Current.map.Water.SunDirection = SunDirection;
 
-			ScmapEditor.Current.map.Water.SunStrength = SunStrength.value;
 			ScmapEditor.Current.map.Water.SunShininess = SunShininess.value;
-			ScmapEditor.Current.map.Water.SunReflection = SunReflection.value;
-
-			ScmapEditor.Current.map.Water.FresnelPower = FresnelPower.value;
-			ScmapEditor.Current.map.Water.FresnelBias = FresnelBias.value;
-
 			ScmapEditor.Current.map.Water.UnitReflection = UnitReflection.value;
 			ScmapEditor.Current.map.Water.SkyReflection = SkyReflection.value;
 			ScmapEditor.Current.map.Water.RefractionScale = RefractionScale.value;
+			
+			ScmapEditor.Current.map.Water.TexPathWaterRamp = WaterRamp.text;
+			ScmapEditor.Current.map.Water.TexPathCubemap = Cubemap.text;
 
 			UpdateScmap(false);
 		}
