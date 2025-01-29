@@ -78,6 +78,9 @@ namespace FAF.MapEditor
 
 		const string CurrentMapPath = "current";
 		const string CurrentMapFolderPath = "maps/";
+		const string SkyCubesFolderPathName = "SkyCubes";
+		const string WavesFolderPathName = "Waves";
+		const string WaterRampFolderPathName = "WaterRamps";
 		const int PauseEveryLoadedAsset = 1;
 
 
@@ -137,99 +140,14 @@ namespace FAF.MapEditor
 				return;
 			}
 
-			/*HashSet<string> LoadedDirectorys = new HashSet<string>();
-			ZipFile zf = GetGamedataFile.GetZipFileInstance(GetGamedataFile.EnvScd);
-
-			if (zf == null)
-			{
-				Debug.LogError("Unable to load ZipFile!");
-				return;
-			}
-			foreach (ZipEntry zipEntry in zf)
-			{
-				if (zipEntry == null || !zipEntry.IsDirectory)
-				{
-					continue;
-				}
-
-				string LocalName = zipEntry.Name.Replace("env/", "");
-
-				if (string.IsNullOrEmpty(LocalName))
-					continue;
-
-				LoadedDirectorys.Add(LocalName);
-
-				int ContSeparators = 0;
-				char Separator = ("/")[0];
-				for (int i = 0; i < LocalName.Length; i++)
-				{
-					if (LocalName[i] == Separator)
-					{
-						ContSeparators++;
-						if (ContSeparators > 1)
-							break;
-					}
-				}
-				if (ContSeparators > 1)
-					continue;
-
-				LocalName = LocalName.Replace("/", "");
-
-				LoadedEnvPaths.Add(LocalName);
-				Dropdown.OptionData NewOptionInstance = new Dropdown.OptionData(LocalName);
-				NewOptions.Add(NewOptionInstance);
-			}
-
-			// FAF
-			zf = GetGamedataFile.GetFAFZipFileInstance(GetGamedataFile.EnvScd);
-			if(zf != null)
-			foreach (ZipEntry zipEntry in zf)
-			{
-				if (!zipEntry.IsDirectory)
-				{
-					continue;
-				}
-
-				string LocalName = zipEntry.Name.Replace("env/", "");
-
-				if (string.IsNullOrEmpty(LocalName))
-					continue;
-
-				if (LoadedDirectorys.Contains(LocalName))
-					continue;
-
-				LoadedDirectorys.Add(LocalName);
-
-				int ContSeparators = 0;
-				char Separator = ("/")[0];
-				for (int i = 0; i < LocalName.Length; i++)
-				{
-					if (LocalName[i] == Separator)
-					{
-						ContSeparators++;
-						if (ContSeparators > 1)
-							break;
-					}
-				}
-				if (ContSeparators > 1)
-					continue;
-
-				LocalName = LocalName.Replace("/", "");
-
-				LoadedEnvPaths.Add(LocalName);
-				Dropdown.OptionData NewOptionInstance = new Dropdown.OptionData(LocalName);
-				NewOptions.Add(NewOptionInstance);
-			}*/
-
 			string[] files = GetGamedataFile.GetFilesInPath("env/");
-			//Debug.Log("Total env files: " + files.Length);
 
 			char Separator = '/';
 			for (int f = 0; f < files.Length; f++)
 			{
 				string LocalName = files[f].Replace("env/", "");
 
-				if (string.IsNullOrEmpty(LocalName))
+				if (string.IsNullOrEmpty(LocalName) || LocalName.StartsWith("."))
 					continue;
 
 				LocalName = LocalName.Split(Separator)[0];
@@ -242,14 +160,25 @@ namespace FAF.MapEditor
 				NewOptions.Add(NewOptionInstance);
 			}
 
-
-			LoadedEnvPaths.Add(CurrentMapFolderPath);
-			Dropdown.OptionData NewOptionInstance2 = new Dropdown.OptionData("Map folder");
+			LoadedEnvPaths.Add(SkyCubesFolderPathName);
+			Dropdown.OptionData NewOptionInstance2 = new Dropdown.OptionData(SkyCubesFolderPathName);
 			NewOptions.Add(NewOptionInstance2);
 
-			LoadedEnvPaths.Add(CurrentMapPath);
-			Dropdown.OptionData NewOptionInstance3 = new Dropdown.OptionData("On map");
+			LoadedEnvPaths.Add(WavesFolderPathName);
+			Dropdown.OptionData NewOptionInstance3 = new Dropdown.OptionData(WavesFolderPathName);
 			NewOptions.Add(NewOptionInstance3);
+			
+			LoadedEnvPaths.Add(WaterRampFolderPathName);
+			Dropdown.OptionData NewOptionInstance4 = new Dropdown.OptionData(WaterRampFolderPathName);
+			NewOptions.Add(NewOptionInstance4);
+
+			LoadedEnvPaths.Add(CurrentMapFolderPath);
+			Dropdown.OptionData NewOptionInstance5 = new Dropdown.OptionData("Map folder");
+			NewOptions.Add(NewOptionInstance5);
+
+			LoadedEnvPaths.Add(CurrentMapPath);
+			Dropdown.OptionData NewOptionInstance6 = new Dropdown.OptionData("On map");
+			NewOptions.Add(NewOptionInstance6);
 
 			EnvType.AddOptions(NewOptions);
 
@@ -283,10 +212,32 @@ namespace FAF.MapEditor
 			int LastEnvType = EnvType.value;
 
 			CustomLoading = true;
-			string BeginPath = path;
+			SelectedObject = path;
 
 			path = path.Replace("env/", "");
+			path = SelectEnvType(path);
+			SelectCategory(path);
 
+			gameObject.SetActive(true);
+
+			if(LoadedEnvPaths.Count <= EnvType.value)
+			{
+				Debug.LogError("Env paths count is lower than selected Env type!");
+			}
+			else if(LoadedEnvPaths[EnvType.value] != CurrentMapFolderPath)
+				DontReload = LastCategory == Category.value && LastEnvType == EnvType.value && !IsGenerating;
+
+			if (!DontReload)
+				Pivot.GetComponent<RectTransform>().anchoredPosition = Vector2.zero;
+
+			if (IsGenerating)
+				StopCoroutine(GeneratingList);
+			CustomLoading = false;
+			GeneratingList = StartCoroutine(GenerateList());
+		}
+
+		private string SelectEnvType(string path)
+		{
 			string EnvTypeFolder = "";
 
 			while (EnvTypeFolder.Length < path.Length)
@@ -308,13 +259,17 @@ namespace FAF.MapEditor
 				}
 			}
 
+			return path;
+		}
+
+		private void SelectCategory(string path)
+		{
 			string CategoryFolder = "";
 			while (CategoryFolder.Length < path.Length)
 			{
 				if (path[CategoryFolder.Length] == "/"[0])
 				{
 					CategoryFolder += "/";
-					path = path.Replace(CategoryFolder, "");
 					break;
 				}
 				CategoryFolder += path[CategoryFolder.Length];
@@ -328,27 +283,6 @@ namespace FAF.MapEditor
 					break;
 				}
 			}
-
-			SelectedObject = BeginPath;
-
-
-			gameObject.SetActive(true);
-
-			if(LoadedEnvPaths.Count <= EnvType.value)
-			{
-				Debug.LogError("Env paths count is lower than selected Env type!");
-			}
-			else if(LoadedEnvPaths[EnvType.value] != CurrentMapFolderPath)
-				DontReload = LastCategory == Category.value && LastEnvType == EnvType.value && !IsGenerating;
-
-			if (!DontReload)
-				Pivot.GetComponent<RectTransform>().anchoredPosition = Vector2.zero;
-
-
-			if (IsGenerating)
-				StopCoroutine(GeneratingList);
-			CustomLoading = false;
-			GeneratingList = StartCoroutine(GenerateList());
 		}
 
 		public void LoadPropBlueprint()
@@ -383,56 +317,11 @@ namespace FAF.MapEditor
 			}
 			else
 			{
-				//Debug.Log ("Load browser for: " + path);
-				string BeginPath = path;
-				//SRect.normalizedPosition = Vector2.zero;
-
+				SelectedObject = path;
 
 				path = path.Replace("env/", "");
-
-				string EnvTypeFolder = "";
-
-				while (EnvTypeFolder.Length < path.Length)
-				{
-					if (path[EnvTypeFolder.Length] == "/"[0])
-					{
-						path = path.Replace(EnvTypeFolder + "/", "");
-						break;
-					}
-					EnvTypeFolder += path[EnvTypeFolder.Length];
-				}
-
-				for (int i = 0; i < EnvType.options.Count; i++)
-				{
-					if (EnvType.options[i].text.ToLower() == EnvTypeFolder.ToLower())
-					{
-						EnvType.value = i;
-						break;
-					}
-				}
-
-				string CategoryFolder = "";
-				while (CategoryFolder.Length < path.Length)
-				{
-					if (path[CategoryFolder.Length] == "/"[0])
-					{
-						CategoryFolder += "/";
-						path = path.Replace(CategoryFolder, "");
-						break;
-					}
-					CategoryFolder += path[CategoryFolder.Length];
-				}
-
-				for (int i = 0; i < Category.options.Count; i++)
-				{
-					if (CategoryPaths[i].ToLower() == CategoryFolder.ToLower())
-					{
-						Category.value = i;
-						break;
-					}
-				}
-
-				SelectedObject = BeginPath;
+				path = SelectEnvType(path);
+				SelectCategory(path);
 
 				if (LoadedEnvPaths[EnvType.value] != CurrentMapFolderPath)
 					DontReload = LastCategory == Category.value && LastEnvType == EnvType.value && !IsGenerating;
@@ -441,10 +330,8 @@ namespace FAF.MapEditor
 
 			gameObject.SetActive(true);
 
-
 			if (!DontReload)
 				Pivot.GetComponent<RectTransform>().anchoredPosition = Vector2.zero;
-
 
 			if (IsGenerating)
 				StopCoroutine(GeneratingList);
@@ -499,20 +386,12 @@ namespace FAF.MapEditor
 			{
 				if (MapLuaParser.IsMapLoaded)
 				{
-
 					string LoadPath = MapLuaParser.LoadedMapFolderPath + "env/" + CategoryPaths[LastLoadedType];
-					//Debug.Log("Try load assets from: " + LoadPath);
 					if (Directory.Exists(LoadPath))
 					{
-
 						string[] AllFiles = Directory.GetFiles(LoadPath, "*", SearchOption.AllDirectories).OrderBy(filePath => filePath).ToArray();
-						//Debug.Log("Found " + AllFiles.Length + " files in map folder");
-
-						for (int i = 0; i < AllFiles.Length; i++)
+						foreach (string path in AllFiles)
 						{
-							string path = AllFiles[i];
-
-							// Load Texture
 							switch (LastLoadedType)
 							{
 								case 0:
@@ -543,9 +422,6 @@ namespace FAF.MapEditor
 						yield return null;
 					}
 				}
-
-
-
 			}
 			else if (LoadedEnvPaths[EnvType.value] == CurrentMapPath)
 			{
@@ -573,116 +449,66 @@ namespace FAF.MapEditor
 				}
 
 			}
-			else
+			else if (LoadedEnvPaths[EnvType.value] == SkyCubesFolderPathName)
 			{
-				/*ZipFile zf = null;
-				ZipFile zf_faf = null;
-				SelectedDirectory = ("env/" + EnvType.options[EnvType.value].text + "/" + CategoryPaths[LastLoadedType]).ToLower();
-				try
+				SelectedDirectory = ("textures/environment/");
+				string[] files = GetGamedataFile.GetFilesInPath(SelectedDirectory).OrderBy(filePath => filePath).ToArray();
+				foreach (string path in files)
 				{
-					zf = GetGamedataFile.GetZipFileInstance(GetGamedataFile.EnvScd);
-					zf_faf = GetGamedataFile.GetFAFZipFileInstance(GetGamedataFile.EnvScd);
-					bool HasFafFile = zf_faf != null;
-
-
-					yield return null;
-
-					bool Breaked = false;
-					//bool ReplacedByFaf = false;
-
-					ZipEntry Current;
-					foreach (ZipEntry zipEntry in zf)
+					if (path.ToLower().EndsWith(".dds") && path.ToLower().Contains("cube"))
+						Counter += GenerateMapTextureButton(path, path, Prefab_Texture);
+					
+					if (Counter >= PauseEveryLoadedAsset)
 					{
-						Current = zipEntry;
-
-						if (!Current.IsFile)
-							continue;
-
-						if (!IsProperFile(Current.Name))
-							continue;
-
-						//ReplacedByFaf = false;
-						if (HasFafFile)
-						{
-							ZipEntry FafEntry = zf_faf.GetEntry(Current.Name);
-							if (FafEntry != null && FafEntry.IsFile)
-							{
-								//Debug.Log("Replace " + Current.Name + "\nwith FAF file: " + FafEntry.Name);
-								Current = FafEntry;
-								//ReplacedByFaf = true;
-							}
-						}
-
-						if (LoadZipEntry(ref Current, out Breaked))
-						{
-							continue;
-						}
-
-						//if (ReplacedByFaf)
-						//	Debug.Log("Replace with FAF file: " + Current.Name);
-
-						if (Breaked)
-							break;
-
-						GeneratedId++;
-						Counter++;
-						if (Counter >= PauseEveryLoadedAsset)
-						{
-							Counter = 0;
-							yield return null;
-						}
-					}
-
-					if (!Breaked && HasFafFile)
-					{
-						string[] NewFiles = GetGamedataFile.GetNewFafFiles(GetGamedataFile.EnvScd);
-
-						for(int i = 0; i < NewFiles.Length; i++)
-						{
-							if (!IsProperFile(NewFiles[i]))
-								continue;
-
-							Current = zf_faf.GetEntry(NewFiles[i]);
-							if (LoadZipEntry(ref Current, out Breaked))
-							{
-								continue;
-							}
-							//Debug.Log("New faf file: " + Current.Name);
-
-							if (Breaked)
-								break;
-
-							GeneratedId++;
-							Counter++;
-							if (Counter >= PauseEveryLoadedAsset)
-							{
-								Counter = 0;
-								yield return null;
-							}
-						}
+						Counter = 0;
+						yield return null;
 					}
 				}
-				finally
+				yield return null;
+			}
+			else if (LoadedEnvPaths[EnvType.value] == WavesFolderPathName)
+			{
+				SelectedDirectory = ("textures/engine/");
+				string[] files = GetGamedataFile.GetFilesInPath(SelectedDirectory).OrderBy(filePath => filePath).ToArray();
+				foreach (string path in files)
 				{
+					if (path.ToLower().EndsWith(".dds") && path.ToLower().Contains("wave"))
+						Counter += GenerateMapTextureButton(path, path, Prefab_Texture);
 					
-					//if (zf != null)
-					//{
-					//	zf.IsStreamOwner = true; // Makes close also shut the underlying stream
-					//	zf.Close(); // Ensure we release resources
-					//}
+					if (Counter >= PauseEveryLoadedAsset)
+					{
+						Counter = 0;
+						yield return null;
+					}
+				}
+				yield return null;
+			}
+			else if (LoadedEnvPaths[EnvType.value] == WaterRampFolderPathName)
+			{
+				SelectedDirectory = ("textures/engine/");
+				string[] files = GetGamedataFile.GetFilesInPath(SelectedDirectory).OrderBy(filePath => filePath).ToArray();
+				foreach (string path in files)
+				{
+					if (path.ToLower().EndsWith(".dds") && path.ToLower().Contains("waterramp"))
+						Counter += GenerateMapTextureButton(path, path, Prefab_Texture);
 					
-				}*/
-
-
+					if (Counter >= PauseEveryLoadedAsset)
+					{
+						Counter = 0;
+						yield return null;
+					}
+				}
+				yield return null;
+			}
+			else
+			{
 				SelectedDirectory = ("env/" + EnvType.options[EnvType.value].text + "/" + CategoryPaths[LastLoadedType]).ToLower();
 
 				string[] files = GetGamedataFile.GetFilesInPath(SelectedDirectory).OrderBy(filePath => filePath).ToArray();
 				bool Breaked = false;
 
-				for (int f = 0; f < files.Length; f++)
+				foreach (string LocalName in files)
 				{
-					string LocalName = files[f];
-
 					if (!IsProperFile(LocalName))
 						continue;
 
