@@ -36,6 +36,11 @@ namespace EditMap
 		public InputField WaterRamp;
 		public InputField Cubemap;
 
+		public UiWaves Waves0;
+		public UiWaves Waves1;
+		public UiWaves Waves2;
+		public UiWaves Waves3;
+
 		bool Loading = false;
 		private void OnEnable()
 		{
@@ -49,8 +54,10 @@ namespace EditMap
 			LoadWavesUI();
 		}
 
-		private void OnDisable()
+		public void ResetUi()
 		{
+			AdvancedWaterToggle.isOn = false;
+			UseLightingSettings.isOn = false;
 		}
 
 		public void OnWaterTogglePressed()
@@ -89,6 +96,8 @@ namespace EditMap
 			Cubemap.text = ScmapEditor.Current.map.Water.TexPathCubemap;
 
 			WaterSettings.interactable = HasWater.isOn;
+			
+			SetWaves();
 
 			Loading = false;
 
@@ -96,6 +105,22 @@ namespace EditMap
 			{
 				UpdateScmap(true);
 			}
+		}
+
+		private void SetWaves()
+		{
+			Waves0.SetTexPath(ScmapEditor.Current.map.Water.WaveTextures[0].TexPath);
+			Waves0.SetScale(ScmapEditor.Current.map.Water.WaveTextures[0].NormalRepeat);
+			Waves0.SetMovement(ScmapEditor.Current.map.Water.WaveTextures[0].NormalMovement);
+			Waves1.SetTexPath(ScmapEditor.Current.map.Water.WaveTextures[1].TexPath);
+			Waves1.SetScale(ScmapEditor.Current.map.Water.WaveTextures[1].NormalRepeat);
+			Waves1.SetMovement(ScmapEditor.Current.map.Water.WaveTextures[1].NormalMovement);
+			Waves2.SetTexPath(ScmapEditor.Current.map.Water.WaveTextures[2].TexPath);
+			Waves2.SetScale(ScmapEditor.Current.map.Water.WaveTextures[2].NormalRepeat);
+			Waves2.SetMovement(ScmapEditor.Current.map.Water.WaveTextures[2].NormalMovement);
+			Waves3.SetTexPath(ScmapEditor.Current.map.Water.WaveTextures[3].TexPath);
+			Waves3.SetScale(ScmapEditor.Current.map.Water.WaveTextures[3].NormalRepeat);
+			Waves3.SetMovement(ScmapEditor.Current.map.Water.WaveTextures[3].NormalMovement);
 		}
 
 		void UpdateScmap(bool Maps)
@@ -147,9 +172,9 @@ namespace EditMap
 				abyss = 0;
 
 			bool AnyChanged = ScmapEditor.Current.map.Water.HasWater != HasWater.isOn
-				|| ScmapEditor.Current.map.Water.Elevation != water
-				|| ScmapEditor.Current.map.Water.ElevationDeep != depth
-				|| ScmapEditor.Current.map.Water.ElevationAbyss != abyss
+				|| !Mathf.Approximately(ScmapEditor.Current.map.Water.Elevation, water)
+				|| !Mathf.Approximately(ScmapEditor.Current.map.Water.ElevationDeep, depth)
+				|| !Mathf.Approximately(ScmapEditor.Current.map.Water.ElevationAbyss, abyss)
 				;
 
 			if (!AnyChanged)
@@ -202,20 +227,7 @@ namespace EditMap
                 SunDirection = new Vector3(0.09954818f, -0.9626309f, 0.2518569f);
             }
 
-            bool AnyChanged = ScmapEditor.Current.map.Water.ColorLerp.x != ColorLerpXElevation.value
-				|| ScmapEditor.Current.map.Water.ColorLerp.y != ColorLerpYElevation.value
-				|| ScmapEditor.Current.map.Water.SurfaceColor != WaterColor.GetVectorValue()
-				|| ScmapEditor.Current.map.Water.SunColor != SunColor.GetVectorValue()
-				|| ScmapEditor.Current.map.Water.SunDirection != SunDirection
-				|| ScmapEditor.Current.map.Water.SunShininess != SunShininess.value
-				|| ScmapEditor.Current.map.Water.UnitReflection != UnitReflection.value
-				|| ScmapEditor.Current.map.Water.SkyReflection != SkyReflection.value
-				|| ScmapEditor.Current.map.Water.RefractionScale != RefractionScale.value
-				|| ScmapEditor.Current.map.Water.TexPathWaterRamp != WaterRamp.text
-				|| ScmapEditor.Current.map.Water.TexPathCubemap != Cubemap.text
-				;
-
-			if (!AnyChanged)
+			if (!AnyChanged())
 				return;
 
 			if (!UndoRegistered)
@@ -243,8 +255,49 @@ namespace EditMap
 			
 			ScmapEditor.Current.map.Water.TexPathWaterRamp = WaterRamp.text;
 			ScmapEditor.Current.map.Water.TexPathCubemap = Cubemap.text;
-
+			
+			ScmapEditor.Current.map.Water.WaveTextures[0].TexPath = Waves0.GetTexPath();
+			ScmapEditor.Current.map.Water.WaveTextures[0].NormalRepeat = Waves0.GetScale() ;
+			ScmapEditor.Current.map.Water.WaveTextures[0].NormalMovement = Waves0.GetMovement();
+			ScmapEditor.Current.map.Water.WaveTextures[1].TexPath = Waves1.GetTexPath() ;
+			ScmapEditor.Current.map.Water.WaveTextures[1].NormalRepeat = Waves1.GetScale() ;
+			ScmapEditor.Current.map.Water.WaveTextures[1].NormalMovement = Waves1.GetMovement();
+			ScmapEditor.Current.map.Water.WaveTextures[2].TexPath = Waves2.GetTexPath() ;
+			ScmapEditor.Current.map.Water.WaveTextures[2].NormalRepeat = Waves2.GetScale() ;
+			ScmapEditor.Current.map.Water.WaveTextures[2].NormalMovement = Waves2.GetMovement();
+			ScmapEditor.Current.map.Water.WaveTextures[3].TexPath = Waves3.GetTexPath() ;
+			ScmapEditor.Current.map.Water.WaveTextures[3].NormalRepeat = Waves3.GetScale() ;
+			ScmapEditor.Current.map.Water.WaveTextures[3].NormalMovement = Waves3.GetMovement();
+			
 			UpdateScmap(false);
+		}
+
+		private bool AnyChanged()
+		{
+			return !Mathf.Approximately(ScmapEditor.Current.map.Water.ColorLerp.x, ColorLerpXElevation.value)
+		        || !Mathf.Approximately(ScmapEditor.Current.map.Water.ColorLerp.y, ColorLerpYElevation.value)
+		        || ScmapEditor.Current.map.Water.SurfaceColor != WaterColor.GetVectorValue()
+		        || ScmapEditor.Current.map.Water.SunColor != SunColor.GetVectorValue()
+		        || ScmapEditor.Current.map.Water.SunDirection != SunDirection
+		        || !Mathf.Approximately(ScmapEditor.Current.map.Water.SunShininess, SunShininess.value)
+		        || !Mathf.Approximately(ScmapEditor.Current.map.Water.UnitReflection, UnitReflection.value)
+		        || !Mathf.Approximately(ScmapEditor.Current.map.Water.SkyReflection, SkyReflection.value)
+		        || !Mathf.Approximately(ScmapEditor.Current.map.Water.RefractionScale, RefractionScale.value)
+		        || ScmapEditor.Current.map.Water.TexPathWaterRamp != WaterRamp.text
+		        || ScmapEditor.Current.map.Water.TexPathCubemap != Cubemap.text
+		        || ScmapEditor.Current.map.Water.WaveTextures[0].TexPath != Waves0.GetTexPath() 
+		        || !Mathf.Approximately(ScmapEditor.Current.map.Water.WaveTextures[0].NormalRepeat, Waves0.GetScale()) 
+		        || ScmapEditor.Current.map.Water.WaveTextures[0].NormalMovement != Waves0.GetMovement()
+		        || ScmapEditor.Current.map.Water.WaveTextures[1].TexPath != Waves1.GetTexPath() 
+		        || !Mathf.Approximately(ScmapEditor.Current.map.Water.WaveTextures[1].NormalRepeat, Waves1.GetScale()) 
+		        || ScmapEditor.Current.map.Water.WaveTextures[1].NormalMovement != Waves1.GetMovement()
+		        || ScmapEditor.Current.map.Water.WaveTextures[2].TexPath != Waves2.GetTexPath() 
+		        || !Mathf.Approximately(ScmapEditor.Current.map.Water.WaveTextures[2].NormalRepeat, Waves2.GetScale()) 
+		        || ScmapEditor.Current.map.Water.WaveTextures[2].NormalMovement != Waves2.GetMovement()
+		        || ScmapEditor.Current.map.Water.WaveTextures[3].TexPath != Waves3.GetTexPath() 
+		        || !Mathf.Approximately(ScmapEditor.Current.map.Water.WaveTextures[3].NormalRepeat, Waves3.GetScale()) 
+		        || ScmapEditor.Current.map.Water.WaveTextures[3].NormalMovement != Waves3.GetMovement()
+				;
 		}
 
 		#region Import/Export
