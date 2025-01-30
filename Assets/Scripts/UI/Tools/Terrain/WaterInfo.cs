@@ -219,17 +219,6 @@ namespace EditMap
 			if (Loading)
 				return;
 
-            if (UseLightingSettings.isOn)
-            {
-				Map map = ScmapEditor.Current.map;
-                SunColor.SetColorField(map.SunColor.x * (map.LightingMultiplier - map.ShadowFillColor.x),
-                                       map.SunColor.y * (map.LightingMultiplier - map.ShadowFillColor.y), 
-									   map.SunColor.z * (map.LightingMultiplier - map.ShadowFillColor.z));
-                SunDirection = map.SunDirection;
-            } else {
-                SunDirection = new Vector3(0.09954818f, -0.9626309f, 0.2518569f);
-            }
-
 			if (!AnyChanged())
 				return;
 
@@ -344,6 +333,22 @@ namespace EditMap
 		public void ClickWave3Button()
 		{
 			ResourceBrowser.Current.LoadWaveTexture(Waves3.TexPath.text);
+		}
+		
+		public void ClickLightSettingsToggle()
+		{
+			if (UseLightingSettings.isOn)
+			{
+				Map map = ScmapEditor.Current.map;
+				SunColor.SetColorField(map.SunColor.x * (map.LightingMultiplier - map.ShadowFillColor.x),
+					map.SunColor.y * (map.LightingMultiplier - map.ShadowFillColor.y), 
+					map.SunColor.z * (map.LightingMultiplier - map.ShadowFillColor.z));
+				SunDirection = map.SunDirection;
+				Cubemap.text = MapLuaParser.Current.EditMenu.LightingMenu.EnvCube.text;
+			} else {
+				SunDirection = new Vector3(0.09954818f, -0.9626309f, 0.2518569f);
+			}
+			WaterSettingsChanged(false);
 		}
 
 		#region Import/Export
