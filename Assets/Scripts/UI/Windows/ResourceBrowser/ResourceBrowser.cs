@@ -227,13 +227,7 @@ namespace FAF.MapEditor
 			else if(LoadedEnvPaths[EnvType.value] != CurrentMapFolderPath)
 				DontReload = LastCategory == Category.value && LastEnvType == EnvType.value && !IsGenerating;
 
-			if (!DontReload)
-				Pivot.GetComponent<RectTransform>().anchoredPosition = Vector2.zero;
-
-			if (IsGenerating)
-				StopCoroutine(GeneratingList);
-			CustomLoading = false;
-			GeneratingList = StartCoroutine(GenerateList());
+			LoadTextures();
 		}
 
 		private string SelectEnvType(string path)
@@ -330,6 +324,62 @@ namespace FAF.MapEditor
 
 			gameObject.SetActive(true);
 
+			LoadTextures();
+		}
+
+		public void LoadSkyCube(string path)
+		{
+			ReadAllFolders();
+			int LastEnvType = EnvType.value;
+			
+			CustomLoading = true;
+			SelectedObject = path;
+			SelectEnvType(SkyCubesFolderPathName);
+			SelectCategory("layers/");
+			
+			DontReload = LastEnvType == EnvType.value && !IsGenerating;
+			
+			gameObject.SetActive(true);
+			
+			LoadTextures();
+		}
+
+		public void LoadWaveTexture(string path)
+		{
+			ReadAllFolders();
+			int LastEnvType = EnvType.value;
+			
+			CustomLoading = true;
+			SelectedObject = path;
+			SelectEnvType(WavesFolderPathName);
+			SelectCategory("layers/");
+			
+			DontReload = LastEnvType == EnvType.value && !IsGenerating;
+			
+			gameObject.SetActive(true);
+			
+			LoadTextures();
+		}
+		
+		public void LoadWaterRampTexture(string path)
+		{
+			ReadAllFolders();
+			int LastEnvType = EnvType.value;
+			
+			CustomLoading = true;
+			SelectedObject = path;
+			SelectEnvType(WaterRampFolderPathName);
+			SelectCategory("layers/");
+			
+			DontReload = LastEnvType == EnvType.value && !IsGenerating;
+			
+			gameObject.SetActive(true);
+			
+			LoadTextures();
+		}
+		
+		private void LoadTextures()
+		{
 			if (!DontReload)
 				Pivot.GetComponent<RectTransform>().anchoredPosition = Vector2.zero;
 

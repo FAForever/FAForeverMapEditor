@@ -2,6 +2,7 @@
 using UnityEngine.UI;
 using Ozone.UI;
 using System.IO;
+using FAF.MapEditor;
 using SFB;
 
 namespace EditMap
@@ -15,6 +16,7 @@ namespace EditMap
 
 		public Toggle HasWater;
 		public CanvasGroup WaterSettings;
+		public CanvasGroup LightSettings;
 
 		public UiTextField WaterElevation;
 		public UiTextField DepthElevation;
@@ -96,6 +98,7 @@ namespace EditMap
 			Cubemap.text = ScmapEditor.Current.map.Water.TexPathCubemap;
 
 			WaterSettings.interactable = HasWater.isOn;
+			LightSettings.interactable = !UseLightingSettings.isOn;
 			
 			SetWaves();
 
@@ -269,6 +272,8 @@ namespace EditMap
 			ScmapEditor.Current.map.Water.WaveTextures[3].NormalRepeat = Waves3.GetScale() ;
 			ScmapEditor.Current.map.Water.WaveTextures[3].NormalMovement = Waves3.GetMovement();
 			
+			LightSettings.interactable = !UseLightingSettings.isOn;
+			
 			UpdateScmap(false);
 		}
 
@@ -298,6 +303,47 @@ namespace EditMap
 		        || !Mathf.Approximately(ScmapEditor.Current.map.Water.WaveTextures[3].NormalRepeat, Waves3.GetScale()) 
 		        || ScmapEditor.Current.map.Water.WaveTextures[3].NormalMovement != Waves3.GetMovement()
 				;
+		}
+
+		public void selectTexture(InputField inputField)
+		{
+			if(ResourceBrowser.DragedObject == null || ResourceBrowser.DragedObject.ContentType != ResourceObject.ContentTypes.Texture)
+				return;
+			if (!ResourceBrowser.Current.gameObject.activeSelf)
+				return;
+			inputField.text = ResourceBrowser.Current.LoadedPaths[ResourceBrowser.DragedObject.InstanceId];
+			ResourceBrowser.ClearDrag();
+			WaterSettingsChanged(false);
+		}
+		
+		public void ClickWaterRampButton()
+		{
+			ResourceBrowser.Current.LoadWaterRampTexture(WaterRamp.text);
+		}
+		
+		public void ClickSkyCubeButton()
+		{
+			ResourceBrowser.Current.LoadSkyCube(Cubemap.text);
+		}
+		
+		public void ClickWave0Button()
+		{
+			ResourceBrowser.Current.LoadWaveTexture(Waves0.TexPath.text);
+		}
+		
+		public void ClickWave1Button()
+		{
+			ResourceBrowser.Current.LoadWaveTexture(Waves1.TexPath.text);
+		}
+		
+		public void ClickWave2Button()
+		{
+			ResourceBrowser.Current.LoadWaveTexture(Waves2.TexPath.text);
+		}
+		
+		public void ClickWave3Button()
+		{
+			ResourceBrowser.Current.LoadWaveTexture(Waves3.TexPath.text);
 		}
 
 		#region Import/Export
