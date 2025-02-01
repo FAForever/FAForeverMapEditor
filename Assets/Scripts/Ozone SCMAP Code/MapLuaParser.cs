@@ -124,8 +124,7 @@ public partial class MapLuaParser : MonoBehaviour
 		ScenarioFileName = "";
 
 		EditMenu.TexturesMenu.ResetVisibility();
-		EditMenu.WaterMenu.AdvancedWaterToggle.isOn = false;
-		EditMenu.WaterMenu.UseLightingSettings.isOn = false;
+		EditMenu.WaterMenu.ResetUi();
 
 		ResourceBrowser.Current.gameObject.SetActive(false);
 	}

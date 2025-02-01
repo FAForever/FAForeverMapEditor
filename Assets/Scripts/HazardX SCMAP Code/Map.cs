@@ -253,15 +253,11 @@ public class Map
 		HeightScale = 0.0078125f;
 
 		TexPathBackground = "/textures/environment/blackbackground.dds";
-		TexPathSkyCubemap = "/textures/environment/skycube_evergreen01a.dds";
-		EnvCubemapsName = new string[3];
-		EnvCubemapsFile = new string[3];
-		EnvCubemapsName[0] = "<aeon>";
-		EnvCubemapsName[1] = "<default>";
-		EnvCubemapsName[2] = "<seraphim>";
-		EnvCubemapsFile[0] = "/textures/environment/envcube_aeon_evergreen.dds";
-		EnvCubemapsFile[1] = "/textures/environment/envcube_evergreen01a.dds";
-		EnvCubemapsFile[2] = "/textures/environment/envcube_seraphim_evergreen.dds";
+		TexPathSkyCubemap = "/textures/environment/defaultenvcube.dds";
+		EnvCubemapsName = new string[1];
+		EnvCubemapsFile = new string[1];
+		EnvCubemapsName[0] = "<default>";
+		EnvCubemapsFile[0] = "/textures/environment/defaultenvcube.dds";
 
 		Bloom = 0.03f;// 0.145f;
 
@@ -547,7 +543,6 @@ public class Map
 			if (VersionMinor >= 56)
 			{
 				Count = _with1.ReadInt32();
-				//always 1?
 				EnvCubemapsName = new string[Count];
 				EnvCubemapsFile = new string[Count];
 				for (int i = 0; i <= Count - 1; i++)
@@ -556,16 +551,12 @@ public class Map
 					EnvCubemapsFile[i] = _with1.ReadStringNull();
 				}
 			}
-			else
+			else // Original SupCom campaign maps, and the first 6 multiplayer maps (i.e. until SCMP_006) are v53
 			{
-				EnvCubemapsName = new string[3];
-				EnvCubemapsFile = new string[3];
-				EnvCubemapsName[0] = "<aeon>";
-				EnvCubemapsName[1] = "<default>";
-				EnvCubemapsName[2] = "<seraphim>";
-				EnvCubemapsFile[0] = "/textures/environment/envcube_aeon_evergreen.dds";
-				EnvCubemapsFile[1] = _with1.ReadStringNull();
-				EnvCubemapsFile[2] = "/textures/environment/envcube_seraphim_evergreen.dds";
+				EnvCubemapsName = new string[1];
+				EnvCubemapsFile = new string[1];
+				EnvCubemapsName[0] = "<default>";
+				EnvCubemapsFile[0] = _with1.ReadStringNull();
 			}
 
 			LightingMultiplier = _with1.ReadSingle();
@@ -962,18 +953,7 @@ public class Map
 
 	public void ConvertToV56()
 	{
-		EnvCubemapsName = new string[3];
-		EnvCubemapsFile = new string[3];
-		EnvCubemapsName[0] = "<aeon>";
-		EnvCubemapsName[1] = "<default>";
-		EnvCubemapsName[2] = "<seraphim>";
-		EnvCubemapsFile[0] = "/textures/environment/envcube_aeon_evergreen.dds";
-		EnvCubemapsFile[1] = "/textures/environment/envcube_evergreen01a.dds";
-		EnvCubemapsFile[2] = "/textures/environment/envcube_seraphim_evergreen.dds";
-
-
 		Unknown15 = 0;
-
 		VersionMinor = 56;
 	}
 

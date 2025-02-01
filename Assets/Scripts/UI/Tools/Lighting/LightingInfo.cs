@@ -1,9 +1,8 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
-using System.Collections;
 using System.IO;
 using Ozone.UI;
-using System.Runtime.InteropServices;
+using FAF.MapEditor;
 using SFB;
 
 namespace EditMap
@@ -24,6 +23,7 @@ namespace EditMap
 		public UiColor AmbienceColor;
 		public UiColor ShadowColor;
 
+		public InputField EnvCube;
 
 		public UiTextField Glow;
 		public UiTextField Bloom;
@@ -70,6 +70,13 @@ namespace EditMap
 			LightColor.SetColorField(Scmap.map.SunColor.x, Scmap.map.SunColor.y, Scmap.map.SunColor.z); // UpdateColors
 			AmbienceColor.SetColorField(Scmap.map.SunAmbience.x, Scmap.map.SunAmbience.y, Scmap.map.SunAmbience.z); // UpdateColors
 			ShadowColor.SetColorField(Scmap.map.ShadowFillColor.x, Scmap.map.ShadowFillColor.y, Scmap.map.ShadowFillColor.z); // UpdateColors
+
+			EnvCube.text = Scmap.map.EnvCubemapsFile[0];  // This is our fallback
+			for (int i = 0; i < Scmap.map.EnvCubemapsFile.Length; i++)
+			{
+				if (Scmap.map.EnvCubemapsName[i] == "<default>") 
+					EnvCube.text = Scmap.map.EnvCubemapsFile[i];
+			}
 
 			FogColor.SetColorField(Scmap.map.FogColor.x, Scmap.map.FogColor.y, Scmap.map.FogColor.z);
 			FogStart.SetValue(Scmap.map.FogStart);
@@ -188,6 +195,11 @@ namespace EditMap
 			Scmap.map.SunColor = LightColor.GetVectorValue();
 			Scmap.map.SunAmbience = AmbienceColor.GetVectorValue();
 			Scmap.map.ShadowFillColor = ShadowColor.GetVectorValue();
+			
+			for (int i = 0; i < Scmap.map.EnvCubemapsFile.Length; i++)
+			{
+				Scmap.map.EnvCubemapsFile[i] = EnvCube.text;
+			}
 
 			Scmap.map.SpecularColor = Specular.GetVector4Value();
 			if (SpecularRed.gameObject.activeSelf)
@@ -240,6 +252,21 @@ namespace EditMap
             Scmap.map.ShadowFillColor = new Vector3(0, 0, 0);
 
 			LoadValues();
+        }
+        
+        public void selectSkyCube()
+        {
+	        if(ResourceBrowser.DragedObject == null || ResourceBrowser.DragedObject.ContentType != ResourceObject.ContentTypes.Texture)
+		        return;
+	        if (!ResourceBrowser.Current.gameObject.activeSelf)
+		        return;
+	        EnvCube.text = ResourceBrowser.Current.LoadedPaths[ResourceBrowser.DragedObject.InstanceId];
+	        ResourceBrowser.ClearDrag();
+        }
+        
+        public void ClickSkyCubeButton()
+        {
+	        ResourceBrowser.Current.LoadSkyCube(EnvCube.text);
         }
 
 		public void ResetLight()
