@@ -975,12 +975,6 @@ namespace EditMap
 				return;
 			if (ResourceBrowser.SelectedCategory == 0 || ResourceBrowser.SelectedCategory == 1)
 			{
-				if (IsTextureNormalMap(ResourceBrowser.Current.LoadedPaths[ResourceBrowser.DragedObject.InstanceId]))
-				{
-					GenericInfoPopup.ShowInfo("Can't assign normal map as albedo!");
-					return;
-				}
-
 				Undo.RegisterUndo(new UndoHistory.HistoryStratumChange(), new UndoHistory.HistoryStratumChange.StratumChangeHistoryParameter(Selected));
 				//Debug.Log(ResourceBrowser.Current.LoadedPaths[ResourceBrowser.DragedObject.InstanceId]);
 
@@ -996,13 +990,6 @@ namespace EditMap
 			}
 		}
 
-		bool IsTextureNormalMap(string LoadPath)
-		{
-			LoadPath = LoadPath.ToLower();
-
-			return LoadPath.Contains("normal") || LoadPath.Contains("nornal");
-		}
-
 		public void SelectNormal()
 		{
 			if (ResourceBrowser.DragedObject == null || ResourceBrowser.DragedObject.ContentType != ResourceObject.ContentTypes.Texture)
@@ -1012,12 +999,6 @@ namespace EditMap
 				return;
 			if (ResourceBrowser.SelectedCategory == 0 || ResourceBrowser.SelectedCategory == 1)
 			{
-				if (!IsTextureNormalMap(ResourceBrowser.Current.LoadedPaths[ResourceBrowser.DragedObject.InstanceId]))
-				{
-					GenericInfoPopup.ShowInfo("Can't assign albedo as normal map!");
-					return;
-				}
-
 				Undo.RegisterUndo(new UndoHistory.HistoryStratumChange(), new UndoHistory.HistoryStratumChange.StratumChangeHistoryParameter(Selected));
 				Debug.Log(ResourceBrowser.Current.LoadedPaths[ResourceBrowser.DragedObject.InstanceId]);
 
