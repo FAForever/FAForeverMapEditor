@@ -39,11 +39,11 @@ namespace Ozone.UI
             return scale;
         }
 
-        public void SetScale(float scale)
+        public void SetFrequency(float frequency)
         {
-            if (scale != 0)
-                scale = 1 / scale;
-            Scale.text = scale.ToString();
+            if (frequency != 0)
+                frequency = 1 / frequency;
+            Scale.text = frequency.ToString();
         }
 
         public Vector2 GetMovement()
