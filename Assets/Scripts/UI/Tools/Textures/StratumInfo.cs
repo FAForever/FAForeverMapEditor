@@ -1169,12 +1169,29 @@ namespace EditMap
         
         public void GenerateHeightRoughnessTexture()
         {
-	        
+	        if (ImagePathField.text == "")
+	        {
+		        GenericInfoPopup.ShowInfo("You need to specify the directory that contains your source images.");
+		        return;
+	        }
+	        string toolsuiteArguments = "generate-pbr --in-path=\"" + ImagePathField.text + 
+	                                 "\" --out-path=\"" + EnvPaths.GetMapsPath() + MapLuaParser.Current.FolderName + "/env/layers/\"";
+	        invokeToolsuite(toolsuiteArguments);
         }
         
         public void ResetRoughnessMask()
         {
+	        Color[] data = ScmapEditor.Current.map.TexturemapTex2.GetPixels();
+	        beginColors = ScmapEditor.Current.map.TexturemapTex2.GetPixels();
+	        Undo.RegisterUndo(new UndoHistory.HistoryStratumPaint(), new UndoHistory.HistoryStratumPaint.StratumPaintHistoryParameter(1, beginColors));
 	        
+	        for (int i = 0; i < data.Length; i++)
+	        {
+		        data[i].a = 0.5f;
+	        }
+
+	        ScmapEditor.Current.map.TexturemapTex2.SetPixels(data);
+	        ScmapEditor.Current.map.TexturemapTex2.Apply(false);
         }
 
         #endregion
