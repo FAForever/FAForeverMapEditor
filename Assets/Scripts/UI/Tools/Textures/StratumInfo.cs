@@ -63,8 +63,7 @@ namespace EditMap
 
 		public InputField JavaPathField;
 		public InputField ImagePathField;
-		public GameObject OutputWindow;
-		public Text JavaOutput;
+		public OutputWindow OutputWindow;
 		private ConcurrentQueue<string> outputQueue = new ();
 
 		[Header("State")]
@@ -169,7 +168,7 @@ namespace EditMap
 			// Process queued messages from Java CLI output
 			if (outputQueue.TryDequeue(out string output))
 			{
-				WriteOutput(output);
+				OutputWindow.WriteOutput(output);
 			}
 			
 			if (StratumChangeCheck)
@@ -1143,8 +1142,7 @@ namespace EditMap
 
         private void invokeToolsuite(string arguments)
         {
-	        JavaOutput.text = "";
-	        OutputWindow.SetActive(true);
+	        OutputWindow.Initialize();
 	        Process neroxisToolsuite = new Process();
             neroxisToolsuite.StartInfo.FileName = EnvPaths.GetJavaPath() + "/java.exe";
             var jarPath = Application.dataPath + "/Plugins/NeroxisMapGenerator/neroxis-toolsuite.jar";
@@ -1164,19 +1162,7 @@ namespace EditMap
             neroxisToolsuite.WaitForExit();
             
             outputQueue.Enqueue("Java process exited with code: " + neroxisToolsuite.ExitCode);
-            float timeout = 2;
-            if (neroxisToolsuite.ExitCode != 0) timeout = 5;
-            Invoke(nameof(HideWindow), timeout);
-        }
-        
-        public void HideWindow(){
-	        OutputWindow.SetActive(false);
-        }
-
-        private void WriteOutput(string text)
-        {
-	        JavaOutput.text += text + "\n";
-	        Debug.Log(text);
+            OutputWindow.Close(neroxisToolsuite.ExitCode);
         }
 
         public void GenerateMapInfoTexture()
