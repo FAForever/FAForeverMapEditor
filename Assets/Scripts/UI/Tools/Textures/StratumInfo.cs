@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System.Collections.Concurrent;
+using UnityEngine;
 using UnityEngine.UI;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -62,7 +63,9 @@ namespace EditMap
 
 		public InputField JavaPathField;
 		public InputField ImagePathField;
+		public GameObject OutputWindow;
 		public Text JavaOutput;
+		private ConcurrentQueue<string> outputQueue = new ();
 
 		[Header("State")]
 		public bool Invert;
@@ -163,6 +166,12 @@ namespace EditMap
 		bool ChangingSize;
 		void Update()
 		{
+			// Process queued messages from Java CLI output
+			if (outputQueue.TryDequeue(out string output))
+			{
+				WriteOutput(output);
+			}
+			
 			if (StratumChangeCheck)
 				if (Input.GetMouseButtonUp(0))
 					StratumChangeCheck = false;
@@ -1132,27 +1141,36 @@ namespace EditMap
 	        }
         }
 
-        public void invokeToolsuite(string arguments)
+        private void invokeToolsuite(string arguments)
         {
 	        JavaOutput.text = "";
+	        OutputWindow.SetActive(true);
 	        Process neroxisToolsuite = new Process();
             neroxisToolsuite.StartInfo.FileName = EnvPaths.GetJavaPath() + "/java.exe";
             var jarPath = Application.dataPath + "/Plugins/NeroxisMapGenerator/neroxis-toolsuite.jar";
             neroxisToolsuite.StartInfo.Arguments = "-jar \"" + jarPath + "\" " + arguments;
-            WriteOutput("Starting Java process: " + neroxisToolsuite.StartInfo.FileName + neroxisToolsuite.StartInfo.Arguments);
+            outputQueue.Enqueue("Starting Java process: " + neroxisToolsuite.StartInfo.FileName + neroxisToolsuite.StartInfo.Arguments);
             
             neroxisToolsuite.StartInfo.CreateNoWindow = true;
             neroxisToolsuite.StartInfo.UseShellExecute = false;
             neroxisToolsuite.StartInfo.RedirectStandardOutput = true;
             neroxisToolsuite.StartInfo.RedirectStandardError = true;
-            neroxisToolsuite.OutputDataReceived += (sender, args) => WriteOutput(args.Data);
-            neroxisToolsuite.ErrorDataReceived += (sender, args) => WriteOutput(args.Data);
+            neroxisToolsuite.OutputDataReceived += (sender, args) => outputQueue.Enqueue(args.Data);
+            neroxisToolsuite.ErrorDataReceived += (sender, args) => outputQueue.Enqueue(args.Data);
 
             neroxisToolsuite.Start();
             neroxisToolsuite.BeginOutputReadLine();
             neroxisToolsuite.BeginErrorReadLine();
             neroxisToolsuite.WaitForExit();
-            WriteOutput("Java process exited with code: " + neroxisToolsuite.ExitCode);
+            
+            outputQueue.Enqueue("Java process exited with code: " + neroxisToolsuite.ExitCode);
+            float timeout = 2;
+            if (neroxisToolsuite.ExitCode != 0) timeout = 5;
+            Invoke(nameof(HideWindow), timeout);
+        }
+        
+        public void HideWindow(){
+	        OutputWindow.SetActive(false);
         }
 
         private void WriteOutput(string text)
@@ -1163,7 +1181,7 @@ namespace EditMap
 
         public void GenerateMapInfoTexture()
         {
-	        var toolsuiteArguments = "export-env-map --map-path=\"" + EnvPaths.GetMapsPath() + MapLuaParser.Current.FolderName + "\"";
+	        string toolsuiteArguments = "export-env-map --map-path=\"" + EnvPaths.GetMapsPath() + MapLuaParser.Current.FolderName + "\"";
 	        invokeToolsuite(toolsuiteArguments);
         }
         
