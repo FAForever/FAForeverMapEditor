@@ -9,6 +9,8 @@ using B83.Image.BMP;
 using SFB;
 using FAF.MapEditor;
 using Debug = UnityEngine.Debug;
+using Image = UnityEngine.UI.Image;
+using Toggle = UnityEngine.UI.Toggle;
 
 namespace EditMap
 {
@@ -1140,7 +1142,7 @@ namespace EditMap
 	        }
         }
 
-        private void invokeToolsuite(string arguments)
+        private int invokeToolsuite(string arguments)
         {
 	        OutputWindow.Initialize();
 	        Process neroxisToolsuite = new Process();
@@ -1163,12 +1165,23 @@ namespace EditMap
             
             outputQueue.Enqueue("Java process exited with code: " + neroxisToolsuite.ExitCode);
             OutputWindow.Close(neroxisToolsuite.ExitCode);
+            return neroxisToolsuite.ExitCode;
         }
 
         public void GenerateMapInfoTexture()
         {
 	        string toolsuiteArguments = "export-env-map --map-path=\"" + EnvPaths.GetMapsPath() + MapLuaParser.Current.FolderName + "\"";
-	        invokeToolsuite(toolsuiteArguments);
+	        int exitcode = invokeToolsuite(toolsuiteArguments);
+	        if (exitcode != 0) return;
+	        
+	        Undo.RegisterUndo(new UndoHistory.HistoryStratumChange(), new UndoHistory.HistoryStratumChange.StratumChangeHistoryParameter(9));
+                
+	        string texturePath = MapLuaParser.RelativeLoadedMapFolderPath + "env/layers/mapwide.dds";
+	        ScmapEditor.Current.Textures[9].Albedo = GetGamedataFile.LoadTexture2D(texturePath);;
+	        ScmapEditor.Current.Textures[9].AlbedoPath = texturePath;
+	        ScmapEditor.Current.SetTextures(9);
+	        ReloadStratums();
+	        SelectStratum(9);
         }
         
         public void GenerateHeightRoughnessTexture()
@@ -1178,9 +1191,19 @@ namespace EditMap
 		        GenericInfoPopup.ShowInfo("You need to specify the directory that contains your source images.");
 		        return;
 	        }
-	        string toolsuiteArguments = "generate-pbr --in-path=\"" + ImagePathField.text + 
-	                                 "\" --out-path=\"" + EnvPaths.GetMapsPath() + MapLuaParser.Current.FolderName + "/env/layers/\"";
-	        invokeToolsuite(toolsuiteArguments);
+	        string toolsuiteArguments = "generate-pbr --in-path=\"" + ImagePathField.text + "\"" +
+	                                    " --out-path=\"" + EnvPaths.GetMapsPath() + MapLuaParser.Current.FolderName + "/env/layers/\"";
+	        int exitcode = invokeToolsuite(toolsuiteArguments);
+	        if (exitcode != 0) return;
+	        
+	        Undo.RegisterUndo(new UndoHistory.HistoryStratumChange(), new UndoHistory.HistoryStratumChange.StratumChangeHistoryParameter(9));
+                
+	        string texturePath = MapLuaParser.RelativeLoadedMapFolderPath + "env/layers/heightroughness.dds";
+	        ScmapEditor.Current.Textures[8].Normal = GetGamedataFile.LoadTexture2D(texturePath);;
+	        ScmapEditor.Current.Textures[8].NormalPath = texturePath;
+	        ScmapEditor.Current.SetTextures(8);
+	        ReloadStratums();
+	        SelectStratum(8);
         }
         
         public void ResetRoughnessMask()
