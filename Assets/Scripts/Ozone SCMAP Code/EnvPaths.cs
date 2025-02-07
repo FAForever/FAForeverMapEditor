@@ -155,7 +155,7 @@ public class EnvPaths : MonoBehaviour {
 	{
 		get
 		{
-			return MyDocuments.Replace("\\", "/") + "/My Games/Gas Powered Games/Supreme Commander Forged Alliance/Mods/";
+			return MyDocuments + "/My Games/Gas Powered Games/Supreme Commander Forged Alliance/Mods/";
 		}
 	}
 
@@ -213,7 +213,7 @@ public class EnvPaths : MonoBehaviour {
 	}
 
 	public static void GenerateMapPath() {
-		DefaultMapPath = MyDocuments.Replace("\\", "/") + "/My Games/Gas Powered Games/Supreme Commander Forged Alliance/Maps/";
+		DefaultMapPath = MyDocuments + "/My Games/Gas Powered Games/Supreme Commander Forged Alliance/Maps/";
 		if (!System.IO.Directory.Exists(DefaultMapPath)) {
 			Debug.LogWarning("Default map directory does not exist: " + DefaultMapPath);
 			DefaultMapPath = "maps/";
@@ -221,7 +221,7 @@ public class EnvPaths : MonoBehaviour {
 	}
     public static void GenerateFafDataPath()
     {
-        DefaultFafDataPath = EnvPaths.ProgramData + "/FAForever/";
+	    DefaultFafDataPath = ProgramData + "/FAForever/";
         if (!System.IO.Directory.Exists(DefaultFafDataPath))
         {
             Debug.LogWarning("Default FAF directory does not exist: " + DefaultFafDataPath);
@@ -252,7 +252,7 @@ public class EnvPaths : MonoBehaviour {
     
 	public static void GenerateJavaPath()
 	{
-		DefaultJavaPath = EnvPaths.Programs + "/FAF Client/jre/bin";
+		DefaultJavaPath = Programs + "/FAF Client/jre/bin";
 		if (!System.IO.Directory.Exists(DefaultJavaPath))
 		{
 			Debug.LogWarning("Default Java directory does not exist: " + DefaultJavaPath);
@@ -299,7 +299,7 @@ public class EnvPaths : MonoBehaviour {
 	{
 		get
 		{
-			return System.Environment.GetFolderPath(System.Environment.SpecialFolder.CommonApplicationData);
+			return System.Environment.GetFolderPath(System.Environment.SpecialFolder.CommonApplicationData).Replace("\\", "/");
 		}
 	}
 	
@@ -307,7 +307,7 @@ public class EnvPaths : MonoBehaviour {
 	{
 		get
 		{
-			return System.Environment.GetFolderPath(System.Environment.SpecialFolder.Programs);
+			return System.Environment.GetFolderPath(System.Environment.SpecialFolder.ProgramFiles).Replace("\\", "/");
 		}
 	}
 
