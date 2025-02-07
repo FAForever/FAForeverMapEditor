@@ -26,7 +26,7 @@ namespace Ozone.UI
 		public void Close(int exitCode)
 		{
 			HideSpinner();
-			float timeout = 2;
+			float timeout = 1;
 			if (exitCode != 0) timeout = 5;
 			Invoke(nameof(HideWindow), timeout);
 		}

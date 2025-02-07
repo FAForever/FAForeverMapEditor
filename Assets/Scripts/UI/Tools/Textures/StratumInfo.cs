@@ -63,6 +63,7 @@ namespace EditMap
 		public Transform BrushListPivot;
 		public Material TerrainMaterial;
 
+		public CanvasGroup ShaderTools;
 		public InputField JavaPathField;
 		public InputField ImagePathField;
 		public OutputWindow OutputWindow;

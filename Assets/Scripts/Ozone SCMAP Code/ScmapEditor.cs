@@ -1131,7 +1131,14 @@ public partial class ScmapEditor : MonoBehaviour
             MapLuaParser.Current.EditMenu.LightingMenu.SpecularRed.SetTitle("Texture Blending Blurriness");
             Textures[9].AlbedoScale = 10000;
             Textures[8].NormalScale = 10000;
+            MapLuaParser.Current.EditMenu.TexturesMenu.ShaderTools.interactable = true;
+            MapLuaParser.Current.EditMenu.TexturesMenu.ShaderTools.alpha = 1;
         }
+		else
+		{
+			MapLuaParser.Current.EditMenu.TexturesMenu.ShaderTools.interactable = false;
+			MapLuaParser.Current.EditMenu.TexturesMenu.ShaderTools.alpha = 0.7f;
+		}
 	}
 #endregion
 }
