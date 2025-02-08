@@ -385,6 +385,92 @@
                 return albedo;
             }
 
+			float4 TerrainNormals000( Input pixel, uniform bool halfRange )
+            {
+                float2 coordinates = pixel.mTexWT * TerrainScale;
+                
+                float4 mask0 = tex2D(UtilitySamplerA, coordinates);
+                float4 mask1 = tex2D(UtilitySamplerB, coordinates);
+
+                if (halfRange) {
+                    mask0 = saturate(mask0 * 2 - 1);
+                    mask1 = saturate(mask1 * 2 - 1);
+                }
+
+                float4 lowerNormal    = normalize(tex2D(LowerNormalSampler, coordinates * LowerNormalTile) * 2 - 1);
+                float4 stratum0Normal = normalize(StratumNormalSampler(0, coordinates * Stratum0NormalTile) * 2 - 1);
+                float4 stratum1Normal = normalize(StratumNormalSampler(1, coordinates * Stratum1NormalTile) * 2 - 1);
+                float4 stratum2Normal = normalize(StratumNormalSampler(2, coordinates * Stratum2NormalTile) * 2 - 1);
+                float4 stratum3Normal = normalize(StratumNormalSampler(3, coordinates * Stratum3NormalTile) * 2 - 1);
+                float4 stratum4Normal = normalize(StratumNormalSampler(4, coordinates * Stratum4NormalTile) * 2 - 1);
+                float4 stratum5Normal = normalize(StratumNormalSampler(5, coordinates * Stratum5NormalTile) * 2 - 1);
+                float4 stratum6Normal = normalize(StratumNormalSampler(6, coordinates * Stratum6NormalTile) * 2 - 1);
+                float4 stratum7Normal = normalize(StratumNormalSampler(7, coordinates * Stratum7NormalTile) * 2 - 1);
+
+                float4 normal = lowerNormal;
+                if(_HideStratum0 == 0)
+                normal = normalize(lerp(normal,stratum0Normal,mask0.x));
+                if(_HideStratum1 == 0)
+                normal = normalize(lerp(normal,stratum1Normal,mask0.y));
+                if(_HideStratum2 == 0)
+                normal = normalize(lerp(normal,stratum2Normal,mask0.z));
+                if(_HideStratum3 == 0)
+                normal = normalize(lerp(normal,stratum3Normal,mask0.w));
+                if(_HideStratum4 == 0)
+                normal = normalize(lerp(normal,stratum4Normal,mask1.x));
+                if(_HideStratum5 == 0)
+                normal = normalize(lerp(normal,stratum5Normal,mask1.y));
+                if(_HideStratum6 == 0)
+                normal = normalize(lerp(normal,stratum6Normal,mask1.z));
+                if(_HideStratum7 == 0)
+                normal = normalize(lerp(normal,stratum7Normal,mask1.w));
+
+                return normal;
+            }
+
+			float4 TerrainAlbedoXPExt( Input inV, uniform bool halfRange)
+            {
+                float3 position = TerrainScale * inV.mTexWT;
+
+                float4 mask0 = tex2D(UtilitySamplerA, position.xy);
+                float4 mask1 = tex2D(UtilitySamplerB, position.xy);
+
+                if (halfRange) {
+                    mask0 = saturate(mask0 * 2 - 1);
+                    mask1 = saturate(mask1 * 2 - 1);
+                }
+
+                float4 lowerAlbedo = tex2D(LowerAlbedoSampler,position*LowerAlbedoTile);
+                float4 stratum0Albedo = StratumAlbedoSampler(0,position*Stratum0AlbedoTile);
+                float4 stratum1Albedo = StratumAlbedoSampler(1,position*Stratum1AlbedoTile);
+                float4 stratum2Albedo = StratumAlbedoSampler(2,position*Stratum2AlbedoTile);
+                float4 stratum3Albedo = StratumAlbedoSampler(3,position*Stratum3AlbedoTile);
+                float4 stratum4Albedo = StratumAlbedoSampler(4,position*Stratum4AlbedoTile);
+                float4 stratum5Albedo = StratumAlbedoSampler(5,position*Stratum5AlbedoTile);
+                float4 stratum6Albedo = StratumAlbedoSampler(6,position*Stratum6AlbedoTile);
+                float4 stratum7Albedo = StratumAlbedoSampler(7,position*Stratum7AlbedoTile);
+
+                float4 albedo = lowerAlbedo;
+                if(_HideStratum0 == 0)
+                albedo = lerp(albedo,stratum0Albedo,mask0.x);
+                if(_HideStratum1 == 0)
+                albedo = lerp(albedo,stratum1Albedo,mask0.y);
+                if(_HideStratum2 == 0)
+                albedo = lerp(albedo,stratum2Albedo,mask0.z);
+                if(_HideStratum3 == 0)
+                albedo = lerp(albedo,stratum3Albedo,mask0.w);
+                if(_HideStratum4 == 0)
+                albedo = lerp(albedo,stratum4Albedo,mask1.x);
+                if(_HideStratum5 == 0)
+                albedo = lerp(albedo,stratum5Albedo,mask1.y);
+                if(_HideStratum6 == 0)
+                albedo = lerp(albedo,stratum6Albedo,mask1.z);
+                if(_HideStratum7 == 0)
+                albedo = lerp(albedo,stratum7Albedo,mask1.w);
+
+                return albedo;
+            }
+
             float4 splatLerp(float4 t1, float4 t2, float t2height, float opacity, uniform float blurriness = 0.06) {
                 float height1 = 1;
                 float height2 = t2height * (1 - 2 * blurriness) + blurriness + opacity;
@@ -816,7 +902,7 @@
             void surf(Input inV, inout CustomSurfaceOutput o)
             {
                 float3 position = TerrainScale * inV.mTexWT.xyz;
-                if (_ShaderID == 0)
+                if (_ShaderID == 10)
                 {
                     float4 albedo = TerrainPS(inV);
                     o.Albedo = albedo.rgb;
@@ -827,7 +913,7 @@
 
                     o.WaterDepth = tex2D(UtilitySamplerC, position.xy).g;
                 }
-                else if (_ShaderID == 1)
+                else if (_ShaderID == 11)
                 {
                     float4 albedo = TerrainAlbedoXP(inV);
                     o.Albedo = albedo.rgb;
@@ -837,8 +923,60 @@
                     o.wNormal = normalize(normal);
 
                     o.WaterDepth = tex2D(UtilitySamplerC, position.xy).g;
+                    o.MapShadow = 1;
                 }
-                else if (_ShaderID == 2)
+                else if (_ShaderID == 12)
+                {
+                    float4 albedo = TerrainAlbedoXPExt(inV, true);
+                    o.Albedo = albedo.rgb;
+                    o.Alpha = albedo.a; // for specularity
+
+                    float3 normal = TangentToWorldSpace(inV, TerrainNormalsXP(inV).xyz);
+                    o.wNormal = normalize(normal);
+
+                    if (_HideStratum8 == 0) {
+                        o.WaterDepth = tex2D(UpperAlbedoSampler, position.xy).b;
+                        o.MapShadow = tex2D(UpperAlbedoSampler, position.xy).w;
+                    } else {
+                        o.WaterDepth = tex2D(UtilitySamplerC, position.xy).g;
+                        o.MapShadow = 1;
+                    }
+                }
+                else if (_ShaderID == 0)
+                {
+                    float4 albedo = TerrainAlbedoXPExt(inV, false);
+                    o.Albedo = albedo.rgb;
+                    o.Alpha = albedo.a; // for specularity
+
+                    float3 normal = TangentToWorldSpace(inV, TerrainNormals000(inV, false).xyz);
+                    o.wNormal = normalize(normal);
+
+                    if (_HideStratum8 == 0) {
+                        o.WaterDepth = tex2D(UpperAlbedoSampler, position.xy).b;
+                        o.MapShadow = tex2D(UpperAlbedoSampler, position.xy).w;
+                    } else {
+                        o.WaterDepth = tex2D(UtilitySamplerC, position.xy).g;
+                        o.MapShadow = 1;
+                    }
+                }
+                else if (_ShaderID == 50)
+                {
+                    float4 albedo = TerrainAlbedoXPExt(inV, true);
+                    o.Albedo = albedo.rgb;
+                    o.Alpha = albedo.a; // for specularity
+
+                    float3 normal = TangentToWorldSpace(inV, TerrainNormals000(inV, true).xyz);
+                    o.wNormal = normalize(normal);
+
+                    if (_HideStratum8 == 0) {
+                        o.WaterDepth = tex2D(UpperAlbedoSampler, position.xy).b;
+                        o.MapShadow = tex2D(UpperAlbedoSampler, position.xy).w;
+                    } else {
+                        o.WaterDepth = tex2D(UtilitySamplerC, position.xy).g;
+                        o.MapShadow = 1;
+                    }
+                }
+                else if (_ShaderID == 200)
                 {
                     float4 albedo = Terrain200AlbedoPS(inV, false);
                     o.Albedo = albedo.rgb;
@@ -855,7 +993,7 @@
                         o.MapShadow = 1;
                     }
                 }
-                else if (_ShaderID == 3)
+                else if (_ShaderID == 250)
                 {
                     float4 albedo = Terrain200AlbedoPS(inV, true);
                     o.Albedo = albedo.rgb;
@@ -872,7 +1010,7 @@
                         o.MapShadow = 1;
                     }
                 }
-                else if (_ShaderID == 4)
+                else if (_ShaderID == 2001)
                 {
                     float4 albedo = Terrain200BAlbedoPS(inV, false);
                     o.Albedo = albedo.rgb;
@@ -889,7 +1027,7 @@
                         o.MapShadow = 1;
                     }
                 }
-                else if (_ShaderID == 5)
+                else if (_ShaderID == 2501)
                 {
                     float4 albedo = Terrain200BAlbedoPS(inV, true);
                     o.Albedo = albedo.rgb;
