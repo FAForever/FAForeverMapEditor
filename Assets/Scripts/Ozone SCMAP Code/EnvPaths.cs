@@ -7,6 +7,7 @@ public class EnvPaths : MonoBehaviour {
 	public static string DefaultMapPath;
 	public static string DefaultGamedataPath;
 	public static string DefaultFafDataPath;
+	public static string DefaultJavaPath;
 
 	static Microsoft.Win32.RegistryKey regKey = Microsoft.Win32.Registry.LocalMachine.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Uninstall");
 	//static RegistryKey regKey = Registry. .OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Uninstall");
@@ -18,6 +19,8 @@ public class EnvPaths : MonoBehaviour {
 	const string InstallationMods = "mods/";
 	const string MapsPath = "MapsPath";
 	const string BackupPath = "BackupPath";
+	const string JavaPath = "JavaPath";
+	const string ImagePath = "ImagePath";
 
 	public static string GetInstallationPath() {
 		return PlayerPrefs.GetString(InstallationPath, EnvPaths.DefaultGamedataPath);
@@ -61,8 +64,46 @@ public class EnvPaths : MonoBehaviour {
 
         if (!System.IO.Directory.Exists(value))
         {
-            GenericInfoPopup.ShowInfo("Wrong game installation path!\nCheck preferences.");
+            GenericInfoPopup.ShowInfo("Wrong faf installation path!\nCheck preferences.");
         }
+    }
+    
+    public static string GetJavaPath()
+    {
+	    return PlayerPrefs.GetString(JavaPath, DefaultJavaPath);
+    }
+
+    public static void SetJavaPath(string value)
+    {
+	    value = value.Replace("\\", "/");
+	    if (value[value.Length - 1].ToString() != "/") value += "/";
+	    if (value[0].ToString() == "/") value = value.Remove(0, 1);
+
+	    PlayerPrefs.SetString(JavaPath, value);
+
+	    if (!System.IO.Directory.Exists(value))
+	    {
+		    GenericInfoPopup.ShowInfo("This directory does not exist!");
+	    }
+    }
+        
+    public static string GetImagePath()
+    {
+	    return PlayerPrefs.GetString(ImagePath, "");
+    }
+
+    public static void SetImagePath(string value)
+    {
+	    value = value.Replace("\\", "/");
+	    if (value[value.Length - 1].ToString() != "/") value += "/";
+	    if (value[0].ToString() == "/") value = value.Remove(0, 1);
+
+	    PlayerPrefs.SetString(ImagePath, value);
+
+	    if (!System.IO.Directory.Exists(value))
+	    {
+		    GenericInfoPopup.ShowInfo("This directory does not exist!");
+	    }
     }
 
     /// <summary>
@@ -114,7 +155,7 @@ public class EnvPaths : MonoBehaviour {
 	{
 		get
 		{
-			return MyDocuments.Replace("\\", "/") + "/My Games/Gas Powered Games/Supreme Commander Forged Alliance/Mods/";
+			return MyDocuments + "/My Games/Gas Powered Games/Supreme Commander Forged Alliance/Mods/";
 		}
 	}
 
@@ -168,10 +209,11 @@ public class EnvPaths : MonoBehaviour {
 		GenerateMapPath();
 		GenerateFafDataPath();
 		GenerateGamedataPath();
+		GenerateJavaPath();
 	}
 
 	public static void GenerateMapPath() {
-		DefaultMapPath = MyDocuments.Replace("\\", "/") + "/My Games/Gas Powered Games/Supreme Commander Forged Alliance/Maps/";
+		DefaultMapPath = MyDocuments + "/My Games/Gas Powered Games/Supreme Commander Forged Alliance/Maps/";
 		if (!System.IO.Directory.Exists(DefaultMapPath)) {
 			Debug.LogWarning("Default map directory does not exist: " + DefaultMapPath);
 			DefaultMapPath = "maps/";
@@ -179,8 +221,8 @@ public class EnvPaths : MonoBehaviour {
 	}
     public static void GenerateFafDataPath()
     {
-        DefaultFafDataPath = EnvPaths.ProgramData + "/FAForever/";
-        if (!System.IO.Directory.Exists(DefaultMapPath))
+	    DefaultFafDataPath = ProgramData + "/FAForever/";
+        if (!System.IO.Directory.Exists(DefaultFafDataPath))
         {
             Debug.LogWarning("Default FAF directory does not exist: " + DefaultFafDataPath);
             DefaultFafDataPath = "";
@@ -206,6 +248,16 @@ public class EnvPaths : MonoBehaviour {
 
 		if (string.IsNullOrEmpty(DefaultGamedataPath))
 			DefaultGamedataPath = "gamedata/";
+	}
+    
+	public static void GenerateJavaPath()
+	{
+		DefaultJavaPath = Programs + "/FAF Client/jre/bin";
+		if (!System.IO.Directory.Exists(DefaultJavaPath))
+		{
+			Debug.LogWarning("Default Java directory does not exist: " + DefaultJavaPath);
+			DefaultJavaPath = "";
+		}
 	}
 
 
@@ -247,7 +299,15 @@ public class EnvPaths : MonoBehaviour {
 	{
 		get
 		{
-			return System.Environment.GetFolderPath(System.Environment.SpecialFolder.CommonApplicationData);
+			return System.Environment.GetFolderPath(System.Environment.SpecialFolder.CommonApplicationData).Replace("\\", "/");
+		}
+	}
+	
+	public static string Programs
+	{
+		get
+		{
+			return System.Environment.GetFolderPath(System.Environment.SpecialFolder.ProgramFiles).Replace("\\", "/");
 		}
 	}
 

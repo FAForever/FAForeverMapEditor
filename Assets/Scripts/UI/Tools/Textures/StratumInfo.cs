@@ -1,11 +1,16 @@
-﻿using UnityEngine;
+﻿using System.Collections.Concurrent;
+using UnityEngine;
 using UnityEngine.UI;
 using System.Collections.Generic;
+using System.Diagnostics;
 using Ozone.UI;
 using System.IO;
 using B83.Image.BMP;
 using SFB;
 using FAF.MapEditor;
+using Debug = UnityEngine.Debug;
+using Image = UnityEngine.UI.Image;
+using Toggle = UnityEngine.UI.Toggle;
 
 namespace EditMap
 {
@@ -57,6 +62,12 @@ namespace EditMap
 		public GameObject BrushListObject;
 		public Transform BrushListPivot;
 		public Material TerrainMaterial;
+
+		public CanvasGroup ShaderTools;
+		public InputField JavaPathField;
+		public InputField ImagePathField;
+		public OutputWindow OutputWindow;
+		private ConcurrentQueue<string> outputQueue = new ();
 
 		[Header("State")]
 		public bool Invert;
@@ -116,6 +127,8 @@ namespace EditMap
 
 		void OnEnable()
 		{
+			JavaPathField.text = EnvPaths.GetJavaPath();
+			ImagePathField.text = EnvPaths.GetImagePath();
 			BrushGenerator.Current.LoadBrushes();
 			ReloadStratums();
 
@@ -155,6 +168,12 @@ namespace EditMap
 		bool ChangingSize;
 		void Update()
 		{
+			// Process queued messages from Java CLI output
+			if (outputQueue.TryDequeue(out string output))
+			{
+				OutputWindow.WriteOutput(output);
+			}
+			
 			if (StratumChangeCheck)
 				if (Input.GetMouseButtonUp(0))
 					StratumChangeCheck = false;
@@ -1081,8 +1100,129 @@ namespace EditMap
 				color.a = channel;
 		}
 
-#endregion
+        #endregion
 
+        #region TextureGeneration
+        public void BrowseJavaPath()
+        {
+
+            var paths = StandaloneFileBrowser.OpenFolderPanel("Select folder containing java.exe.", EnvPaths.GetJavaPath(), false);
+
+            if (paths.Length > 0 && !string.IsNullOrEmpty(paths[0]))
+            {
+                JavaPathField.text = paths[0];
+                EnvPaths.SetJavaPath(paths[0]);
+            }
+        }
+        
+        public void UpdateJavaPath()
+        {
+	        if (!string.IsNullOrEmpty(JavaPathField.text))
+	        {
+		        EnvPaths.SetJavaPath(JavaPathField.text);
+	        }
+        }
+		
+        public void BrowseImagePath()
+        {
+
+	        var paths = StandaloneFileBrowser.OpenFolderPanel("Select folder for height and roughness images.", "C:\\", false);
+
+	        if (paths.Length > 0 && !string.IsNullOrEmpty(paths[0]))
+	        {
+		        ImagePathField.text = paths[0];
+		        EnvPaths.SetImagePath(paths[0]);
+	        }
+        }
+        
+        public void UpdateImagePath()
+        {
+	        if (!string.IsNullOrEmpty(ImagePathField.text))
+	        {
+		        EnvPaths.SetImagePath(ImagePathField.text);
+	        }
+        }
+
+        private int invokeToolsuite(string arguments)
+        {
+	        OutputWindow.Initialize();
+	        Process neroxisToolsuite = new Process();
+            neroxisToolsuite.StartInfo.FileName = EnvPaths.GetJavaPath() + "/java.exe";
+            var jarPath = Application.dataPath + "/Plugins/NeroxisMapGenerator/neroxis-toolsuite.jar";
+            neroxisToolsuite.StartInfo.Arguments = "-jar \"" + jarPath + "\" " + arguments;
+            outputQueue.Enqueue("Starting Java process: " + neroxisToolsuite.StartInfo.FileName + neroxisToolsuite.StartInfo.Arguments);
+            
+            neroxisToolsuite.StartInfo.CreateNoWindow = true;
+            neroxisToolsuite.StartInfo.UseShellExecute = false;
+            neroxisToolsuite.StartInfo.RedirectStandardOutput = true;
+            neroxisToolsuite.StartInfo.RedirectStandardError = true;
+            neroxisToolsuite.OutputDataReceived += (sender, args) => outputQueue.Enqueue(args.Data);
+            neroxisToolsuite.ErrorDataReceived += (sender, args) => outputQueue.Enqueue(args.Data);
+
+            neroxisToolsuite.Start();
+            neroxisToolsuite.BeginOutputReadLine();
+            neroxisToolsuite.BeginErrorReadLine();
+            neroxisToolsuite.WaitForExit();
+            
+            outputQueue.Enqueue("Java process exited with code: " + neroxisToolsuite.ExitCode);
+            OutputWindow.Close(neroxisToolsuite.ExitCode);
+            return neroxisToolsuite.ExitCode;
+        }
+
+        public void GenerateMapInfoTexture()
+        {
+	        string toolsuiteArguments = "export-env-map --map-path=\"" + EnvPaths.GetMapsPath() + MapLuaParser.Current.FolderName + "\"";
+	        int exitcode = invokeToolsuite(toolsuiteArguments);
+	        if (exitcode != 0) return;
+	        
+	        Undo.RegisterUndo(new UndoHistory.HistoryStratumChange(), new UndoHistory.HistoryStratumChange.StratumChangeHistoryParameter(9));
+                
+	        string texturePath = MapLuaParser.RelativeLoadedMapFolderPath + "env/layers/mapwide.dds";
+	        ScmapEditor.Current.Textures[9].Albedo = GetGamedataFile.LoadTexture2D(texturePath);;
+	        ScmapEditor.Current.Textures[9].AlbedoPath = texturePath;
+	        ScmapEditor.Current.SetTextures(9);
+	        ReloadStratums();
+	        SelectStratum(9);
+        }
+        
+        public void GenerateHeightRoughnessTexture()
+        {
+	        if (ImagePathField.text == "")
+	        {
+		        GenericInfoPopup.ShowInfo("You need to specify the directory that contains your source images.");
+		        return;
+	        }
+	        string toolsuiteArguments = "generate-pbr --in-path=\"" + ImagePathField.text + "\"" +
+	                                    " --out-path=\"" + EnvPaths.GetMapsPath() + MapLuaParser.Current.FolderName + "/env/layers/\"";
+	        int exitcode = invokeToolsuite(toolsuiteArguments);
+	        if (exitcode != 0) return;
+	        
+	        Undo.RegisterUndo(new UndoHistory.HistoryStratumChange(), new UndoHistory.HistoryStratumChange.StratumChangeHistoryParameter(9));
+                
+	        string texturePath = MapLuaParser.RelativeLoadedMapFolderPath + "env/layers/heightroughness.dds";
+	        ScmapEditor.Current.Textures[8].Normal = GetGamedataFile.LoadTexture2D(texturePath);;
+	        ScmapEditor.Current.Textures[8].NormalPath = texturePath;
+	        ScmapEditor.Current.SetTextures(8);
+	        ReloadStratums();
+	        SelectStratum(8);
+        }
+        
+        public void ResetRoughnessMask()
+        {
+	        Color[] data = ScmapEditor.Current.map.TexturemapTex2.GetPixels();
+	        beginColors = ScmapEditor.Current.map.TexturemapTex2.GetPixels();
+	        Undo.RegisterUndo(new UndoHistory.HistoryStratumPaint(), new UndoHistory.HistoryStratumPaint.StratumPaintHistoryParameter(1, beginColors));
+	        
+	        for (int i = 0; i < data.Length; i++)
+	        {
+		        data[i].a = 0.5f;
+	        }
+
+	        ScmapEditor.Current.map.TexturemapTex2.SetPixels(data);
+	        ScmapEditor.Current.map.TexturemapTex2.Apply(false);
+        }
+
+        #endregion
 
 		#region Import/Export
 
