@@ -51,44 +51,44 @@ public class WaterShader
     {
         HasWater = true;
 
-        Elevation = 17.5f;
-        ElevationDeep = 15f;
-        ElevationAbyss = 2.5f;
+        Elevation = 30f;
+        ElevationDeep = 25f;
+        ElevationAbyss = 15f;
 
-        SurfaceColor = new Vector3(0f, 0.7f, 1.5f);
-        ColorLerp = new Vector2(0.064f, 0.119f);
+        SurfaceColor = new Vector3(0.2f, 0.2f, 0.2f);
+        ColorLerp = new Vector2(0.064f, 0.064f);
         RefractionScale = 0.38f;
-        FresnelBias = 0.14f;
-        FresnelPower = 1.5f;
-        UnitReflection = 1f;
-        SkyReflection = 0.678f;
-        SunShininess = 78.9f;
-        SunStrength = 3.9f;
+        FresnelBias = 0f;
+        FresnelPower = 0f;
+        UnitReflection = 0.5f;
+        SkyReflection = 1f;
+        SunShininess = 80f;
+        SunStrength = 0f;
         SunDirection = new Vector3(0.09954818f, -0.9626309f, 0.2518569f);
         SunColor = new Vector3(0.52f, 0.47f, 0.35f);
-        SunReflection = 2.02f;
-        SunGlow = 0.165f;
+        SunReflection = 0f;
+        SunGlow = 0f;
 
         TexPathCubemap = "/textures/environment/skycube_evergreen01a.dds";
         TexPathWaterRamp = "/textures/engine/waterramp.dds";
 
         WaveTextures = new WaveTexture[4];
         WaveTextures[0] = new WaveTexture();
-        WaveTextures[0].NormalMovement = new Vector2(0f, 0.01f);
-        WaveTextures[0].NormalRepeat = 0.08f;
-        WaveTextures[0].TexPath = "/textures/engine/waves.dds";
+        WaveTextures[0].NormalMovement = new Vector2(0f, -0.012f);
+        WaveTextures[0].NormalRepeat = 0.05f;
+        WaveTextures[0].TexPath = "/textures/engine/waves1_400m.dds";
         WaveTextures[1] = new WaveTexture();
-        WaveTextures[1].NormalMovement = new Vector2(-0.08660255f, 0.05f);
-        WaveTextures[1].NormalRepeat = 0.009f;
-        WaveTextures[1].TexPath = "/textures/engine/waves.dds";
+        WaveTextures[1].NormalMovement = new Vector2(-0.00130236f, 0.00738606f);
+        WaveTextures[1].NormalRepeat = 0.167f;
+        WaveTextures[1].TexPath = "/textures/engine/waves1_120m.dds";
         WaveTextures[2] = new WaveTexture();
-        WaveTextures[2].NormalMovement = new Vector2(0.001307336f, 0.01494292f);
-        WaveTextures[2].NormalRepeat = 0.06f;
-        WaveTextures[2].TexPath = "/textures/engine/waves001.dds";
+        WaveTextures[2].NormalMovement = new Vector2(-0.003f, 0.00519615f);
+        WaveTextures[2].NormalRepeat = 0.5f;
+        WaveTextures[2].TexPath = "/textures/engine/waves1_40m.dds";
         WaveTextures[3] = new WaveTexture();
-        WaveTextures[3].NormalMovement = new Vector2(0.004949748f, 0.004949748f);
-        WaveTextures[3].NormalRepeat = 0.5f;
-        WaveTextures[3].TexPath = "/textures/engine/waves001.dds";
+        WaveTextures[3].NormalMovement = new Vector2(-0.00105f, -0.006f);
+        WaveTextures[3].NormalRepeat = 0.8f;
+        WaveTextures[3].TexPath = "/textures/engine/waves1_120m.dds";
     }
     
     public void Load( BinaryReader Stream)
@@ -104,20 +104,16 @@ public class WaterShader
         }
         else
         {
-			//_with1.BaseStream.Position += 12;
-			//Elevation = 17.5f;
-			//ElevationDeep = 15f;
-			//ElevationAbyss = 2.5f;
 			Elevation = _with1.ReadSingle();
 			ElevationDeep = _with1.ReadSingle();
 			ElevationAbyss = _with1.ReadSingle();
 
 			if (Elevation <= 0)
-				Elevation = 17.5f;
+				Elevation = 30f;
 			if (ElevationDeep <= 0)
-				ElevationDeep = 15f;
+				ElevationDeep = 25f;
 			if (ElevationAbyss <= 0)
-				ElevationAbyss = 2.5f;
+				ElevationAbyss = 15f;
 
 		}
 

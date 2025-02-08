@@ -275,10 +275,10 @@ namespace EditMap
 
 			RA.SetValue(312);
 			DA.SetValue(34);
-			LightMultipiler.SetValue(1.54f);
+			LightMultipiler.SetValue(1.6f);
 			LightColor.SetColorField(new Color(1.38f, 1.29f, 1.14f, 1));
-			AmbienceColor.SetColorField(Color.black);
-			ShadowColor.SetColorField(new Color(0.54f, 0.54f, 0.7f));
+			AmbienceColor.SetColorField(new Color(0.54f, 0.54f, 0.7f));
+			ShadowColor.SetColorField(Color.black);
 
 			UpdateMenu();
 		}
@@ -286,9 +286,9 @@ namespace EditMap
 		public void ResetFog() {
 			BeginUpdateMenu();
 
-			FogColor.SetColorField(new Color(0.37f, 0.49f, 0.45f));
+			FogColor.SetColorField(new Color(0.37f, 0.50f, 0.61f));
 			FogStart.SetValue(0);
-			FogEnd.SetValue(750);
+			FogEnd.SetValue(800);
 
 			UpdateMenu();
 		}
@@ -298,7 +298,8 @@ namespace EditMap
 			BeginUpdateMenu();
 
 			Bloom.SetValue(0.03f);
-			Specular.SetColorField(new Color(0.31f, 0, 0, 0));
+			Specular.SetColorField(new Color(0.1f, 0.1f, 0.1f, 0.1f));
+			EnvCube.text = "/textures/environment/defaultenvcube.dds";
 
 			UpdateMenu();
 		}

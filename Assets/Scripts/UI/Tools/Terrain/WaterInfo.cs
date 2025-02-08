@@ -113,16 +113,16 @@ namespace EditMap
 		private void SetWaves()
 		{
 			Waves0.SetTexPath(ScmapEditor.Current.map.Water.WaveTextures[0].TexPath);
-			Waves0.SetScale(ScmapEditor.Current.map.Water.WaveTextures[0].NormalRepeat);
+			Waves0.SetFrequency(ScmapEditor.Current.map.Water.WaveTextures[0].NormalRepeat);
 			Waves0.SetMovement(ScmapEditor.Current.map.Water.WaveTextures[0].NormalMovement);
 			Waves1.SetTexPath(ScmapEditor.Current.map.Water.WaveTextures[1].TexPath);
-			Waves1.SetScale(ScmapEditor.Current.map.Water.WaveTextures[1].NormalRepeat);
+			Waves1.SetFrequency(ScmapEditor.Current.map.Water.WaveTextures[1].NormalRepeat);
 			Waves1.SetMovement(ScmapEditor.Current.map.Water.WaveTextures[1].NormalMovement);
 			Waves2.SetTexPath(ScmapEditor.Current.map.Water.WaveTextures[2].TexPath);
-			Waves2.SetScale(ScmapEditor.Current.map.Water.WaveTextures[2].NormalRepeat);
+			Waves2.SetFrequency(ScmapEditor.Current.map.Water.WaveTextures[2].NormalRepeat);
 			Waves2.SetMovement(ScmapEditor.Current.map.Water.WaveTextures[2].NormalMovement);
 			Waves3.SetTexPath(ScmapEditor.Current.map.Water.WaveTextures[3].TexPath);
-			Waves3.SetScale(ScmapEditor.Current.map.Water.WaveTextures[3].NormalRepeat);
+			Waves3.SetFrequency(ScmapEditor.Current.map.Water.WaveTextures[3].NormalRepeat);
 			Waves3.SetMovement(ScmapEditor.Current.map.Water.WaveTextures[3].NormalMovement);
 		}
 
@@ -348,6 +348,24 @@ namespace EditMap
 			} else {
 				SunDirection = new Vector3(0.09954818f, -0.9626309f, 0.2518569f);
 			}
+			WaterSettingsChanged(false);
+		}
+		
+		public void ResetWaves()
+		{
+			Waves0.SetTexPath("/textures/engine/waves1_400m.dds");
+			Waves0.SetFrequency(0.05f);
+			Waves0.SetMovement(new Vector2(0f, -0.012f));
+			Waves1.SetTexPath("/textures/engine/waves1_120m.dds");
+			Waves1.SetFrequency(0.167f);
+			Waves1.SetMovement(new Vector2(-0.00130236f, 0.00738606f));
+			Waves2.SetTexPath("/textures/engine/waves1_40m.dds");
+			Waves2.SetFrequency(0.5f);
+			Waves2.SetMovement(new Vector2(-0.003f, 0.00519615f));
+			Waves3.SetTexPath("/textures/engine/waves1_120m.dds");
+			Waves3.SetFrequency(0.8f);
+			Waves3.SetMovement(new Vector2(-0.00105f, -0.006f));
+			
 			WaterSettingsChanged(false);
 		}
 

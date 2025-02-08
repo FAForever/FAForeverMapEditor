@@ -37,14 +37,14 @@ namespace EditMap
 			MapType.value = 0;
 			Width.value = 3;
 			Height.value = 3;
-			InitialHeight.SetValue(16);
+			InitialHeight.SetValue(35);
+            WaterElv.SetValue(30);
+			DepthElevation.SetValue(25);
+			AbyssElevation.SetValue(15);
 		}
 
 		public void ToggleWater()
 		{
-			//WaterElv.interactable = Water.isOn;
-			//DepthElevation.interactable = Water.isOn;
-			//AbyssElevation.interactable = Water.isOn;
 			WaterElv.gameObject.SetActive(Water.isOn);
 			DepthElevation.gameObject.SetActive(Water.isOn);
 			AbyssElevation.gameObject.SetActive(Water.isOn);
