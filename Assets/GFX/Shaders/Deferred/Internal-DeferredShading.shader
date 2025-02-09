@@ -162,7 +162,7 @@ float3 PBR(float3 wpos, float3 viewDirection, float3 albedo, float3 n, float rou
     float3 l = SunDirection;
     float3 h = normalize(v + l);
     float nDotL = max(dot(n, l), 0.0);
-    // Normal maps can cause an angle > 90° betweeen n and v which would 
+    // Normal maps can cause an angle > 90 degrees betweeen n and v which would 
     // cause artifacts if we don't take some countermeasures
     float nDotV = abs(dot(n, v)) + 0.001;
     float3 sunLight = SunColor * LightingMultiplier * shadow;
@@ -224,11 +224,11 @@ half4 CalculateLight (unity_v2f_deferred i)
 
 	float4 color;
 
-    if (_ShaderID == 0) {
+    if (_ShaderID == 10) {
         color.rgb = CalculateLighting(worldNormal, eyeVec, albedo, 1-alpha, atten);
-    } else if (_ShaderID == 1) {
-        color.rgb = CalculateXPLighting(worldNormal, eyeVec, float4(albedo, alpha), atten);
-    } else if (_ShaderID == 2 || _ShaderID == 3 || _ShaderID == 4 || _ShaderID == 5) {
+    } else if (_ShaderID == 11 || _ShaderID == 12 || _ShaderID == 0 || _ShaderID == 50) {
+        color.rgb = CalculateXPLighting(worldNormal, eyeVec, float4(albedo, alpha), mapShadow * atten);
+    } else if (_ShaderID == 200 || _ShaderID == 250 || _ShaderID == 2001 || _ShaderID == 2501) {
         color.rgb = PBR(wpos, eyeVec, albedo, worldNormal, roughness, mapShadow * atten);
     } else {
         color.rgb = albedo;

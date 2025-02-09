@@ -411,11 +411,10 @@ namespace EditMap
 				Stratum_Normal_Input.gameObject.SetActive(false);
 			}
 
-			if (MapLuaParser.Current.EditMenu.MapInfoMenu.ShaderName.text == "Terrain200" ||
-                MapLuaParser.Current.EditMenu.MapInfoMenu.ShaderName.text == "Terrain250" ||
-                MapLuaParser.Current.EditMenu.MapInfoMenu.ShaderName.text == "Terrain301" ||
-                MapLuaParser.Current.EditMenu.MapInfoMenu.ShaderName.text == "Terrain200B" ||
-                MapLuaParser.Current.EditMenu.MapInfoMenu.ShaderName.text == "Terrain250B")
+			if (Shader.GetGlobalInt("_ShaderID") == 200 ||
+			    Shader.GetGlobalInt("_ShaderID") == 250 ||
+			    Shader.GetGlobalInt("_ShaderID") == 2001 ||
+			    Shader.GetGlobalInt("_ShaderID") == 2501)
 			{
 				if (Selected == 9)
 				{
