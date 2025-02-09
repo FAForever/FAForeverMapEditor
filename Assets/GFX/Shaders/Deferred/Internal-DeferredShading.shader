@@ -162,7 +162,7 @@ float3 PBR(float3 wpos, float3 viewDirection, float3 albedo, float3 n, float rou
     float3 l = SunDirection;
     float3 h = normalize(v + l);
     float nDotL = max(dot(n, l), 0.0);
-    // Normal maps can cause an angle > 90� betweeen n and v which would 
+    // Normal maps can cause an angle > 90 degrees betweeen n and v which would 
     // cause artifacts if we don't take some countermeasures
     float nDotV = abs(dot(n, v)) + 0.001;
     float3 sunLight = SunColor * LightingMultiplier * shadow;
