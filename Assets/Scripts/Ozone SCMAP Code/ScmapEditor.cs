@@ -809,9 +809,9 @@ public partial class ScmapEditor : MonoBehaviour
 	public void UnloadMap()
 	{
 		Textures[0].AlbedoPath = "/env/evergreen2/layers/eg_gravel005_albedo.dds";
-		Textures[0].NormalPath = "/env/tundra/layers/tund_sandlight_normal.dds";
+		Textures[0].NormalPath = "/env/tundra/layers/des_none_normal.dds";
 		Textures[0].AlbedoScale = 4;
-		Textures[0].NormalScale = 8.75f;
+		Textures[0].NormalScale = 4;
 
 		Textures[1].AlbedoPath = "";
 		Textures[1].NormalPath = "";
