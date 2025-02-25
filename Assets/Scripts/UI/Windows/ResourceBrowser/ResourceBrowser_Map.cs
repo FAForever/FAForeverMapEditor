@@ -35,9 +35,18 @@ namespace FAF.MapEditor
 
 			GameObject NewButton = Instantiate(Prefab) as GameObject;
 			NewButton.transform.SetParent(Pivot, false);
-			NewButton.GetComponent<ResourceObject>().SetImages(LoadedTex);
-			NewButton.GetComponent<ResourceObject>().InstanceId = LoadedTextures.Count;
-			NewButton.GetComponent<ResourceObject>().NameField.text = TexPath;
+			
+			ResourceObject Ro = NewButton.GetComponent<ResourceObject>();
+			Ro.SetImages(LoadedTex);
+			Ro.InstanceId = LoadedTextures.Count;
+			Ro.NameField.text = TexPath;
+			if (Ro.CustomTexts.Length > 3)
+			{
+				Ro.CustomTexts[0].text = LoadedTex.width + "x" + LoadedTex.height;
+				Ro.CustomTexts[1].text = (LoadedTex.width / 4).ToString();
+				Ro.CustomTexts[2].text = (LoadedTex.width / 16).ToString();
+				Ro.CustomTexts[3].text = (LoadedTex.width / 64).ToString();
+			}
 			LoadedTextures.Add(LoadedTex);
 			LoadedPaths.Add(RelativePath);
 
