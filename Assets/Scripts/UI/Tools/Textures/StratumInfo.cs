@@ -1284,29 +1284,24 @@ namespace EditMap
 
 			var extensions = new[]
 			{
-				new ExtensionFilter("Stratum mask", new string[]{"bmp", "raw" })
-				//new ExtensionFilter("Stratum mask", "raw, bmp")
+				new ExtensionFilter("Stratum mask", new string[]{"png", "raw" })
 			};
 
 			var paths = StandaloneFileBrowser.OpenFilePanel("Import stratum mask", DefaultPath, extensions, false);
-
-
+			
 			if (paths.Length > 0 && !string.IsNullOrEmpty(paths[0]))
 			{
-				if (paths[0].ToLower().EndsWith("bmp"))
+				if (paths[0].ToLower().EndsWith("png"))
 				{
-					BMPLoader loader = new BMPLoader();
-					BMPImage img = loader.LoadBMP(paths[0]);
-
-					Color[] StratumData;
+					Color[] data;
 					if (Selected > 4)
 					{
-						StratumData = ScmapEditor.Current.map.TexturemapTex2.GetPixels();
+						data = ScmapEditor.Current.map.TexturemapTex2.GetPixels();
 						beginColors = ScmapEditor.Current.map.TexturemapTex2.GetPixels();
 					}
 					else
 					{
-						StratumData = ScmapEditor.Current.map.TexturemapTex.GetPixels();
+						data = ScmapEditor.Current.map.TexturemapTex.GetPixels();
 						beginColors = ScmapEditor.Current.map.TexturemapTex.GetPixels();
 					}
 
@@ -1315,42 +1310,39 @@ namespace EditMap
 					else if (Selected > 4 && Selected < 9)
 						Undo.RegisterUndo(new UndoHistory.HistoryStratumPaint(), new UndoHistory.HistoryStratumPaint.StratumPaintHistoryParameter(1, beginColors));
 
-					Texture2D ImportedImage = img.ToTexture2D();
-					if(ImportedImage.width != ScmapEditor.Current.map.TexturemapTex.width || ImportedImage.height != ScmapEditor.Current.map.TexturemapTex.height)
-					{
-						//ImportedImage.Resize(Map.map.TexturemapTex.width, Map.map.TexturemapTex.height);
-						ImportedImage = TextureScale.Bilinear(ImportedImage, ScmapEditor.Current.map.TexturemapTex.width, ScmapEditor.Current.map.TexturemapTex.height);
-						//ImportedImage.Apply(false);
-					}
+					byte[] binaryImageData = File.ReadAllBytes(paths[0]);
+					Texture2D ImportedImage = new Texture2D(ScmapEditor.Current.map.TexturemapTex.width,
+						ScmapEditor.Current.map.TexturemapTex.height);
+					ImportedImage.LoadImage(binaryImageData);
 
 					ImportedImage = TextureFlip.FlipTextureVertical(ImportedImage, false);
 
 					Color[] ImportedColors = ImportedImage.GetPixels();
 
-					for (int i = 0; i < StratumData.Length; i++)
+					for (int i = 0; i < data.Length; i++)
 					{
 						if (Selected == 1 || Selected == 5)
-							StratumData[i].r = ImportedColors[i].r;
+							data[i].r = ImportedColors[i].r;
 						else if (Selected == 2 || Selected == 6)
-							StratumData[i].g = ImportedColors[i].r;
+							data[i].g = ImportedColors[i].r;
 						else if (Selected == 3 || Selected == 7)
-							StratumData[i].b = ImportedColors[i].r;
+							data[i].b = ImportedColors[i].r;
 						else if (Selected == 4 || Selected == 8)
-							StratumData[i].a = ImportedColors[i].r;
+							data[i].a = ImportedColors[i].r;
 					}
 
 
 					if (Selected > 4)
 					{
-						ScmapEditor.Current.map.TexturemapTex2.SetPixels(StratumData);
+						ScmapEditor.Current.map.TexturemapTex2.SetPixels(data);
 						ScmapEditor.Current.map.TexturemapTex2.Apply(false);
 					}
 					else
 					{
-						ScmapEditor.Current.map.TexturemapTex.SetPixels(StratumData);
+						ScmapEditor.Current.map.TexturemapTex.SetPixels(data);
 						ScmapEditor.Current.map.TexturemapTex.Apply(false);
 					}
-					GenericInfoPopup.ShowInfo("Stratim mask import success!\n" + System.IO.Path.GetFileName(paths[0]));
+					GenericInfoPopup.ShowInfo("Stratum mask import success!\n" + System.IO.Path.GetFileName(paths[0]));
 
 				}
 				else if(paths[0].ToLower().EndsWith("raw"))
@@ -1404,7 +1396,7 @@ namespace EditMap
 					}
 
 
-					GenericInfoPopup.ShowInfo("Stratim mask import success!\n" + System.IO.Path.GetFileName(paths[0]));
+					GenericInfoPopup.ShowInfo("Stratum mask import success!\n" + System.IO.Path.GetFileName(paths[0]));
 
 				}
 				else
