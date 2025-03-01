@@ -1,6 +1,6 @@
 ﻿// Upgrade NOTE: replaced 'mul(UNITY_MATRIX_MVP,*)' with 'UnityObjectToClipPos(*)'
 
-Shader "UI/RawImageChannel"
+Shader "UI/RawImageNoAlpha"
 {
 	Properties
 	{
@@ -68,10 +68,6 @@ Shader "UI/RawImageChannel"
 			};
 			
 			fixed4 _Color;
-			int _Red;
-			int _Green;
-			int _Blue;
-			int _Alpha;
 			int _Mipmap;
 
 			v2f vert(appdata_t IN)
