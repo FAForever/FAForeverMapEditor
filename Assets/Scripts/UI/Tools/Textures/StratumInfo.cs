@@ -1145,7 +1145,7 @@ namespace EditMap
 	        OutputWindow.Initialize();
 	        Process neroxisToolsuite = new Process();
             neroxisToolsuite.StartInfo.FileName = EnvPaths.GetJavaPath() + "/java.exe";
-            var jarPath = Application.dataPath + "/Plugins/NeroxisMapGenerator/neroxis-toolsuite.jar";
+            var jarPath = MapLuaParser.StructurePath + "Neroxis/neroxis-toolsuite.jar";
             neroxisToolsuite.StartInfo.Arguments = "-jar \"" + jarPath + "\" " + arguments;
             outputQueue.Enqueue("Starting Java process: " + neroxisToolsuite.StartInfo.FileName + neroxisToolsuite.StartInfo.Arguments);
             
