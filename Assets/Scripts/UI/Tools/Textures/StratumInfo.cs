@@ -617,15 +617,13 @@ namespace EditMap
 		}
         #endregion
 
-        #region Load all brushesh
+        #region Load all brushes
         bool BrusheshLoaded = false;
-		string StructurePath;
 		public void LoadBrushesh()
 		{
 			Clean();
 
-
-			StructurePath = MapLuaParser.GetDataPath() + "/Structure/"; ;
+			string StructurePath = MapLuaParser.GetDataPath() + "/Structure/"; ;
 			StructurePath += "brush";
 
 			if (!Directory.Exists(StructurePath))
