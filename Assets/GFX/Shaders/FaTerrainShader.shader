@@ -872,6 +872,7 @@
 
 				GridFinal *= GridColor.a;
 
+                // central axes
 				half CenterGridSize = lerp(0.005, 0.015, _GridCamDist) / _GridScale;
 				if (uv_Control.x > 0.5 - CenterGridSize && uv_Control.x < 0.5 + CenterGridSize)
 					GridFinal.rgb = fixed3(0.4, 1, 0);
@@ -884,13 +885,13 @@
             float3 renderGridOverlay(float2 uv){
                 float3 Emit = 0;
                 if (_Grid > 0) {
-					if(_GridType == 1)
+					if(_GridType == 1) // build
 						Emit += RenderGrid(_GridTexture, uv, 0, _GridScale);
-					else if (_GridType == 2)
+					else if (_GridType == 2) // general
 						Emit += RenderGrid(_GridTexture, uv, 0.0015, _GridScale / 5.12);
-					else if (_GridType == 3)
+					else if (_GridType == 3) // AI
 						Emit += RenderGrid(_GridTexture, uv, 0.0015, 16);
-					else
+					else //standard
 						Emit += RenderGrid(_GridTexture, uv, 0, _GridScale);
 				}
                 return Emit;
