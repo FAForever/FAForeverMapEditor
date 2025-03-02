@@ -35,9 +35,11 @@
         UtilitySamplerB ("masks of stratum layers 4 - 7", 2D) = "black" {}
         UtilitySamplerC ("water properties", 2D) = "black" {}  // not set?
 
-    	LowerAlbedoSampler ("Layer Lower (R)", 2D) = "white" {}
-	    LowerNormalSampler ("Normal Lower (R)", 2D) = "bump" {}
-    	UpperAlbedoSampler ("Layer Upper (R)", 2D) = "white" {}
+    	LowerAlbedoSampler ("Lower Albedo", 2D) = "white" {}
+	    LowerNormalSampler ("Lower Normal", 2D) = "bump" {}
+        Stratum7AlbedoSampler ("Stratum 7 Albedo", 2D) = "white" {}
+	    Stratum7NormalSampler ("Stratum 7 Normal", 2D) = "bump" {}
+    	UpperAlbedoSampler ("Upper Albedo", 2D) = "white" {}
 
         _StratumAlbedoArray ("Albedo array", 2DArray) = "" {}
 	    _StratumNormalArray ("Normal array", 2DArray) = "" {}
@@ -158,6 +160,8 @@
             sampler2D LowerAlbedoSampler;
             sampler2D UpperAlbedoSampler;
             sampler2D LowerNormalSampler;
+			sampler2D Stratum7AlbedoSampler;
+			sampler2D Stratum7NormalSampler;
        
 			UNITY_DECLARE_TEX2DARRAY(_StratumAlbedoArray);
 			UNITY_DECLARE_TEX2DARRAY(_StratumNormalArray);
@@ -196,7 +200,7 @@
                 float3 worldNormal;
                 if (Stratum7NormalTile < 1.0 && _HideStratum7 == 0) {
                     float3 normal;
-                    normal.xz = StratumNormalSampler(7, TerrainScale * v.mTexWT.xy).ag * 2 - 1;
+                    normal.xz = tex2D(Stratum7NormalSampler, TerrainScale * v.mTexWT.xy).ag * 2 - 1;
                     normal.z = normal.z * -1;
                     // reconstruct y component
                     normal.y = sqrt(1 - dot(normal.xz, normal.xz));
@@ -320,7 +324,7 @@
                 float4 stratum4Normal = normalize(StratumNormalSampler(4,pixel.mTexWT*TerrainScale*Stratum4NormalTile)*2-1);
                 float4 stratum5Normal = normalize(StratumNormalSampler(5,pixel.mTexWT*TerrainScale*Stratum5NormalTile)*2-1);
                 float4 stratum6Normal = normalize(StratumNormalSampler(6,pixel.mTexWT*TerrainScale*Stratum6NormalTile)*2-1);
-                float4 stratum7Normal = normalize(StratumNormalSampler(7,pixel.mTexWT*TerrainScale*Stratum7NormalTile)*2-1);
+                float4 stratum7Normal = normalize(tex2D(Stratum7NormalSampler,pixel.mTexWT*TerrainScale*Stratum7NormalTile)*2-1);
 
                 float4 normal = lowerNormal;
                 if(_HideStratum0 == 0)
@@ -359,7 +363,7 @@
                 float4 stratum4Albedo = StratumAlbedoSampler(4,position*Stratum4AlbedoTile);
                 float4 stratum5Albedo = StratumAlbedoSampler(5,position*Stratum5AlbedoTile);
                 float4 stratum6Albedo = StratumAlbedoSampler(6,position*Stratum6AlbedoTile);
-                float4 stratum7Albedo = StratumAlbedoSampler(7,position*Stratum7AlbedoTile);
+                float4 stratum7Albedo = tex2D(Stratum7AlbedoSampler,position*Stratum7AlbedoTile);
                 float4 upperAlbedo = tex2D(UpperAlbedoSampler,position*UpperAlbedoTile);
 
                 float4 albedo = lowerAlbedo;
@@ -719,7 +723,7 @@
                 float stratum5Height = sampleHeight(position.xy, Stratum5AlbedoTile.xx, Stratum5NormalTile.xx, float2(0.0, 0.5), false);
                 float stratum6Height = sampleHeight(rotated_pos, Stratum6AlbedoTile.xx, Stratum6NormalTile.xx, float2(0.5, 0.5), false);
 
-                float2 terrainNormal = StratumNormalSampler(7, position.xy).ag * 2 - 1;
+                float2 terrainNormal = tex2D(Stratum7NormalSampler, position.xy).ag * 2 - 1;
                 float2 blendWeights = pow(abs(terrainNormal), 3);
                 blendWeights = blendWeights / (blendWeights.x + blendWeights.y);
 
@@ -782,7 +786,7 @@
                 float stratum5Height = sampleHeight(position.xy, Stratum5AlbedoTile.xx, Stratum5NormalTile.xx, float2(0.0, 0.5), false);
                 float stratum6Height = sampleHeight(rotated_pos, Stratum6AlbedoTile.xx, Stratum6NormalTile.xx, float2(0.5, 0.5), false);
 
-                float2 terrainNormal = StratumNormalSampler(7, position.xy).ag * 2 - 1;
+                float2 terrainNormal = tex2D(Stratum7NormalSampler, position.xy).ag * 2 - 1;
                 float2 blendWeights = pow(abs(terrainNormal), 3);
                 blendWeights = blendWeights / (blendWeights.x + blendWeights.y);
 
@@ -962,8 +966,8 @@
                     o.wNormal = normalize(normal);
 
                     if (_HideStratum7 == 0) {
-                        o.WaterDepth = StratumAlbedoSampler(7, position.xy).a;
-                        o.MapShadow = StratumAlbedoSampler(7, position.xy).g;
+                        o.WaterDepth = tex2D(Stratum7AlbedoSampler, position.xy).a;
+                        o.MapShadow = tex2D(Stratum7AlbedoSampler, position.xy).g;
                     } else {
                         o.WaterDepth = tex2D(UtilitySamplerC, position.xy).g;
                         o.MapShadow = 1;
@@ -979,8 +983,8 @@
                     o.wNormal = normalize(normal);
 
                     if (_HideStratum7 == 0) {
-                        o.WaterDepth = StratumAlbedoSampler(7, position.xy).a;
-                        o.MapShadow = StratumAlbedoSampler(7, position.xy).g;
+                        o.WaterDepth = tex2D(Stratum7AlbedoSampler, position.xy).a;
+                        o.MapShadow = tex2D(Stratum7AlbedoSampler, position.xy).g;
                     } else {
                         o.WaterDepth = tex2D(UtilitySamplerC, position.xy).g;
                         o.MapShadow = 1;
@@ -996,8 +1000,8 @@
                     o.wNormal = normalize(normal);
 
                     if (_HideStratum7 == 0) {
-                        o.WaterDepth = StratumAlbedoSampler(7, position.xy).a;
-                        o.MapShadow = StratumAlbedoSampler(7, position.xy).g;
+                        o.WaterDepth = tex2D(Stratum7AlbedoSampler, position.xy).a;
+                        o.MapShadow = tex2D(Stratum7AlbedoSampler, position.xy).g;
                     } else {
                         o.WaterDepth = tex2D(UtilitySamplerC, position.xy).g;
                         o.MapShadow = 1;
@@ -1013,8 +1017,8 @@
                     o.wNormal = normalize(normal);
 
                     if (_HideStratum7 == 0) {
-                        o.WaterDepth = StratumAlbedoSampler(7, position.xy).a;
-                        o.MapShadow = StratumAlbedoSampler(7, position.xy).g;
+                        o.WaterDepth = tex2D(Stratum7AlbedoSampler, position.xy).a;
+                        o.MapShadow = tex2D(Stratum7AlbedoSampler, position.xy).g;
                     } else {
                         o.WaterDepth = tex2D(UtilitySamplerC, position.xy).g;
                         o.MapShadow = 1;
@@ -1030,8 +1034,8 @@
                     o.wNormal = normalize(normal);
 
                     if (_HideStratum7 == 0) {
-                        o.WaterDepth = StratumAlbedoSampler(7, position.xy).a;
-                        o.MapShadow = StratumAlbedoSampler(7, position.xy).g;
+                        o.WaterDepth = tex2D(Stratum7AlbedoSampler, position.xy).a;
+                        o.MapShadow = tex2D(Stratum7AlbedoSampler, position.xy).g;
                     } else {
                         o.WaterDepth = tex2D(UtilitySamplerC, position.xy).g;
                         o.MapShadow = 1;
@@ -1047,8 +1051,8 @@
                     o.wNormal = normalize(normal);
 
                     if (_HideStratum7 == 0) {
-                        o.WaterDepth = StratumAlbedoSampler(7, position.xy).a;
-                        o.MapShadow = StratumAlbedoSampler(7, position.xy).g;
+                        o.WaterDepth = tex2D(Stratum7AlbedoSampler, position.xy).a;
+                        o.MapShadow = tex2D(Stratum7AlbedoSampler, position.xy).g;
                     } else {
                         o.WaterDepth = tex2D(UtilitySamplerC, position.xy).g;
                         o.MapShadow = 1;
@@ -1064,8 +1068,8 @@
                     o.wNormal = normalize(normal);
 
                     if (_HideStratum7 == 0) {
-                        o.WaterDepth = StratumAlbedoSampler(7, position.xy).a;
-                        o.MapShadow = StratumAlbedoSampler(7, position.xy).g;
+                        o.WaterDepth = tex2D(Stratum7AlbedoSampler, position.xy).a;
+                        o.MapShadow = tex2D(Stratum7AlbedoSampler, position.xy).g;
                     } else {
                         o.WaterDepth = tex2D(UtilitySamplerC, position.xy).g;
                         o.MapShadow = 1;

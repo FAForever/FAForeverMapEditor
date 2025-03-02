@@ -451,14 +451,30 @@ public partial class ScmapEditor : MonoBehaviour
 #region Textures
 	public void SetTextures(int Layer = -1)
 	{
-
 		if (Layer < 0)
 		{
 			TerrainMaterial.SetTexture("UtilitySamplerA", map.TexturemapTex);
 			if (Textures[5].Albedo || Textures[6].Albedo || Textures[7].Albedo || Textures[8].Albedo)
 				TerrainMaterial.SetTexture("UtilitySamplerB", map.TexturemapTex2);
-		}
+			
+			TerrainMaterial.SetFloat("Stratum0AlbedoTile", map.Width / Textures[1].AlbedoScale);
+            TerrainMaterial.SetFloat("Stratum1AlbedoTile", map.Width / Textures[2].AlbedoScale);
+            TerrainMaterial.SetFloat("Stratum2AlbedoTile", map.Width / Textures[3].AlbedoScale);
+            TerrainMaterial.SetFloat("Stratum3AlbedoTile", map.Width / Textures[4].AlbedoScale);
+            TerrainMaterial.SetFloat("Stratum4AlbedoTile", map.Width / Textures[5].AlbedoScale);
+            TerrainMaterial.SetFloat("Stratum5AlbedoTile", map.Width / Textures[6].AlbedoScale);
+            TerrainMaterial.SetFloat("Stratum6AlbedoTile", map.Width / Textures[7].AlbedoScale);
 
+            TerrainMaterial.SetFloat("Stratum0NormalTile", map.Width / Textures[1].NormalScale);
+            TerrainMaterial.SetFloat("Stratum1NormalTile", map.Width / Textures[2].NormalScale);
+            TerrainMaterial.SetFloat("Stratum2NormalTile", map.Width / Textures[3].NormalScale);
+            TerrainMaterial.SetFloat("Stratum3NormalTile", map.Width / Textures[4].NormalScale);
+            TerrainMaterial.SetFloat("Stratum4NormalTile", map.Width / Textures[5].NormalScale);
+            TerrainMaterial.SetFloat("Stratum5NormalTile", map.Width / Textures[6].NormalScale);
+            TerrainMaterial.SetFloat("Stratum6NormalTile", map.Width / Textures[7].NormalScale);
+            
+            GenerateArrays();
+		}
 
 		if (Layer <= 0)
 		{
@@ -468,31 +484,20 @@ public partial class ScmapEditor : MonoBehaviour
 			TerrainMaterial.SetTexture("LowerNormalSampler", Textures[0].Normal);
 		}
 
-		if (Layer > 0 && Layer < 9)
+		if (Layer >= 1 && Layer <= 7)
 		{
 			string IdStrig = (Layer - 1).ToString();
 			TerrainMaterial.SetFloat("Stratum" + IdStrig + "AlbedoTile", map.Width / Textures[Layer].AlbedoScale);
 			TerrainMaterial.SetFloat("Stratum" + IdStrig + "NormalTile", map.Width / Textures[Layer].NormalScale);
+			GenerateArrays();
 		}
-		else
+		
+		if (Layer == 8 || Layer < 0)
 		{
-			TerrainMaterial.SetFloat("Stratum0AlbedoTile", map.Width / Textures[1].AlbedoScale);
-			TerrainMaterial.SetFloat("Stratum1AlbedoTile", map.Width / Textures[2].AlbedoScale);
-			TerrainMaterial.SetFloat("Stratum2AlbedoTile", map.Width / Textures[3].AlbedoScale);
-			TerrainMaterial.SetFloat("Stratum3AlbedoTile", map.Width / Textures[4].AlbedoScale);
-			TerrainMaterial.SetFloat("Stratum4AlbedoTile", map.Width / Textures[5].AlbedoScale);
-			TerrainMaterial.SetFloat("Stratum5AlbedoTile", map.Width / Textures[6].AlbedoScale);
-			TerrainMaterial.SetFloat("Stratum6AlbedoTile", map.Width / Textures[7].AlbedoScale);
 			TerrainMaterial.SetFloat("Stratum7AlbedoTile", map.Width / Textures[8].AlbedoScale);
-
-			TerrainMaterial.SetFloat("Stratum0NormalTile", map.Width / Textures[1].NormalScale);
-			TerrainMaterial.SetFloat("Stratum1NormalTile", map.Width / Textures[2].NormalScale);
-			TerrainMaterial.SetFloat("Stratum2NormalTile", map.Width / Textures[3].NormalScale);
-			TerrainMaterial.SetFloat("Stratum3NormalTile", map.Width / Textures[4].NormalScale);
-			TerrainMaterial.SetFloat("Stratum4NormalTile", map.Width / Textures[5].NormalScale);
-			TerrainMaterial.SetFloat("Stratum5NormalTile", map.Width / Textures[6].NormalScale);
-			TerrainMaterial.SetFloat("Stratum6NormalTile", map.Width / Textures[7].NormalScale);
 			TerrainMaterial.SetFloat("Stratum7NormalTile", map.Width / Textures[8].NormalScale);
+			TerrainMaterial.SetTexture("Stratum7AlbedoSampler", Textures[8].Albedo);
+			TerrainMaterial.SetTexture("Stratum7NormalSampler", Textures[8].Normal);
 		}
 
 		if (Layer == 9 || Layer < 0)
@@ -500,19 +505,16 @@ public partial class ScmapEditor : MonoBehaviour
 			TerrainMaterial.SetFloat("UpperAlbedoTile", map.Width / Textures[9].AlbedoScale);
 			TerrainMaterial.SetTexture("UpperAlbedoSampler", Textures[9].Albedo);
 		}
-
-		if(Layer != 9 && Layer != 0)
-		{
-			GenerateArrays();
-		}
 	}
 
+	// We need an array texture to reduce the amount of samplers in the shader,
+	// but we exclude stratum 7 as it might hold very large textures.
 	void GenerateArrays()
 	{
 		int AlbedoSize = 256;
 		int MipMapCount = 10;
 
-		for (int i = 0; i < 8; i++)
+		for (int i = 0; i < 7; i++)
 		{
 			if (Textures[i + 1].Albedo.width > AlbedoSize)
 			{
@@ -526,9 +528,9 @@ public partial class ScmapEditor : MonoBehaviour
 			}
 		}
 
-		Texture2DArray AlbedoArray = new Texture2DArray(AlbedoSize, AlbedoSize, 8, TextureFormat.RGBA32, true);
+		Texture2DArray AlbedoArray = new Texture2DArray(AlbedoSize, AlbedoSize, 7, TextureFormat.RGBA32, true);
 
-		for (int i = 0; i < 8; i++)
+		for (int i = 0; i < 7; i++)
 		{
 			if(!Textures[i + 1].Albedo.isReadable)
 			{
@@ -568,7 +570,7 @@ public partial class ScmapEditor : MonoBehaviour
 
 		AlbedoSize = 256;
 
-		for (int i = 0; i < 8; i++)
+		for (int i = 0; i < 7; i++)
 		{
 			if (Textures[i + 1].Normal == null)
 				continue;
@@ -582,9 +584,9 @@ public partial class ScmapEditor : MonoBehaviour
 			}
 		}
 
-		Texture2DArray NormalArray = new Texture2DArray(AlbedoSize, AlbedoSize, 8, TextureFormat.RGBA32, true);
+		Texture2DArray NormalArray = new Texture2DArray(AlbedoSize, AlbedoSize, 7, TextureFormat.RGBA32, true);
 
-		for (int i = 0; i < 8; i++)
+		for (int i = 0; i < 7; i++)
 		{
 			if (!Textures[i + 1].Normal.isReadable)
 			{
