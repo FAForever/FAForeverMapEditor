@@ -1106,7 +1106,6 @@ public partial class ScmapEditor : MonoBehaviour
 				Shader.SetGlobalInt("_ShaderID", 200);
 				break;
 			case "Terrain250":
-			case "Terrain301":
 				Shader.SetGlobalInt("_ShaderID", 250);
 				break;
 			case "Terrain200B":
@@ -1125,14 +1124,20 @@ public partial class ScmapEditor : MonoBehaviour
 		    MapLuaParser.Current.EditMenu.MapInfoMenu.ShaderName.text == "Terrain050" ||
 		    MapLuaParser.Current.EditMenu.MapInfoMenu.ShaderName.text == "Terrain200" ||
 		    MapLuaParser.Current.EditMenu.MapInfoMenu.ShaderName.text == "Terrain250" ||
-		    MapLuaParser.Current.EditMenu.MapInfoMenu.ShaderName.text == "Terrain301" ||
 		    MapLuaParser.Current.EditMenu.MapInfoMenu.ShaderName.text == "Terrain200B" ||
 		    MapLuaParser.Current.EditMenu.MapInfoMenu.ShaderName.text == "Terrain250B")
         {
-            Textures[9].AlbedoScale = 10000;
-            Textures[8].NormalScale = 10000;
+            Textures[8].AlbedoScale = 10000;  // Use map shadow on decals
+            Textures[8].NormalScale = 10000;  // Use terrain normal texture
             MapLuaParser.Current.EditMenu.TexturesMenu.ShaderTools.interactable = true;
             MapLuaParser.Current.EditMenu.TexturesMenu.ShaderTools.alpha = 1;
+            if (MapLuaParser.Current.EditMenu.MapInfoMenu.ShaderName.text == "Terrain200" ||
+                MapLuaParser.Current.EditMenu.MapInfoMenu.ShaderName.text == "Terrain250" ||
+                MapLuaParser.Current.EditMenu.MapInfoMenu.ShaderName.text == "Terrain200B" ||
+                MapLuaParser.Current.EditMenu.MapInfoMenu.ShaderName.text == "Terrain250B")
+            {
+                Textures[9].AlbedoScale = 10000;  // Use PBR rendering on decals
+            }
         }
 		else
 		{
@@ -1142,7 +1147,6 @@ public partial class ScmapEditor : MonoBehaviour
 		
 		if (MapLuaParser.Current.EditMenu.MapInfoMenu.ShaderName.text == "Terrain200" ||
 		    MapLuaParser.Current.EditMenu.MapInfoMenu.ShaderName.text == "Terrain250" ||
-		    MapLuaParser.Current.EditMenu.MapInfoMenu.ShaderName.text == "Terrain301" ||
 		    MapLuaParser.Current.EditMenu.MapInfoMenu.ShaderName.text == "Terrain200B" ||
 		    MapLuaParser.Current.EditMenu.MapInfoMenu.ShaderName.text == "Terrain250B")
 		{
