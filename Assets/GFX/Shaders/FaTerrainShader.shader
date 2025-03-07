@@ -498,7 +498,7 @@
                 return normalize(float3((n1.xy * (1 - factormodified) + n2.xy * factormodified), n1.z));
             }
 
-            /* # Sample a 2D 2x2 texture atlas # */
+            /* # Sample the 2D 2x2 PBR texture atlas # */
             /* To prevent bleeding from the neighboring tiles, we need to work with padding */
             float4 atlas2D(float2 uv, uniform float2 offset) {
                 // We need to manually provide the derivatives to prevent seams.
@@ -514,9 +514,9 @@
                 float4 albedo = StratumAlbedoSampler(layer, position * scale);
                 // store roughness in albedo alpha so we get the roughness splatting for free
                 if (firstBatch) {
-                    albedo.a = atlas2D(position * scale, offset).y;
+                    albedo.a = atlas2D(position * scale, offset).x;
                 } else {
-                    albedo.a = atlas2D(position * scale, offset).w;
+                    albedo.a = atlas2D(position * scale, offset).z;
                 }
                 return albedo;
             }
@@ -525,9 +525,9 @@
                 float4 albedo = tex2D(s, position * scale);
                 // store roughness in albedo alpha so we get the roughness splatting for free
                 if (firstBatch) {
-                    albedo.a = atlas2D(position * scale, offset).y;
+                    albedo.a = atlas2D(position * scale, offset).x;
                 } else {
-                    albedo.a = atlas2D(position * scale, offset).w;
+                    albedo.a = atlas2D(position * scale, offset).z;
                 }
                 return albedo;
             }
@@ -536,13 +536,50 @@
                 float heightNear;
                 float heightFar;
                 if (firstBatch) {
-                    heightNear = atlas2D(position * nearScale, offset).x;
-                    heightFar = atlas2D(position * farScale, offset).x;
+                    heightNear = atlas2D(position * nearScale, offset).y;
+                    heightFar = atlas2D(position * farScale, offset).y;
                 } else {
-                    heightNear = atlas2D(position * nearScale, offset).z;
-                    heightFar = atlas2D(position * farScale, offset).z;
+                    heightNear = atlas2D(position * nearScale, offset).w;
+                    heightFar = atlas2D(position * farScale, offset).w;
                 }
                 return (heightNear + heightFar) / 2;
+            }
+			
+            float blendHeight(float3 position, float2 blendWeights, uniform float2 nearscale, uniform float2 farscale, uniform float2 offset, uniform bool firstBatch) {
+                float heightNearXZ;
+                float heightFarXZ;
+                float heightNearYZ;
+                float heightFarYZ;
+                if (firstBatch) {
+                    heightNearXZ = atlas2D(position.xz * nearscale, offset).y;
+                    heightFarXZ = atlas2D(position.xz * farscale, offset).y;
+                    heightNearYZ = atlas2D(position.yz * nearscale, offset).y;
+                    heightFarYZ = atlas2D(position.yz * farscale, offset).y;
+                } else {
+                    heightNearXZ = atlas2D(position.xz * nearscale, offset).w;
+                    heightFarXZ = atlas2D(position.xz * farscale, offset).w;
+                    heightNearYZ = atlas2D(position.yz * nearscale, offset).w;
+                    heightFarYZ = atlas2D(position.yz * farscale, offset).w;
+                }
+                return (heightNearYZ + heightFarYZ) / 2 * blendWeights.x + (heightNearXZ + heightFarXZ) / 2 * blendWeights.y;
+            }
+
+			float2 calculateBlendWeights(float2 position) {
+                float2 terrainNormal = tex2D(Stratum7NormalSampler, position).ag * 2 - 1;
+                float2 blendWeights = pow(abs(terrainNormal), 3);
+                blendWeights = blendWeights / (blendWeights.x + blendWeights.y);
+                return blendWeights;
+            }
+
+            float3 blendMacrotexture (float2 position, uniform float macrotextureblend, float3 albedo) {
+                if (macrotextureblend == 1) {
+                    float4 macrotexture = tex2D(LowerAlbedoSampler, position.xy * LowerAlbedoTile.xx);
+                    albedo = lerp(albedo, macrotexture.rgb, macrotexture.a);
+                } else if (macrotextureblend == 2) {
+                    float4 macrotexture = tex2D(LowerAlbedoSampler, position.xy * LowerAlbedoTile.xx);
+                    albedo = lerp(albedo, 2 * macrotexture.rgb * albedo, macrotexture.a);
+                }
+                return albedo;
             }
 
             float3 Terrain200NormalsPS ( Input inV, uniform bool halfRange )
@@ -655,37 +692,12 @@
                 albedo = splatLerp(albedo, stratum5Albedo, stratum5Height, mask1.y, SpecularColor.r);
                 if(_HideStratum6 == 0)
                 albedo = splatLerp(albedo, stratum6Albedo, stratum6Height, mask1.z, SpecularColor.r);
-                if (macrotextureblend == 1) {
-                    float4 macrotexture = tex2D(LowerAlbedoSampler, position.xy * LowerAlbedoTile.xx);
-                    albedo.rgb = lerp(albedo.rgb, macrotexture.rgb, macrotexture.a);
-                } else if (macrotextureblend == 2) {
-                    float4 macrotexture = tex2D(LowerAlbedoSampler, position.xy * LowerAlbedoTile.xx);
-                    albedo.rgb = lerp(albedo.rgb, 2 * macrotexture.rgb * albedo.rgb, macrotexture.a);
-                }
+                albedo.rgb = blendMacrotexture(position.xy, macrotextureblend, albedo.rgb);
 
                 // We need to add 0.01 as the reflection disappears at 0
                 float roughness = saturate(albedo.a * mask1.w * 2 + 0.01);
 
                 return float4(albedo.rgb, roughness);
-            }
-
-            float blendHeight(float3 position, float2 blendWeights, uniform float2 nearscale, uniform float2 farscale, uniform float2 offset, uniform bool firstBatch) {
-                float heightNearXZ;
-                float heightFarXZ;
-                float heightNearYZ;
-                float heightFarYZ;
-                if (firstBatch) {
-                    heightNearXZ = atlas2D(position.xz * nearscale, offset).x;
-                    heightFarXZ = atlas2D(position.xz * farscale, offset).x;
-                    heightNearYZ = atlas2D(position.yz * nearscale, offset).x;
-                    heightFarYZ = atlas2D(position.yz * farscale, offset).x;
-                } else {
-                    heightNearXZ = atlas2D(position.xz * nearscale, offset).z;
-                    heightFarXZ = atlas2D(position.xz * farscale, offset).z;
-                    heightNearYZ = atlas2D(position.yz * nearscale, offset).z;
-                    heightFarYZ = atlas2D(position.yz * farscale, offset).z;
-                }
-                return (heightNearYZ + heightFarYZ) / 2 * blendWeights.x + (heightNearXZ + heightFarXZ) / 2 * blendWeights.y;
             }
 
             // Stratum2 and Stratum3 use biplanar mapping to improve cliff texturing
@@ -723,10 +735,7 @@
                 float stratum5Height = sampleHeight(position.xy, Stratum5AlbedoTile.xx, Stratum5NormalTile.xx, float2(0.0, 0.5), false);
                 float stratum6Height = sampleHeight(rotated_pos, Stratum6AlbedoTile.xx, Stratum6NormalTile.xx, float2(0.5, 0.5), false);
 
-                float2 terrainNormal = tex2D(Stratum7NormalSampler, position.xy).ag * 2 - 1;
-                float2 blendWeights = pow(abs(terrainNormal), 3);
-                blendWeights = blendWeights / (blendWeights.x + blendWeights.y);
-
+                float2 blendWeights = calculateBlendWeights(position.xy);
                 float3 stratum2NormalXZ = normalize(StratumNormalSampler(2, position.xz * Stratum2AlbedoTile.xx).rgb * 2 - 1);
                 float3 stratum2NormalYZ = normalize(StratumNormalSampler(2, position.yz * Stratum2AlbedoTile.xx).rgb * 2 - 1);
                 float3 stratum2Normal = stratum2NormalYZ * blendWeights.x + stratum2NormalXZ * blendWeights.y;
@@ -786,10 +795,7 @@
                 float stratum5Height = sampleHeight(position.xy, Stratum5AlbedoTile.xx, Stratum5NormalTile.xx, float2(0.0, 0.5), false);
                 float stratum6Height = sampleHeight(rotated_pos, Stratum6AlbedoTile.xx, Stratum6NormalTile.xx, float2(0.5, 0.5), false);
 
-                float2 terrainNormal = tex2D(Stratum7NormalSampler, position.xy).ag * 2 - 1;
-                float2 blendWeights = pow(abs(terrainNormal), 3);
-                blendWeights = blendWeights / (blendWeights.x + blendWeights.y);
-
+                float2 blendWeights = calculateBlendWeights(position.xy);
                 float4 stratum2AlbedoXZ = sampleAlbedoStratum(2, position.xz, inV.nearScales.zz, float2(0.5, 0.5), true);
                 float4 stratum2AlbedoYZ = sampleAlbedoStratum(2, position.yz, inV.nearScales.zz, float2(0.5, 0.5), true);
                 float4 stratum2Albedo = stratum2AlbedoYZ * blendWeights.x + stratum2AlbedoXZ * blendWeights.y;
@@ -815,13 +821,7 @@
                 albedo = splatLerp(albedo, stratum5Albedo, stratum5Height, mask1.y, SpecularColor.r);
                 if(_HideStratum6 == 0)
                 albedo = splatLerp(albedo, stratum6Albedo, stratum6Height, mask1.z, SpecularColor.r);
-                if (macrotextureblend == 1) {
-                    float4 macrotexture = tex2D(LowerAlbedoSampler, position.xy * LowerAlbedoTile.xx);
-                    albedo.rgb = lerp(albedo.rgb, macrotexture.rgb, macrotexture.a);
-                } else if (macrotextureblend == 2) {
-                    float4 macrotexture = tex2D(LowerAlbedoSampler, position.xy * LowerAlbedoTile.xx);
-                    albedo.rgb = lerp(albedo.rgb, 2 * macrotexture.rgb * albedo.rgb, macrotexture.a);
-                }
+                albedo.rgb = blendMacrotexture(position.xy, macrotextureblend, albedo.rgb);
 
                 // We need to add 0.01 as the reflection disappears at 0
                 float roughness = saturate(albedo.a * mask1.w * 2 + 0.01);
@@ -955,6 +955,7 @@
 
                     o.WaterDepth = tex2D(UtilitySamplerC, position.xy).g;
                     o.MapShadow = 1;
+                    o.AmbientOcclusion = 1;
                 }
                 else if (_ShaderID == 12)
                 {
@@ -965,12 +966,14 @@
                     float3 normal = TangentToWorldSpace(inV, TerrainNormals000(inV, false).xyz);
                     o.wNormal = normalize(normal);
 
-                    if (_HideStratum7 == 0) {
-                        o.WaterDepth = tex2D(Stratum7AlbedoSampler, position.xy).a;
-                        o.MapShadow = tex2D(Stratum7AlbedoSampler, position.xy).g;
+                    o.WaterDepth = tex2D(UtilitySamplerC, position.xy).g;
+                    if (Stratum7AlbedoTile < 1 && _HideStratum7 == 0) {
+                        float4 terrainInfo = tex2D(Stratum7AlbedoSampler, position.xy);
+                        o.MapShadow = terrainInfo.a;
+                        o.AmbientOcclusion = terrainInfo.g;
                     } else {
-                        o.WaterDepth = tex2D(UtilitySamplerC, position.xy).g;
                         o.MapShadow = 1;
+                        o.AmbientOcclusion = 1;
                     }
                 }
                 else if (_ShaderID == 0)
@@ -981,13 +984,15 @@
 
                     float3 normal = TangentToWorldSpace(inV, TerrainNormals000(inV, false).xyz);
                     o.wNormal = normalize(normal);
-
-                    if (_HideStratum7 == 0) {
-                        o.WaterDepth = tex2D(Stratum7AlbedoSampler, position.xy).a;
-                        o.MapShadow = tex2D(Stratum7AlbedoSampler, position.xy).g;
+                    
+                    o.WaterDepth = tex2D(UtilitySamplerC, position.xy).g;
+                    if (Stratum7AlbedoTile < 1 && _HideStratum7 == 0) {
+                        float4 terrainInfo = tex2D(Stratum7AlbedoSampler, position.xy);
+                        o.MapShadow = terrainInfo.a;
+                        o.AmbientOcclusion = terrainInfo.g;
                     } else {
-                        o.WaterDepth = tex2D(UtilitySamplerC, position.xy).g;
                         o.MapShadow = 1;
+                        o.AmbientOcclusion = 1;
                     }
                 }
                 else if (_ShaderID == 50)
@@ -999,12 +1004,14 @@
                     float3 normal = TangentToWorldSpace(inV, TerrainNormals000(inV, true).xyz);
                     o.wNormal = normalize(normal);
 
-                    if (_HideStratum7 == 0) {
-                        o.WaterDepth = tex2D(Stratum7AlbedoSampler, position.xy).a;
-                        o.MapShadow = tex2D(Stratum7AlbedoSampler, position.xy).g;
+                    o.WaterDepth = tex2D(UtilitySamplerC, position.xy).g;
+                    if (Stratum7AlbedoTile < 1 && _HideStratum7 == 0) {
+                        float4 terrainInfo = tex2D(Stratum7AlbedoSampler, position.xy);
+                        o.MapShadow = terrainInfo.a;
+                        o.AmbientOcclusion = terrainInfo.g;
                     } else {
-                        o.WaterDepth = tex2D(UtilitySamplerC, position.xy).g;
                         o.MapShadow = 1;
+                        o.AmbientOcclusion = 1;
                     }
                 }
                 else if (_ShaderID == 200)
@@ -1016,12 +1023,14 @@
                     float3 normal = TangentToWorldSpace(inV, Terrain200NormalsPS(inV, false).xyz);
                     o.wNormal = normalize(normal);
 
-                    if (_HideStratum7 == 0) {
-                        o.WaterDepth = tex2D(Stratum7AlbedoSampler, position.xy).a;
-                        o.MapShadow = tex2D(Stratum7AlbedoSampler, position.xy).g;
+                    o.WaterDepth = tex2D(UtilitySamplerC, position.xy).g;
+                    if (Stratum7AlbedoTile < 1 && _HideStratum7 == 0) {
+                        float4 terrainInfo = tex2D(Stratum7AlbedoSampler, position.xy);
+                        o.MapShadow = terrainInfo.a;
+                        o.AmbientOcclusion = terrainInfo.g;
                     } else {
-                        o.WaterDepth = tex2D(UtilitySamplerC, position.xy).g;
                         o.MapShadow = 1;
+                        o.AmbientOcclusion = 1;
                     }
                 }
                 else if (_ShaderID == 250)
@@ -1033,12 +1042,14 @@
                     float3 normal = TangentToWorldSpace(inV, Terrain200NormalsPS(inV, true).xyz);
                     o.wNormal = normalize(normal);
 
-                    if (_HideStratum7 == 0) {
-                        o.WaterDepth = tex2D(Stratum7AlbedoSampler, position.xy).a;
-                        o.MapShadow = tex2D(Stratum7AlbedoSampler, position.xy).g;
+                    o.WaterDepth = tex2D(UtilitySamplerC, position.xy).g;
+                    if (Stratum7AlbedoTile < 1 && _HideStratum7 == 0) {
+                        float4 terrainInfo = tex2D(Stratum7AlbedoSampler, position.xy);
+                        o.MapShadow = terrainInfo.a;
+                        o.AmbientOcclusion = terrainInfo.g;
                     } else {
-                        o.WaterDepth = tex2D(UtilitySamplerC, position.xy).g;
                         o.MapShadow = 1;
+                        o.AmbientOcclusion = 1;
                     }
                 }
                 else if (_ShaderID == 2001)
@@ -1049,13 +1060,16 @@
 
                     float3 normal = TangentToWorldSpace(inV, Terrain200BNormalsPS(inV, false).xyz);
                     o.wNormal = normalize(normal);
-
-                    if (_HideStratum7 == 0) {
-                        o.WaterDepth = tex2D(Stratum7AlbedoSampler, position.xy).a;
-                        o.MapShadow = tex2D(Stratum7AlbedoSampler, position.xy).g;
+                    
+                    if (Stratum7AlbedoTile < 1 && _HideStratum7 == 0) {
+                        float4 terrainInfo = tex2D(Stratum7AlbedoSampler, position.xy);
+                        o.WaterDepth = terrainInfo.r;
+                        o.MapShadow = terrainInfo.a;
+                        o.AmbientOcclusion = terrainInfo.g;
                     } else {
                         o.WaterDepth = tex2D(UtilitySamplerC, position.xy).g;
                         o.MapShadow = 1;
+                        o.AmbientOcclusion = 1;
                     }
                 }
                 else if (_ShaderID == 2501)
@@ -1067,12 +1081,15 @@
                     float3 normal = TangentToWorldSpace(inV, Terrain200BNormalsPS(inV, true).xyz);
                     o.wNormal = normalize(normal);
 
-                    if (_HideStratum7 == 0) {
-                        o.WaterDepth = tex2D(Stratum7AlbedoSampler, position.xy).a;
-                        o.MapShadow = tex2D(Stratum7AlbedoSampler, position.xy).g;
+                    if (Stratum7AlbedoTile < 1 && _HideStratum7 == 0) {
+                        float4 terrainInfo = tex2D(Stratum7AlbedoSampler, position.xy);
+                        o.WaterDepth = terrainInfo.r;
+                        o.MapShadow = terrainInfo.a;
+                        o.AmbientOcclusion = terrainInfo.g;
                     } else {
                         o.WaterDepth = tex2D(UtilitySamplerC, position.xy).g;
                         o.MapShadow = 1;
+                        o.AmbientOcclusion = 1;
                     }
                 }
                 else {

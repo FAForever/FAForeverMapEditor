@@ -98,14 +98,14 @@ float4 CalculateLighting( float3 inNormal, float3 viewDirection, float3 inAlbedo
     return color;
 }
 
-float4 CalculateXPLighting( float3 normal, float3 viewDirection, float4 albedo, float shadow)
+float4 CalculateXPLighting( float3 normal, float3 viewDirection, float4 albedo, float shadow, float ambientOcclusion)
 {
     float3 r = reflect(viewDirection,normal);
     float3 specular = pow(saturate(dot(r,SunDirection)),80)*albedo.aaa*SpecularColor.a*SpecularColor.rgb;
 
     float dotSunNormal = dot(SunDirection,normal);
 
-    float3 light = SunColor*saturate(dotSunNormal)*shadow + SunAmbience;
+    float3 light = SunColor*saturate(dotSunNormal)*shadow + SunAmbience * ambientOcclusion;
     light = LightingMultiplier*light + ShadowFillColor*(1-light);
     albedo.rgb = light * ( albedo.rgb + specular.rgb );
 
@@ -150,7 +150,7 @@ float GeometrySmith(float3 n, float nDotV, float3 l, float roughness)
     return gs1 * gs2;
 }
 
-float3 PBR(float3 wpos, float3 viewDirection, float3 albedo, float3 n, float roughness, float shadow) {
+float3 PBR(float3 wpos, float3 viewDirection, float3 albedo, float3 n, float roughness, float shadow, float ambientOcclusion) {
     // See https://blog.selfshadow.com/publications/s2013-shading-course/
 
     float facingSpecular = 0.04;
@@ -184,7 +184,7 @@ float3 PBR(float3 wpos, float3 viewDirection, float3 albedo, float3 n, float rou
     float3 color = (refracted + reflected) * irradiance;
 
     float3 shadowColor = (1 - (SunColor * shadow * nDotL + SunAmbience)) * ShadowFillColor;
-    float3 ambient = SunAmbience * LightingMultiplier + shadowColor;
+    float3 ambient = SunAmbience * ambientOcclusion * LightingMultiplier + shadowColor;
 
     // we simplify here for the ambient lighting
     color += albedo * ambient;
@@ -215,6 +215,7 @@ half4 CalculateLight (unity_v2f_deferred i)
     float mapShadow = gbuffer1.r;
     float waterDepth = gbuffer1.g;
     float roughness = gbuffer1.b;
+    float ambientOcclusion = gbuffer1.a;
     float3 worldNormal = gbuffer2.rgb;
 
     worldNormal = worldNormal * 2 - 1;
@@ -227,13 +228,14 @@ half4 CalculateLight (unity_v2f_deferred i)
     if (_ShaderID == 10) {
         color.rgb = CalculateLighting(worldNormal, eyeVec, albedo, 1-alpha, atten);
     } else if (_ShaderID == 11 || _ShaderID == 12 || _ShaderID == 0 || _ShaderID == 50) {
-        color.rgb = CalculateXPLighting(worldNormal, eyeVec, float4(albedo, alpha), mapShadow * atten);
+        color.rgb = CalculateXPLighting(worldNormal, eyeVec, float4(albedo, alpha), mapShadow * atten, ambientOcclusion);
     } else if (_ShaderID == 200 || _ShaderID == 250 || _ShaderID == 2001 || _ShaderID == 2501) {
-        color.rgb = PBR(wpos, eyeVec, albedo, worldNormal, roughness, mapShadow * atten);
+        color.rgb = PBR(wpos, eyeVec, albedo, worldNormal, roughness, mapShadow * atten, ambientOcclusion);
     } else {
         color.rgb = albedo;
     }
 
+    // The game does not have this check. This is to make it possible to debug the map in the editor
     if (_Water) {
         color.rgb = ApplyWaterColor(wpos, -eyeVec, waterDepth, color.rgb);
     }
