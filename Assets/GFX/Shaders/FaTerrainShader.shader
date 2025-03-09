@@ -598,7 +598,7 @@
                     mask1 = saturate(mask1 * 2 - 1);
                 }
 
-                float3 lowerNormal    = normalize(tex2D(LowerNormalSampler,  position.xy * LowerAlbedoTile.xx).rgb * 2 - 1);
+                float3 lowerNormal    = normalize(tex2D(LowerNormalSampler,  position.xy * LowerNormalTile.xx).rgb * 2 - 1);
                 float3 stratum0Normal = normalize(StratumNormalSampler(0, rotated_pos * Stratum0AlbedoTile.xx).rgb * 2 - 1);
                 float3 stratum1Normal = normalize(StratumNormalSampler(1, position.xy * Stratum1AlbedoTile.xx).rgb * 2 - 1);
                 float3 stratum2Normal = normalize(StratumNormalSampler(2, rotated_pos * Stratum2AlbedoTile.xx).rgb * 2 - 1);
@@ -717,7 +717,7 @@
                     mask1 = saturate(mask1 * 2 - 1);
                 }
 
-                float3 lowerNormal    = normalize(tex2D(LowerNormalSampler,  position.xy * LowerAlbedoTile.xx).rgb * 2 - 1);
+                float3 lowerNormal    = normalize(tex2D(LowerNormalSampler,  position.xy * LowerNormalTile.xx).rgb * 2 - 1);
                 float3 stratum0Normal = normalize(StratumNormalSampler(0, rotated_pos * Stratum0AlbedoTile.xx).rgb * 2 - 1);
                 float3 stratum1Normal = normalize(StratumNormalSampler(1, position.xy * Stratum1AlbedoTile.xx).rgb * 2 - 1);
                 float3 stratum4Normal = normalize(StratumNormalSampler(4, rotated_pos * Stratum4AlbedoTile.xx).rgb * 2 - 1);
