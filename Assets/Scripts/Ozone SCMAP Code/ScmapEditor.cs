@@ -1111,6 +1111,42 @@ public partial class ScmapEditor : MonoBehaviour
 			case "Terrain050":
 				shaderId = 50;
 				break;
+			case "Terrain100":
+				shaderId = 100;
+				break;
+			case "Terrain150":
+				shaderId = 150;
+				break;
+			case "Terrain101":
+				shaderId = 101;
+				break;
+			case "Terrain151":
+				shaderId = 151;
+				break;
+			case "Terrain102":
+				shaderId = 102;
+				break;
+			case "Terrain152":
+				shaderId = 152;
+				break;
+			case "Terrain100B":
+				shaderId = 110;
+				break;
+			case "Terrain150B":
+				shaderId = 160;
+				break;
+			case "Terrain101B":
+				shaderId = 111;
+				break;
+			case "Terrain151B":
+				shaderId = 161;
+				break;
+			case "Terrain102B":
+				shaderId = 112;
+				break;
+			case "Terrain152B":
+				shaderId = 162;
+				break;
 			case "Terrain200":
 				shaderId = 200;
 				break;
@@ -1158,7 +1194,7 @@ public partial class ScmapEditor : MonoBehaviour
             Textures[8].NormalScale = 10000;  // Use terrain normal texture
             MapLuaParser.Current.EditMenu.TexturesMenu.ShaderTools.interactable = true;
             MapLuaParser.Current.EditMenu.TexturesMenu.ShaderTools.alpha = 1;
-            if (shaderId >= 200)
+            if (shaderId >= 100)
             {
                 Textures[9].AlbedoScale = 10000;  // Use PBR rendering on decals
             }
@@ -1174,6 +1210,11 @@ public partial class ScmapEditor : MonoBehaviour
 			MapLuaParser.Current.EditMenu.LightingMenu.Specular.gameObject.SetActive(false);
 			MapLuaParser.Current.EditMenu.LightingMenu.SpecularRed.gameObject.SetActive(true);
 			MapLuaParser.Current.EditMenu.LightingMenu.SpecularRed.SetTitle("Texture Blending Blurriness");
+		}
+		else if (shaderId >= 100)
+		{
+			MapLuaParser.Current.EditMenu.LightingMenu.Specular.gameObject.SetActive(false);
+			MapLuaParser.Current.EditMenu.LightingMenu.SpecularRed.gameObject.SetActive(false);
 		}
 		else if (shaderId == -10)  //TTerrain
 		{
