@@ -84,7 +84,7 @@
 
             CGPROGRAM
 			#pragma surface surf SimpleLambert vertex:TerrainVS exclude_path:forward nometa
-            #pragma multi_compile_fog
+			#pragma multi_compile _ TTerrain TTerrainXP TTerrainXPExt Terrain000 Terrain050 Terrain200 Terrain250 Terrain201 Terrain251 Terrain202 Terrain252 Terrain200B Terrain250B Terrain201B Terrain251B Terrain202B Terrain252B
 			#pragma target 3.5
 			#include "Assets/GFX/Shaders/SimpleLambert.cginc"
 
@@ -933,8 +933,7 @@
             void surf(Input inV, inout CustomSurfaceOutput o)
             {
                 float3 position = TerrainScale * inV.mTexWT.xyz;
-                if (_ShaderID == -10)
-                {
+                #if TTerrain
                     float4 albedo = TerrainPS(inV);
                     o.Albedo = albedo.rgb;
                     o.Alpha = albedo.a; // for specularity
@@ -943,9 +942,7 @@
                     o.wNormal = normalize(normal);
 
                     o.WaterDepth = tex2D(UtilitySamplerC, position.xy).g;
-                }
-                else if (_ShaderID == -20)
-                {
+                #elif TTerrainXP
                     float4 albedo = TerrainAlbedoXP(inV);
                     o.Albedo = albedo.rgb;
                     o.Alpha = albedo.a; // for specularity
@@ -956,9 +953,7 @@
                     o.WaterDepth = tex2D(UtilitySamplerC, position.xy).g;
                     o.MapShadow = 1;
                     o.AmbientOcclusion = 1;
-                }
-                else if (_ShaderID == 20)
-                {
+                #elif TTerrainXPExt
                     float4 albedo = Terrain000AlbedoPS(inV, true);
                     o.Albedo = albedo.rgb;
                     o.Alpha = albedo.a; // for specularity
@@ -975,9 +970,7 @@
                         o.MapShadow = 1;
                         o.AmbientOcclusion = 1;
                     }
-                }
-                else if (_ShaderID == 0)
-                {
+                #elif Terrain000
                     float4 albedo = Terrain000AlbedoPS(inV, false);
                     o.Albedo = albedo.rgb;
                     o.Alpha = albedo.a; // for specularity
@@ -994,9 +987,7 @@
                         o.MapShadow = 1;
                         o.AmbientOcclusion = 1;
                     }
-                }
-                else if (_ShaderID == 50)
-                {
+                #elif Terrain050
                     float4 albedo = Terrain000AlbedoPS(inV, true);
                     o.Albedo = albedo.rgb;
                     o.Alpha = albedo.a; // for specularity
@@ -1013,9 +1004,7 @@
                         o.MapShadow = 1;
                         o.AmbientOcclusion = 1;
                     }
-                }
-                else if (_ShaderID == 200)
-                {
+                #elif Terrain200
                     float4 albedo = Terrain200AlbedoPS(inV, false, 0);
                     o.Albedo = albedo.rgb;
                     o.Roughness = albedo.a;
@@ -1032,9 +1021,7 @@
                         o.MapShadow = 1;
                         o.AmbientOcclusion = 1;
                     }
-                }
-                else if (_ShaderID == 250)
-                {
+                #elif Terrain250
                     float4 albedo = Terrain200AlbedoPS(inV, true, 0);
                     o.Albedo = albedo.rgb;
                     o.Roughness = albedo.a;
@@ -1051,9 +1038,7 @@
                         o.MapShadow = 1;
                         o.AmbientOcclusion = 1;
                     }
-                }
-                else if (_ShaderID == 201)
-                {
+                #elif Terrain201
                     float4 albedo = Terrain200AlbedoPS(inV, false, 1);
                     o.Albedo = albedo.rgb;
                     o.Roughness = albedo.a;
@@ -1070,9 +1055,7 @@
                         o.MapShadow = 1;
                         o.AmbientOcclusion = 1;
                     }
-                }
-                else if (_ShaderID == 251)
-                {
+                #elif Terrain251
                     float4 albedo = Terrain200AlbedoPS(inV, true, 1);
                     o.Albedo = albedo.rgb;
                     o.Roughness = albedo.a;
@@ -1089,9 +1072,7 @@
                         o.MapShadow = 1;
                         o.AmbientOcclusion = 1;
                     }
-                }
-                else if (_ShaderID == 202)
-                {
+                #elif Terrain202
                     float4 albedo = Terrain200AlbedoPS(inV, false, 2);
                     o.Albedo = albedo.rgb;
                     o.Roughness = albedo.a;
@@ -1108,9 +1089,7 @@
                         o.MapShadow = 1;
                         o.AmbientOcclusion = 1;
                     }
-                }
-                else if (_ShaderID == 252)
-                {
+                #elif Terrain252
                     float4 albedo = Terrain200AlbedoPS(inV, true, 2);
                     o.Albedo = albedo.rgb;
                     o.Roughness = albedo.a;
@@ -1127,9 +1106,7 @@
                         o.MapShadow = 1;
                         o.AmbientOcclusion = 1;
                     }
-                }
-                else if (_ShaderID == 210)
-                {
+                #elif Terrain200B
                     float4 albedo = Terrain200BAlbedoPS(inV, false, 0);
                     o.Albedo = albedo.rgb;
                     o.Roughness = albedo.a;
@@ -1147,9 +1124,7 @@
                         o.MapShadow = 1;
                         o.AmbientOcclusion = 1;
                     }
-                }
-                else if (_ShaderID == 260)
-                {
+                #elif Terrain250B
                     float4 albedo = Terrain200BAlbedoPS(inV, true, 0);
                     o.Albedo = albedo.rgb;
                     o.Roughness = albedo.a;
@@ -1167,9 +1142,7 @@
                         o.MapShadow = 1;
                         o.AmbientOcclusion = 1;
                     }
-                }
-                else if (_ShaderID == 211)
-                {
+                #elif Terrain201B
                     float4 albedo = Terrain200BAlbedoPS(inV, false, 1);
                     o.Albedo = albedo.rgb;
                     o.Roughness = albedo.a;
@@ -1187,9 +1160,7 @@
                         o.MapShadow = 1;
                         o.AmbientOcclusion = 1;
                     }
-                }
-                else if (_ShaderID == 261)
-                {
+                #elif Terrain251B
                     float4 albedo = Terrain200BAlbedoPS(inV, true, 1);
                     o.Albedo = albedo.rgb;
                     o.Roughness = albedo.a;
@@ -1207,9 +1178,7 @@
                         o.MapShadow = 1;
                         o.AmbientOcclusion = 1;
                     }
-                }
-                else if (_ShaderID == 212)
-                {
+                #elif Terrain202B
                     float4 albedo = Terrain200BAlbedoPS(inV, false, 2);
                     o.Albedo = albedo.rgb;
                     o.Roughness = albedo.a;
@@ -1227,9 +1196,7 @@
                         o.MapShadow = 1;
                         o.AmbientOcclusion = 1;
                     }
-                }
-                else if (_ShaderID == 262)
-                {
+                #elif Terrain252B
                     float4 albedo = Terrain200BAlbedoPS(inV, true, 2);
                     o.Albedo = albedo.rgb;
                     o.Roughness = albedo.a;
@@ -1247,10 +1214,9 @@
                         o.MapShadow = 1;
                         o.AmbientOcclusion = 1;
                     }
-                }
-                else {
+                #else
                     o.Albedo = float3(1, 0, 1);
-                }
+                #endif
 
                 o.Emission = renderBrush(position.xy);
                 o.Emission += renderSlope(inV);

@@ -1087,6 +1087,12 @@ public partial class ScmapEditor : MonoBehaviour
 
 	public void ToogleShader()
 	{
+		foreach (var localKeyword in TerrainMaterial.shader.keywordSpace.keywords)
+		{
+			TerrainMaterial.DisableKeyword(localKeyword);
+		}
+		TerrainMaterial.EnableKeyword(MapLuaParser.Current.EditMenu.MapInfoMenu.ShaderName.text);
+		
 		int shaderId;
 		switch (MapLuaParser.Current.EditMenu.MapInfoMenu.ShaderName.text)
 		{
