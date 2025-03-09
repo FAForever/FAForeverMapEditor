@@ -411,10 +411,7 @@ namespace EditMap
 				Stratum_Normal_Input.gameObject.SetActive(false);
 			}
 
-			if (Shader.GetGlobalInt("_ShaderID") == 200 ||
-			    Shader.GetGlobalInt("_ShaderID") == 250 ||
-			    Shader.GetGlobalInt("_ShaderID") == 2001 ||
-			    Shader.GetGlobalInt("_ShaderID") == 2501)
+			if (Shader.GetGlobalInt("_ShaderID") >= 200)
 			{
 				if (Selected == 9)
 				{

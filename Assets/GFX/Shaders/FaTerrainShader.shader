@@ -933,7 +933,7 @@
             void surf(Input inV, inout CustomSurfaceOutput o)
             {
                 float3 position = TerrainScale * inV.mTexWT.xyz;
-                if (_ShaderID == 10)
+                if (_ShaderID == -10)
                 {
                     float4 albedo = TerrainPS(inV);
                     o.Albedo = albedo.rgb;
@@ -944,7 +944,7 @@
 
                     o.WaterDepth = tex2D(UtilitySamplerC, position.xy).g;
                 }
-                else if (_ShaderID == 11)
+                else if (_ShaderID == -20)
                 {
                     float4 albedo = TerrainAlbedoXP(inV);
                     o.Albedo = albedo.rgb;
@@ -957,7 +957,7 @@
                     o.MapShadow = 1;
                     o.AmbientOcclusion = 1;
                 }
-                else if (_ShaderID == 12)
+                else if (_ShaderID == 20)
                 {
                     float4 albedo = Terrain000AlbedoPS(inV, true);
                     o.Albedo = albedo.rgb;
@@ -1052,7 +1052,83 @@
                         o.AmbientOcclusion = 1;
                     }
                 }
-                else if (_ShaderID == 2001)
+                else if (_ShaderID == 201)
+                {
+                    float4 albedo = Terrain200AlbedoPS(inV, false, 1);
+                    o.Albedo = albedo.rgb;
+                    o.Roughness = albedo.a;
+
+                    float3 normal = TangentToWorldSpace(inV, Terrain200NormalsPS(inV, false).xyz);
+                    o.wNormal = normalize(normal);
+
+                    o.WaterDepth = tex2D(UtilitySamplerC, position.xy).g;
+                    if (Stratum7AlbedoTile < 1 && _HideStratum7 == 0) {
+                        float4 terrainInfo = tex2D(Stratum7AlbedoSampler, position.xy);
+                        o.MapShadow = terrainInfo.a;
+                        o.AmbientOcclusion = terrainInfo.g;
+                    } else {
+                        o.MapShadow = 1;
+                        o.AmbientOcclusion = 1;
+                    }
+                }
+                else if (_ShaderID == 251)
+                {
+                    float4 albedo = Terrain200AlbedoPS(inV, true, 1);
+                    o.Albedo = albedo.rgb;
+                    o.Roughness = albedo.a;
+
+                    float3 normal = TangentToWorldSpace(inV, Terrain200NormalsPS(inV, true).xyz);
+                    o.wNormal = normalize(normal);
+
+                    o.WaterDepth = tex2D(UtilitySamplerC, position.xy).g;
+                    if (Stratum7AlbedoTile < 1 && _HideStratum7 == 0) {
+                        float4 terrainInfo = tex2D(Stratum7AlbedoSampler, position.xy);
+                        o.MapShadow = terrainInfo.a;
+                        o.AmbientOcclusion = terrainInfo.g;
+                    } else {
+                        o.MapShadow = 1;
+                        o.AmbientOcclusion = 1;
+                    }
+                }
+                else if (_ShaderID == 202)
+                {
+                    float4 albedo = Terrain200AlbedoPS(inV, false, 2);
+                    o.Albedo = albedo.rgb;
+                    o.Roughness = albedo.a;
+
+                    float3 normal = TangentToWorldSpace(inV, Terrain200NormalsPS(inV, false).xyz);
+                    o.wNormal = normalize(normal);
+
+                    o.WaterDepth = tex2D(UtilitySamplerC, position.xy).g;
+                    if (Stratum7AlbedoTile < 1 && _HideStratum7 == 0) {
+                        float4 terrainInfo = tex2D(Stratum7AlbedoSampler, position.xy);
+                        o.MapShadow = terrainInfo.a;
+                        o.AmbientOcclusion = terrainInfo.g;
+                    } else {
+                        o.MapShadow = 1;
+                        o.AmbientOcclusion = 1;
+                    }
+                }
+                else if (_ShaderID == 252)
+                {
+                    float4 albedo = Terrain200AlbedoPS(inV, true, 2);
+                    o.Albedo = albedo.rgb;
+                    o.Roughness = albedo.a;
+
+                    float3 normal = TangentToWorldSpace(inV, Terrain200NormalsPS(inV, true).xyz);
+                    o.wNormal = normalize(normal);
+
+                    o.WaterDepth = tex2D(UtilitySamplerC, position.xy).g;
+                    if (Stratum7AlbedoTile < 1 && _HideStratum7 == 0) {
+                        float4 terrainInfo = tex2D(Stratum7AlbedoSampler, position.xy);
+                        o.MapShadow = terrainInfo.a;
+                        o.AmbientOcclusion = terrainInfo.g;
+                    } else {
+                        o.MapShadow = 1;
+                        o.AmbientOcclusion = 1;
+                    }
+                }
+                else if (_ShaderID == 210)
                 {
                     float4 albedo = Terrain200BAlbedoPS(inV, false, 0);
                     o.Albedo = albedo.rgb;
@@ -1072,9 +1148,89 @@
                         o.AmbientOcclusion = 1;
                     }
                 }
-                else if (_ShaderID == 2501)
+                else if (_ShaderID == 260)
                 {
                     float4 albedo = Terrain200BAlbedoPS(inV, true, 0);
+                    o.Albedo = albedo.rgb;
+                    o.Roughness = albedo.a;
+
+                    float3 normal = TangentToWorldSpace(inV, Terrain200BNormalsPS(inV, true).xyz);
+                    o.wNormal = normalize(normal);
+
+                    if (Stratum7AlbedoTile < 1 && _HideStratum7 == 0) {
+                        float4 terrainInfo = tex2D(Stratum7AlbedoSampler, position.xy);
+                        o.WaterDepth = terrainInfo.r;
+                        o.MapShadow = terrainInfo.a;
+                        o.AmbientOcclusion = terrainInfo.g;
+                    } else {
+                        o.WaterDepth = tex2D(UtilitySamplerC, position.xy).g;
+                        o.MapShadow = 1;
+                        o.AmbientOcclusion = 1;
+                    }
+                }
+                else if (_ShaderID == 211)
+                {
+                    float4 albedo = Terrain200BAlbedoPS(inV, false, 1);
+                    o.Albedo = albedo.rgb;
+                    o.Roughness = albedo.a;
+
+                    float3 normal = TangentToWorldSpace(inV, Terrain200BNormalsPS(inV, false).xyz);
+                    o.wNormal = normalize(normal);
+                    
+                    if (Stratum7AlbedoTile < 1 && _HideStratum7 == 0) {
+                        float4 terrainInfo = tex2D(Stratum7AlbedoSampler, position.xy);
+                        o.WaterDepth = terrainInfo.r;
+                        o.MapShadow = terrainInfo.a;
+                        o.AmbientOcclusion = terrainInfo.g;
+                    } else {
+                        o.WaterDepth = tex2D(UtilitySamplerC, position.xy).g;
+                        o.MapShadow = 1;
+                        o.AmbientOcclusion = 1;
+                    }
+                }
+                else if (_ShaderID == 261)
+                {
+                    float4 albedo = Terrain200BAlbedoPS(inV, true, 1);
+                    o.Albedo = albedo.rgb;
+                    o.Roughness = albedo.a;
+
+                    float3 normal = TangentToWorldSpace(inV, Terrain200BNormalsPS(inV, true).xyz);
+                    o.wNormal = normalize(normal);
+
+                    if (Stratum7AlbedoTile < 1 && _HideStratum7 == 0) {
+                        float4 terrainInfo = tex2D(Stratum7AlbedoSampler, position.xy);
+                        o.WaterDepth = terrainInfo.r;
+                        o.MapShadow = terrainInfo.a;
+                        o.AmbientOcclusion = terrainInfo.g;
+                    } else {
+                        o.WaterDepth = tex2D(UtilitySamplerC, position.xy).g;
+                        o.MapShadow = 1;
+                        o.AmbientOcclusion = 1;
+                    }
+                }
+                else if (_ShaderID == 212)
+                {
+                    float4 albedo = Terrain200BAlbedoPS(inV, false, 2);
+                    o.Albedo = albedo.rgb;
+                    o.Roughness = albedo.a;
+
+                    float3 normal = TangentToWorldSpace(inV, Terrain200BNormalsPS(inV, false).xyz);
+                    o.wNormal = normalize(normal);
+                    
+                    if (Stratum7AlbedoTile < 1 && _HideStratum7 == 0) {
+                        float4 terrainInfo = tex2D(Stratum7AlbedoSampler, position.xy);
+                        o.WaterDepth = terrainInfo.r;
+                        o.MapShadow = terrainInfo.a;
+                        o.AmbientOcclusion = terrainInfo.g;
+                    } else {
+                        o.WaterDepth = tex2D(UtilitySamplerC, position.xy).g;
+                        o.MapShadow = 1;
+                        o.AmbientOcclusion = 1;
+                    }
+                }
+                else if (_ShaderID == 262)
+                {
+                    float4 albedo = Terrain200BAlbedoPS(inV, true, 2);
                     o.Albedo = albedo.rgb;
                     o.Roughness = albedo.a;
 

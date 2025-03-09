@@ -225,11 +225,11 @@ half4 CalculateLight (unity_v2f_deferred i)
 
 	float4 color;
 
-    if (_ShaderID == 10) {
+    if (_ShaderID == -10) {
         color.rgb = CalculateLighting(worldNormal, eyeVec, albedo, 1-alpha, atten);
-    } else if (_ShaderID == 11 || _ShaderID == 12 || _ShaderID == 0 || _ShaderID == 50) {
+    } else if (_ShaderID == -20 || _ShaderID == 20 || _ShaderID == 0 || _ShaderID == 50) {
         color.rgb = CalculateXPLighting(worldNormal, eyeVec, float4(albedo, alpha), mapShadow * atten, ambientOcclusion);
-    } else if (_ShaderID == 200 || _ShaderID == 250 || _ShaderID == 2001 || _ShaderID == 2501) {
+    } else if (_ShaderID >= 200 && _ShaderID <= 262) {
         color.rgb = PBR(wpos, eyeVec, albedo, worldNormal, roughness, mapShadow * atten, ambientOcclusion);
     } else {
         color.rgb = albedo;
