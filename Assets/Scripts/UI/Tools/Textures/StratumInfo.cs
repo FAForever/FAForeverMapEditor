@@ -1158,7 +1158,8 @@ namespace EditMap
             neroxisToolsuite.WaitForExit();
             
             outputQueue.Enqueue("Java process exited with code: " + neroxisToolsuite.ExitCode);
-            OutputWindow.Close(neroxisToolsuite.ExitCode);
+            OutputWindow.Close();
+            if (neroxisToolsuite.ExitCode != 0) GenericInfoPopup.ShowInfo("Command failed! Check the log for more information.");
             return neroxisToolsuite.ExitCode;
         }
 
