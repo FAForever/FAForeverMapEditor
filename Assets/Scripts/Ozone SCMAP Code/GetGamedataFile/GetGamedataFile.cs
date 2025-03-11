@@ -192,7 +192,7 @@ public partial struct GetGamedataFile
 	{
 		if (NormalMap)
 		{
-			ScmapEditor.Current.Textures[Id].Normal = LoadTexture2D(LocalPath, NormalMap, true, false);
+			ScmapEditor.Current.Textures[Id].Normal = LoadTexture2D(LocalPath, NormalMap, false, false);
 
 			if (ScmapEditor.Current.Textures[Id].Normal == null)
 			{
@@ -207,7 +207,7 @@ public partial struct GetGamedataFile
 		}
 		else
 		{
-			ScmapEditor.Current.Textures[Id].Albedo = LoadTexture2D(LocalPath, NormalMap, true, false);
+			ScmapEditor.Current.Textures[Id].Albedo = LoadTexture2D(LocalPath, NormalMap, false, false);
 
 			if(ScmapEditor.Current.Textures[Id].Albedo == null)
 			{

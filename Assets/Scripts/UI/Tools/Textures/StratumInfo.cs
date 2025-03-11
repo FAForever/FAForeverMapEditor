@@ -1172,7 +1172,7 @@ namespace EditMap
 	        Undo.RegisterUndo(new UndoHistory.HistoryStratumChange(), new UndoHistory.HistoryStratumChange.StratumChangeHistoryParameter(9));
                 
 	        string texturePath = MapLuaParser.RelativeLoadedMapFolderPath + "env/layers/mapwide.dds";
-	        ScmapEditor.Current.Textures[8].Normal = GetGamedataFile.LoadTexture2D(texturePath);
+	        ScmapEditor.Current.Textures[8].Normal = GetGamedataFile.LoadTexture2D(texturePath, false, false, false);
             ScmapEditor.Current.Textures[8].NormalPath = texturePath;
             ScmapEditor.Current.SetTextures(8);
             ReloadStratums();
