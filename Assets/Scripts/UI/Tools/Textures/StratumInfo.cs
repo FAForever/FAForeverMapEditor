@@ -411,10 +411,7 @@ namespace EditMap
 				Stratum_Normal_Input.gameObject.SetActive(false);
 			}
 
-			if (Shader.GetGlobalInt("_ShaderID") == 200 ||
-			    Shader.GetGlobalInt("_ShaderID") == 250 ||
-			    Shader.GetGlobalInt("_ShaderID") == 2001 ||
-			    Shader.GetGlobalInt("_ShaderID") == 2501)
+			if (Shader.GetGlobalInt("_ShaderID") >= 200)
 			{
 				if (Selected == 9)
 				{
@@ -422,8 +419,7 @@ namespace EditMap
                 }
 				else if (Selected == 8)
 				{
-                    Stratum_Albedo_Input.SetTitle("Macrotexture Scale");
-                    Stratum_Albedo_Input.gameObject.SetActive(true);
+                    Stratum_Albedo_Input.gameObject.SetActive(false);
                     Stratum_Normal_Input.gameObject.SetActive(false);
                 }
 				else
@@ -1175,11 +1171,11 @@ namespace EditMap
 	        Undo.RegisterUndo(new UndoHistory.HistoryStratumChange(), new UndoHistory.HistoryStratumChange.StratumChangeHistoryParameter(9));
                 
 	        string texturePath = MapLuaParser.RelativeLoadedMapFolderPath + "env/layers/mapwide.dds";
-	        ScmapEditor.Current.Textures[9].Albedo = GetGamedataFile.LoadTexture2D(texturePath);;
-	        ScmapEditor.Current.Textures[9].AlbedoPath = texturePath;
-	        ScmapEditor.Current.SetTextures(9);
-	        ReloadStratums();
-	        SelectStratum(9);
+	        ScmapEditor.Current.Textures[8].Normal = GetGamedataFile.LoadTexture2D(texturePath);
+            ScmapEditor.Current.Textures[8].NormalPath = texturePath;
+            ScmapEditor.Current.SetTextures(8);
+            ReloadStratums();
+            SelectStratum(8);
         }
         
         public void GenerateHeightRoughnessTexture()
@@ -1197,11 +1193,11 @@ namespace EditMap
 	        Undo.RegisterUndo(new UndoHistory.HistoryStratumChange(), new UndoHistory.HistoryStratumChange.StratumChangeHistoryParameter(9));
                 
 	        string texturePath = MapLuaParser.RelativeLoadedMapFolderPath + "env/layers/heightroughness.dds";
-	        ScmapEditor.Current.Textures[8].Normal = GetGamedataFile.LoadTexture2D(texturePath);;
-	        ScmapEditor.Current.Textures[8].NormalPath = texturePath;
-	        ScmapEditor.Current.SetTextures(8);
-	        ReloadStratums();
-	        SelectStratum(8);
+	        ScmapEditor.Current.Textures[9].Albedo = GetGamedataFile.LoadTexture2D(texturePath);
+            ScmapEditor.Current.Textures[9].AlbedoPath = texturePath;
+            ScmapEditor.Current.SetTextures(9);
+            ReloadStratums();
+            SelectStratum(9);
         }
         
         public void ResetRoughnessMask()

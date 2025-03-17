@@ -142,7 +142,7 @@
 		float3 calculateSunReflection(float3 R, float3 v, float3 n)
 		{
 			// for unknown reasons the game seems to mess with the SunColor, so we also need to correct
-			if (_ShaderID == 10) {
+			if (_ShaderID == -10) {
 				SunColor *= 2;
 			} else {
 				SunColor *= 0.75;

@@ -13,6 +13,7 @@ struct CustomSurfaceOutput
     half MapShadow; // manual terrain shadow that is defined by input texture
     half Roughness;
     half Alpha;
+	half AmbientOcclusion;
     
     // this only exists to make the surface shader compile and is unused
     float3 Normal;
@@ -50,7 +51,7 @@ inline half4 LightingSimpleLambert_Deferred(CustomSurfaceOutput s, UnityGI gi, o
 {
     outGBuffer0 = half4(s.Albedo, s.Alpha);
 
-    outGBuffer1 = half4(s.MapShadow, s.WaterDepth, s.Roughness, 0);
+    outGBuffer1 = half4(s.MapShadow, s.WaterDepth, s.Roughness, s.AmbientOcclusion);
 
     outGBuffer2 = half4(s.wNormal * 0.5f + 0.5f, 0);
 

@@ -451,14 +451,30 @@ public partial class ScmapEditor : MonoBehaviour
 #region Textures
 	public void SetTextures(int Layer = -1)
 	{
-
 		if (Layer < 0)
 		{
 			TerrainMaterial.SetTexture("UtilitySamplerA", map.TexturemapTex);
 			if (Textures[5].Albedo || Textures[6].Albedo || Textures[7].Albedo || Textures[8].Albedo)
 				TerrainMaterial.SetTexture("UtilitySamplerB", map.TexturemapTex2);
-		}
+			
+			TerrainMaterial.SetFloat("Stratum0AlbedoTile", map.Width / Textures[1].AlbedoScale);
+            TerrainMaterial.SetFloat("Stratum1AlbedoTile", map.Width / Textures[2].AlbedoScale);
+            TerrainMaterial.SetFloat("Stratum2AlbedoTile", map.Width / Textures[3].AlbedoScale);
+            TerrainMaterial.SetFloat("Stratum3AlbedoTile", map.Width / Textures[4].AlbedoScale);
+            TerrainMaterial.SetFloat("Stratum4AlbedoTile", map.Width / Textures[5].AlbedoScale);
+            TerrainMaterial.SetFloat("Stratum5AlbedoTile", map.Width / Textures[6].AlbedoScale);
+            TerrainMaterial.SetFloat("Stratum6AlbedoTile", map.Width / Textures[7].AlbedoScale);
 
+            TerrainMaterial.SetFloat("Stratum0NormalTile", map.Width / Textures[1].NormalScale);
+            TerrainMaterial.SetFloat("Stratum1NormalTile", map.Width / Textures[2].NormalScale);
+            TerrainMaterial.SetFloat("Stratum2NormalTile", map.Width / Textures[3].NormalScale);
+            TerrainMaterial.SetFloat("Stratum3NormalTile", map.Width / Textures[4].NormalScale);
+            TerrainMaterial.SetFloat("Stratum4NormalTile", map.Width / Textures[5].NormalScale);
+            TerrainMaterial.SetFloat("Stratum5NormalTile", map.Width / Textures[6].NormalScale);
+            TerrainMaterial.SetFloat("Stratum6NormalTile", map.Width / Textures[7].NormalScale);
+            
+            GenerateArrays();
+		}
 
 		if (Layer <= 0)
 		{
@@ -468,31 +484,20 @@ public partial class ScmapEditor : MonoBehaviour
 			TerrainMaterial.SetTexture("LowerNormalSampler", Textures[0].Normal);
 		}
 
-		if (Layer > 0 && Layer < 9)
+		if (Layer >= 1 && Layer <= 7)
 		{
 			string IdStrig = (Layer - 1).ToString();
 			TerrainMaterial.SetFloat("Stratum" + IdStrig + "AlbedoTile", map.Width / Textures[Layer].AlbedoScale);
 			TerrainMaterial.SetFloat("Stratum" + IdStrig + "NormalTile", map.Width / Textures[Layer].NormalScale);
+			GenerateArrays();
 		}
-		else
+		
+		if (Layer == 8 || Layer < 0)
 		{
-			TerrainMaterial.SetFloat("Stratum0AlbedoTile", map.Width / Textures[1].AlbedoScale);
-			TerrainMaterial.SetFloat("Stratum1AlbedoTile", map.Width / Textures[2].AlbedoScale);
-			TerrainMaterial.SetFloat("Stratum2AlbedoTile", map.Width / Textures[3].AlbedoScale);
-			TerrainMaterial.SetFloat("Stratum3AlbedoTile", map.Width / Textures[4].AlbedoScale);
-			TerrainMaterial.SetFloat("Stratum4AlbedoTile", map.Width / Textures[5].AlbedoScale);
-			TerrainMaterial.SetFloat("Stratum5AlbedoTile", map.Width / Textures[6].AlbedoScale);
-			TerrainMaterial.SetFloat("Stratum6AlbedoTile", map.Width / Textures[7].AlbedoScale);
 			TerrainMaterial.SetFloat("Stratum7AlbedoTile", map.Width / Textures[8].AlbedoScale);
-
-			TerrainMaterial.SetFloat("Stratum0NormalTile", map.Width / Textures[1].NormalScale);
-			TerrainMaterial.SetFloat("Stratum1NormalTile", map.Width / Textures[2].NormalScale);
-			TerrainMaterial.SetFloat("Stratum2NormalTile", map.Width / Textures[3].NormalScale);
-			TerrainMaterial.SetFloat("Stratum3NormalTile", map.Width / Textures[4].NormalScale);
-			TerrainMaterial.SetFloat("Stratum4NormalTile", map.Width / Textures[5].NormalScale);
-			TerrainMaterial.SetFloat("Stratum5NormalTile", map.Width / Textures[6].NormalScale);
-			TerrainMaterial.SetFloat("Stratum6NormalTile", map.Width / Textures[7].NormalScale);
 			TerrainMaterial.SetFloat("Stratum7NormalTile", map.Width / Textures[8].NormalScale);
+			TerrainMaterial.SetTexture("Stratum7AlbedoSampler", Textures[8].Albedo);
+			TerrainMaterial.SetTexture("Stratum7NormalSampler", Textures[8].Normal);
 		}
 
 		if (Layer == 9 || Layer < 0)
@@ -500,19 +505,16 @@ public partial class ScmapEditor : MonoBehaviour
 			TerrainMaterial.SetFloat("UpperAlbedoTile", map.Width / Textures[9].AlbedoScale);
 			TerrainMaterial.SetTexture("UpperAlbedoSampler", Textures[9].Albedo);
 		}
-
-		if(Layer != 9 && Layer != 0)
-		{
-			GenerateArrays();
-		}
 	}
 
+	// We need an array texture to reduce the amount of samplers in the shader,
+	// but we exclude stratum 7 as it might hold very large textures.
 	void GenerateArrays()
 	{
 		int AlbedoSize = 256;
 		int MipMapCount = 10;
 
-		for (int i = 0; i < 8; i++)
+		for (int i = 0; i < 7; i++)
 		{
 			if (Textures[i + 1].Albedo.width > AlbedoSize)
 			{
@@ -526,9 +528,9 @@ public partial class ScmapEditor : MonoBehaviour
 			}
 		}
 
-		Texture2DArray AlbedoArray = new Texture2DArray(AlbedoSize, AlbedoSize, 8, TextureFormat.RGBA32, true);
+		Texture2DArray AlbedoArray = new Texture2DArray(AlbedoSize, AlbedoSize, 7, TextureFormat.RGBA32, true);
 
-		for (int i = 0; i < 8; i++)
+		for (int i = 0; i < 7; i++)
 		{
 			if(!Textures[i + 1].Albedo.isReadable)
 			{
@@ -568,7 +570,7 @@ public partial class ScmapEditor : MonoBehaviour
 
 		AlbedoSize = 256;
 
-		for (int i = 0; i < 8; i++)
+		for (int i = 0; i < 7; i++)
 		{
 			if (Textures[i + 1].Normal == null)
 				continue;
@@ -582,9 +584,9 @@ public partial class ScmapEditor : MonoBehaviour
 			}
 		}
 
-		Texture2DArray NormalArray = new Texture2DArray(AlbedoSize, AlbedoSize, 8, TextureFormat.RGBA32, true);
+		Texture2DArray NormalArray = new Texture2DArray(AlbedoSize, AlbedoSize, 7, TextureFormat.RGBA32, true);
 
-		for (int i = 0; i < 8; i++)
+		for (int i = 0; i < 7; i++)
 		{
 			if (!Textures[i + 1].Normal.isReadable)
 			{
@@ -1085,54 +1087,117 @@ public partial class ScmapEditor : MonoBehaviour
 
 	public void ToogleShader()
 	{
+		foreach (var localKeyword in TerrainMaterial.shader.keywordSpace.keywords)
+		{
+			TerrainMaterial.DisableKeyword(localKeyword);
+		}
+		TerrainMaterial.EnableKeyword(MapLuaParser.Current.EditMenu.MapInfoMenu.ShaderName.text);
+		
+		int shaderId;
 		switch (MapLuaParser.Current.EditMenu.MapInfoMenu.ShaderName.text)
 		{
 			case "TTerrain":
-				Shader.SetGlobalInt("_ShaderID", 10);
+				shaderId = -10;
 				break;
 			case "TTerrainXP":
-				Shader.SetGlobalInt("_ShaderID", 11);
+				shaderId = -20;
 				break;
 			case "TTerrainXPExt":
-				Shader.SetGlobalInt("_ShaderID", 12);
+				shaderId = 20;
 				break;
 			case "Terrain000":
-				Shader.SetGlobalInt("_ShaderID", 0);
+				shaderId = 0;
 				break;
 			case "Terrain050":
-				Shader.SetGlobalInt("_ShaderID", 50);
+				shaderId = 50;
+				break;
+			case "Terrain100":
+				shaderId = 100;
+				break;
+			case "Terrain150":
+				shaderId = 150;
+				break;
+			case "Terrain101":
+				shaderId = 101;
+				break;
+			case "Terrain151":
+				shaderId = 151;
+				break;
+			case "Terrain102":
+				shaderId = 102;
+				break;
+			case "Terrain152":
+				shaderId = 152;
+				break;
+			case "Terrain100B":
+				shaderId = 110;
+				break;
+			case "Terrain150B":
+				shaderId = 160;
+				break;
+			case "Terrain101B":
+				shaderId = 111;
+				break;
+			case "Terrain151B":
+				shaderId = 161;
+				break;
+			case "Terrain102B":
+				shaderId = 112;
+				break;
+			case "Terrain152B":
+				shaderId = 162;
 				break;
 			case "Terrain200":
-				Shader.SetGlobalInt("_ShaderID", 200);
+				shaderId = 200;
 				break;
 			case "Terrain250":
-			case "Terrain301":
-				Shader.SetGlobalInt("_ShaderID", 250);
+				shaderId = 250;
+				break;
+			case "Terrain201":
+				shaderId = 201;
+				break;
+			case "Terrain251":
+				shaderId = 251;
+				break;
+			case "Terrain202":
+				shaderId = 202;
+				break;
+			case "Terrain252":
+				shaderId = 252;
 				break;
 			case "Terrain200B":
-				Shader.SetGlobalInt("_ShaderID", 2001);
+				shaderId = 210;
 				break;
 			case "Terrain250B":
-				Shader.SetGlobalInt("_ShaderID", 2501);
+				shaderId = 260;
+				break;
+			case "Terrain201B":
+				shaderId = 211;
+				break;
+			case "Terrain251B":
+				shaderId = 261;
+				break;
+			case "Terrain202B":
+				shaderId = 212;
+				break;
+			case "Terrain252B":
+				shaderId = 262;
 				break;
 			default:
-				Shader.SetGlobalInt("_ShaderID", -1);
+				shaderId = -1;
 				break;
 		}
 
-		if (MapLuaParser.Current.EditMenu.MapInfoMenu.ShaderName.text == "TTerrainXPExt" ||
-		    MapLuaParser.Current.EditMenu.MapInfoMenu.ShaderName.text == "Terrain000" ||
-		    MapLuaParser.Current.EditMenu.MapInfoMenu.ShaderName.text == "Terrain050" ||
-		    MapLuaParser.Current.EditMenu.MapInfoMenu.ShaderName.text == "Terrain200" ||
-		    MapLuaParser.Current.EditMenu.MapInfoMenu.ShaderName.text == "Terrain250" ||
-		    MapLuaParser.Current.EditMenu.MapInfoMenu.ShaderName.text == "Terrain301" ||
-		    MapLuaParser.Current.EditMenu.MapInfoMenu.ShaderName.text == "Terrain200B" ||
-		    MapLuaParser.Current.EditMenu.MapInfoMenu.ShaderName.text == "Terrain250B")
+		if (shaderId >= 0)
         {
-            Textures[9].AlbedoScale = 10000;
-            Textures[8].NormalScale = 10000;
+            Textures[8].AlbedoScale = 10000;  // Use terrain info texture
+            Textures[8].NormalScale = 10000;  // Use terrain normal texture
             MapLuaParser.Current.EditMenu.TexturesMenu.ShaderTools.interactable = true;
             MapLuaParser.Current.EditMenu.TexturesMenu.ShaderTools.alpha = 1;
+            if (shaderId >= 100)
+            {
+                Textures[9].AlbedoScale = 10000;  // Use PBR rendering on decals
+            }
         }
 		else
 		{
@@ -1140,17 +1205,18 @@ public partial class ScmapEditor : MonoBehaviour
 			MapLuaParser.Current.EditMenu.TexturesMenu.ShaderTools.alpha = 0.7f;
 		}
 		
-		if (MapLuaParser.Current.EditMenu.MapInfoMenu.ShaderName.text == "Terrain200" ||
-		    MapLuaParser.Current.EditMenu.MapInfoMenu.ShaderName.text == "Terrain250" ||
-		    MapLuaParser.Current.EditMenu.MapInfoMenu.ShaderName.text == "Terrain301" ||
-		    MapLuaParser.Current.EditMenu.MapInfoMenu.ShaderName.text == "Terrain200B" ||
-		    MapLuaParser.Current.EditMenu.MapInfoMenu.ShaderName.text == "Terrain250B")
+		if (shaderId >= 200)
 		{
 			MapLuaParser.Current.EditMenu.LightingMenu.Specular.gameObject.SetActive(false);
 			MapLuaParser.Current.EditMenu.LightingMenu.SpecularRed.gameObject.SetActive(true);
 			MapLuaParser.Current.EditMenu.LightingMenu.SpecularRed.SetTitle("Texture Blending Blurriness");
 		}
-		else if (MapLuaParser.Current.EditMenu.MapInfoMenu.ShaderName.text == "TTerrain")
+		else if (shaderId >= 100)
+		{
+			MapLuaParser.Current.EditMenu.LightingMenu.Specular.gameObject.SetActive(false);
+			MapLuaParser.Current.EditMenu.LightingMenu.SpecularRed.gameObject.SetActive(false);
+		}
+		else if (shaderId == -10)  //TTerrain
 		{
 			MapLuaParser.Current.EditMenu.LightingMenu.Specular.gameObject.SetActive(false);
 			MapLuaParser.Current.EditMenu.LightingMenu.SpecularRed.gameObject.SetActive(true);
@@ -1161,6 +1227,8 @@ public partial class ScmapEditor : MonoBehaviour
 			MapLuaParser.Current.EditMenu.LightingMenu.Specular.gameObject.SetActive(true);
 			MapLuaParser.Current.EditMenu.LightingMenu.SpecularRed.gameObject.SetActive(false);
 		}
+		
+		Shader.SetGlobalInt("_ShaderID", shaderId);
 	}
 #endregion
 }
