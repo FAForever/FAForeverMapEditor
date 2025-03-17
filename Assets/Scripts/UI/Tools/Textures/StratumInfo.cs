@@ -1141,7 +1141,7 @@ namespace EditMap
 	        OutputWindow.Initialize();
 	        Process neroxisToolsuite = new Process();
             neroxisToolsuite.StartInfo.FileName = EnvPaths.GetJavaPath() + "/java.exe";
-            var jarPath = MapLuaParser.StructurePath + "Neroxis/neroxis-toolsuite.jar";
+            var jarPath = MapLuaParser.StructurePath + "Neroxis/toolsuite-all.jar";
             neroxisToolsuite.StartInfo.Arguments = "-jar \"" + jarPath + "\" " + arguments;
             outputQueue.Enqueue("Starting Java process: " + neroxisToolsuite.StartInfo.FileName + neroxisToolsuite.StartInfo.Arguments);
             
@@ -1158,24 +1158,43 @@ namespace EditMap
             neroxisToolsuite.WaitForExit();
             
             outputQueue.Enqueue("Java process exited with code: " + neroxisToolsuite.ExitCode);
-            OutputWindow.Close(neroxisToolsuite.ExitCode);
+            OutputWindow.Close();
+            if (neroxisToolsuite.ExitCode != 0) GenericInfoPopup.ShowInfo("Command failed! Check the log for more information.");
             return neroxisToolsuite.ExitCode;
         }
 
         public void GenerateMapInfoTexture()
         {
-	        string toolsuiteArguments = "export-env-map --map-path=\"" + EnvPaths.GetMapsPath() + MapLuaParser.Current.FolderName + "\"";
+	        string toolsuiteArguments = "export-map-info --map-path=\"" + EnvPaths.GetMapsPath() + MapLuaParser.Current.FolderName + "\"";
 	        int exitcode = invokeToolsuite(toolsuiteArguments);
 	        if (exitcode != 0) return;
 	        
 	        Undo.RegisterUndo(new UndoHistory.HistoryStratumChange(), new UndoHistory.HistoryStratumChange.StratumChangeHistoryParameter(9));
                 
-	        string texturePath = MapLuaParser.RelativeLoadedMapFolderPath + "env/layers/mapwide.dds";
-	        ScmapEditor.Current.Textures[8].Normal = GetGamedataFile.LoadTexture2D(texturePath);
-            ScmapEditor.Current.Textures[8].NormalPath = texturePath;
+	        string texturePath = MapLuaParser.RelativeLoadedMapFolderPath + "env/layers/mapInfo.dds";
+	        ScmapEditor.Current.Textures[8].Albedo = GetGamedataFile.LoadTexture2D(texturePath, false, false, false);
+	        ScmapEditor.Current.Textures[8].AlbedoPath = texturePath;
+	        ScmapEditor.Current.Textures[8].AlbedoScale = MapLuaParser.Current.ScenarioLuaFile.Data.Size[0] + 1;
             ScmapEditor.Current.SetTextures(8);
             ReloadStratums();
             SelectStratum(8);
+        }
+        
+        public void GenerateMapNormalTexture()
+        {
+	        string toolsuiteArguments = "export-map-normals --map-path=\"" + EnvPaths.GetMapsPath() + MapLuaParser.Current.FolderName + "\"";
+	        int exitcode = invokeToolsuite(toolsuiteArguments);
+	        if (exitcode != 0) return;
+	        
+	        Undo.RegisterUndo(new UndoHistory.HistoryStratumChange(), new UndoHistory.HistoryStratumChange.StratumChangeHistoryParameter(9));
+                
+	        string texturePath = MapLuaParser.RelativeLoadedMapFolderPath + "env/layers/mapNormal.dds";
+	        ScmapEditor.Current.Textures[8].Normal = GetGamedataFile.LoadTexture2D(texturePath, true, false, false);
+	        ScmapEditor.Current.Textures[8].NormalPath = texturePath;
+	        ScmapEditor.Current.Textures[8].NormalScale = MapLuaParser.Current.ScenarioLuaFile.Data.Size[0] + 1;
+	        ScmapEditor.Current.SetTextures(8);
+	        ReloadStratums();
+	        SelectStratum(8);
         }
         
         public void GenerateHeightRoughnessTexture()
@@ -1192,9 +1211,10 @@ namespace EditMap
 	        
 	        Undo.RegisterUndo(new UndoHistory.HistoryStratumChange(), new UndoHistory.HistoryStratumChange.StratumChangeHistoryParameter(9));
                 
-	        string texturePath = MapLuaParser.RelativeLoadedMapFolderPath + "env/layers/heightroughness.dds";
-	        ScmapEditor.Current.Textures[9].Albedo = GetGamedataFile.LoadTexture2D(texturePath);
+	        string texturePath = MapLuaParser.RelativeLoadedMapFolderPath + "env/layers/roughnessAndHeight.dds";
+	        ScmapEditor.Current.Textures[9].Albedo = GetGamedataFile.LoadTexture2D(texturePath, false, false, false);
             ScmapEditor.Current.Textures[9].AlbedoPath = texturePath;
+            ScmapEditor.Current.Textures[9].AlbedoScale = MapLuaParser.Current.ScenarioLuaFile.Data.Size[0] + 1;
             ScmapEditor.Current.SetTextures(9);
             ReloadStratums();
             SelectStratum(9);

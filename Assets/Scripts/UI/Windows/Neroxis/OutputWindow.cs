@@ -23,12 +23,10 @@ namespace Ozone.UI
 			Debug.Log(text);
 		}
 
-		public void Close(int exitCode)
+		public void Close()
 		{
 			HideSpinner();
-			float timeout = 1;
-			if (exitCode != 0) timeout = 5;
-			Invoke(nameof(HideWindow), timeout);
+			Invoke(nameof(HideWindow), 1);
 		}
 
 		private void HideSpinner()
