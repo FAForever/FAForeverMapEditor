@@ -1165,7 +1165,7 @@ namespace EditMap
 
         public void GenerateMapInfoTexture()
         {
-	        string toolsuiteArguments = "export-map-info --map-path=\"" + EnvPaths.GetMapsPath() + MapLuaParser.Current.FolderName + "\"";
+	        string toolsuiteArguments = "export-map-info --map-path=\"" + MapLuaParser.LoadedMapFolderPath + "\"";
 	        int exitcode = invokeToolsuite(toolsuiteArguments);
 	        if (exitcode != 0) return;
 	        
@@ -1182,7 +1182,7 @@ namespace EditMap
         
         public void GenerateMapNormalTexture()
         {
-	        string toolsuiteArguments = "export-map-normals --map-path=\"" + EnvPaths.GetMapsPath() + MapLuaParser.Current.FolderName + "\"";
+	        string toolsuiteArguments = "export-map-normals --map-path=\"" + MapLuaParser.LoadedMapFolderPath + "\"";
 	        int exitcode = invokeToolsuite(toolsuiteArguments);
 	        if (exitcode != 0) return;
 	        
@@ -1205,7 +1205,7 @@ namespace EditMap
 		        return;
 	        }
 	        string toolsuiteArguments = "generate-pbr --in-path=\"" + ImagePathField.text + "\"" +
-	                                    " --out-path=\"" + EnvPaths.GetMapsPath() + MapLuaParser.Current.FolderName + "/env/layers/\"";
+	                                    " --out-path=\"" + MapLuaParser.LoadedMapFolderPath + "/env/layers/\"";
 	        int exitcode = invokeToolsuite(toolsuiteArguments);
 	        if (exitcode != 0) return;
 	        
