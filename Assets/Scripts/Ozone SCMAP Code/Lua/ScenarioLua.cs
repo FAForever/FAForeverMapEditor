@@ -472,7 +472,10 @@ namespace MapLua
 			LuaTable ScenarioInfoTab = LuaFile.GetTable(TABLE_SCENARIOINFO);
 
 			Data.name = LuaParser.Read.StringFromTable(ScenarioInfoTab, ScenarioInfo.KEY_NAME);
-			Data.description = LuaParser.Read.StringFromTable(ScenarioInfoTab, ScenarioInfo.KEY_DESCRIPTION);
+			// When there is \r\n in the scenario source file (for example from a neroxis map generator map)
+			// we need to get rid of that, or we will break the formatting of the file when we save it again.
+			// The multiline text field of unity doesn't handle it well.
+			Data.description = LuaParser.Read.StringFromTable(ScenarioInfoTab, ScenarioInfo.KEY_DESCRIPTION).Replace("\r", "");
 			Data.type = LuaParser.Read.StringFromTable(ScenarioInfoTab, ScenarioInfo.KEY_TYPE);
 			Data.starts = LuaParser.Read.BoolFromTable(ScenarioInfoTab, ScenarioInfo.KEY_STARTS, true);
 
