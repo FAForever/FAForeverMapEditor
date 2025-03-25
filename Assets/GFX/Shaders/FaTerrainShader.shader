@@ -776,7 +776,7 @@
                 float2 position;
                 position.xy = TerrainScale * inV.mTexWT;
                 // 30° rotation
-                float2x2 rotationMatrix = float2x2(float2(0.866, -0.5), float2(0.5, 0.866));
+                float2x2 rotationMatrix = float2x2(float2(SpecularColor.b, -SpecularColor.a), float2(SpecularColor.a, SpecularColor.b));
                 float2 rotated_pos = mul(position.xy, rotationMatrix);
 
                 float4 mask0 = tex2D(UtilitySamplerA, position.xy);
@@ -836,7 +836,7 @@
                 float2 position;
                 position.xy = TerrainScale * inV.mTexWT;
                 // 30° rotation
-                float2x2 rotationMatrix = float2x2(float2(0.866, -0.5), float2(0.5, 0.866));
+                float2x2 rotationMatrix = float2x2(float2(SpecularColor.b, -SpecularColor.a), float2(SpecularColor.a, SpecularColor.b));
                 float2 rotated_pos = mul(position.xy, rotationMatrix);
 
                 float4 mask0 = tex2D(UtilitySamplerA, position.xy);
@@ -895,7 +895,7 @@
                 // height is now in the z coordinate
                 float3 position = TerrainScale.xxx * inV.mTexWT;
                 // 30° rotation
-                float2x2 rotationMatrix = float2x2(float2(0.866, -0.5), float2(0.5, 0.866));
+                float2x2 rotationMatrix = float2x2(float2(SpecularColor.b, -SpecularColor.a), float2(SpecularColor.a, SpecularColor.b));
                 float2 rotated_pos = mul(position.xy, rotationMatrix);
 
                 float4 mask0 = tex2D(UtilitySamplerA, position.xy);
@@ -958,7 +958,7 @@
             {
                 float3 position = TerrainScale.xxx * inV.mTexWT;
                 // 30° rotation
-                float2x2 rotationMatrix = float2x2(float2(0.866, -0.5), float2(0.5, 0.866));
+                float2x2 rotationMatrix = float2x2(float2(SpecularColor.b, -SpecularColor.a), float2(SpecularColor.a, SpecularColor.b));
                 float2 rotated_pos = mul(position.xy, rotationMatrix);
 
                 float4 mask0 = tex2D(UtilitySamplerA, position.xy);
