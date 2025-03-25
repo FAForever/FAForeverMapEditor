@@ -714,22 +714,22 @@
             }
 
             float4 splatLerp(float4 t1, float4 t2, float t2height, float opacity, uniform float blurriness = 0.06) {
-                // We need to increase the contrast of the height
-                float height2 = (1.6 * (t2height * (1 - 2 * blurriness) + blurriness) - 0.3) + opacity;
-                float threshold = max(1, height2) - blurriness;
+                t2height = lerp(t2height, 0.5, blurriness);
+                // increase the contrast of the height
+                t2height = (1 + SpecularColor.g) * t2height - 0.5 * SpecularColor.g;
                 float factor = 0;
                 if (opacity > 0) {
-                    factor = (opacity >= 1) ? 1 : max(height2 - threshold, 0) / blurriness;
+                    factor = (opacity >= 1) ? 1 : saturate((t2height + opacity - 1 + 0.5 * blurriness) / blurriness);
                 }
                 return lerp(t1, t2, factor);
             }
 
             float3 splatBlendNormal(float3 n1, float3 n2, float t2height, float opacity, uniform float blurriness = 0.06) {
-                float height2 = (1.6 * (t2height * (1 - 2 * blurriness) + blurriness) - 0.3) + opacity;
-                float threshold = max(1, height2) - blurriness;
+                t2height = lerp(t2height, 0.5, blurriness);
+                t2height = (1 + SpecularColor.g) * t2height - 0.5 * SpecularColor.g;
                 float factor = 0;
                 if (opacity > 0) {
-                    factor = (opacity >= 1) ? 1 : max(height2 - threshold, 0) / blurriness;
+                    factor = (opacity >= 1) ? 1 : saturate((t2height + opacity - 1 + 0.5 * blurriness) / blurriness);
                 }
                 // This modification is to make low opacity normal maps more visible,
                 // as we notice small changes to the albedo maps more easily.
