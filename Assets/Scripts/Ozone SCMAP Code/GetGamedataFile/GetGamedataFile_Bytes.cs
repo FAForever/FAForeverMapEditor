@@ -199,7 +199,7 @@ public partial struct GetGamedataFile
 			localPath = localPath.ToLower();
 			if (!gamedata.ContainsKey(localPath))
 			{
-				Debug.LogWarning("Can't load ZipFile");
+				Debug.LogWarning("Can't load file " + localPath);
 				return null;
 			}
 		}

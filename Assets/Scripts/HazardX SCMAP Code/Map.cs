@@ -287,8 +287,8 @@ public class Map
 		{
 			// 0
 			Layer NewLayer = new Layer();
-			NewLayer.PathTexture = "/env/paradise/layers/sand000_albedo.dds";
-			NewLayer.PathNormalmap = "/env/paradise/layers/sand000_normals.dds";
+			NewLayer.PathTexture = "env/paradise/layers/sand000_albedo.dds";
+			NewLayer.PathNormalmap = "env/paradise/layers/sand000_normals.dds";
 			NewLayer.ScaleTexture = 4;
 			NewLayer.ScaleNormalmap = 4;
 			Layers.Add(NewLayer);
@@ -296,7 +296,7 @@ public class Map
 			// 1
 			NewLayer = new Layer();
 			NewLayer.PathTexture = "";
-			NewLayer.PathNormalmap = "";
+			NewLayer.PathNormalmap = "env/tundra/layers/tund_none_normal.dds";
 			NewLayer.ScaleTexture = 4;
 			NewLayer.ScaleNormalmap = 4;
 			Layers.Add(NewLayer);
@@ -304,7 +304,7 @@ public class Map
 			// 2
 			NewLayer = new Layer();
 			NewLayer.PathTexture = "";
-			NewLayer.PathNormalmap = "";
+			NewLayer.PathNormalmap = "env/tundra/layers/tund_none_normal.dds";
 			NewLayer.ScaleTexture = 4;
 			NewLayer.ScaleNormalmap = 4;
 			Layers.Add(NewLayer);
@@ -312,7 +312,7 @@ public class Map
 			// 3
 			NewLayer = new Layer();
 			NewLayer.PathTexture = "";
-			NewLayer.PathNormalmap = "";
+			NewLayer.PathNormalmap = "env/tundra/layers/tund_none_normal.dds";
 			NewLayer.ScaleTexture = 4;
 			NewLayer.ScaleNormalmap = 4;
 			Layers.Add(NewLayer);
@@ -320,7 +320,7 @@ public class Map
 			// 4
 			NewLayer = new Layer();
 			NewLayer.PathTexture = "";
-			NewLayer.PathNormalmap = "";
+			NewLayer.PathNormalmap = "env/tundra/layers/tund_none_normal.dds";
 			NewLayer.ScaleTexture = 4;
 			NewLayer.ScaleNormalmap = 4;
 			Layers.Add(NewLayer);
@@ -328,7 +328,7 @@ public class Map
 			// 5
 			NewLayer = new Layer();
 			NewLayer.PathTexture = "";
-			NewLayer.PathNormalmap = "";
+			NewLayer.PathNormalmap = "env/tundra/layers/tund_none_normal.dds";
 			NewLayer.ScaleTexture = 4;
 			NewLayer.ScaleNormalmap = 4;
 			Layers.Add(NewLayer);
@@ -336,7 +336,7 @@ public class Map
 			// 6
 			NewLayer = new Layer();
 			NewLayer.PathTexture = "";
-			NewLayer.PathNormalmap = "";
+			NewLayer.PathNormalmap = "env/tundra/layers/tund_none_normal.dds";
 			NewLayer.ScaleTexture = 4;
 			NewLayer.ScaleNormalmap = 4;
 			Layers.Add(NewLayer);
@@ -344,7 +344,7 @@ public class Map
 			// 7
 			NewLayer = new Layer();
 			NewLayer.PathTexture = "";
-			NewLayer.PathNormalmap = "";
+			NewLayer.PathNormalmap = "env/tundra/layers/tund_none_normal.dds";
 			NewLayer.ScaleTexture = 4;
 			NewLayer.ScaleNormalmap = 4;
 			Layers.Add(NewLayer);
@@ -352,14 +352,14 @@ public class Map
 			// 8
 			NewLayer = new Layer();
 			NewLayer.PathTexture = "";
-			NewLayer.PathNormalmap = "";
+			NewLayer.PathNormalmap = "env/tundra/layers/tund_none_normal.dds";
 			NewLayer.ScaleTexture = 4;
 			NewLayer.ScaleNormalmap = 4;
 			Layers.Add(NewLayer);
 
 			// 9
 			NewLayer = new Layer();
-			NewLayer.PathTexture = "/env/evergreen/layers/macrotexture000_albedo.dds";
+			NewLayer.PathTexture = "env/evergreen/layers/macrotexture000_albedo.dds";
 			NewLayer.PathNormalmap = "";
 			NewLayer.ScaleTexture = 128;
 			NewLayer.ScaleNormalmap = 1;
