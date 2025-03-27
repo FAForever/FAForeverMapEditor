@@ -1208,24 +1208,29 @@ public partial class ScmapEditor : MonoBehaviour
 		if (shaderId >= 200)
 		{
 			MapLuaParser.Current.EditMenu.LightingMenu.Specular.gameObject.SetActive(false);
-			MapLuaParser.Current.EditMenu.LightingMenu.SpecularRed.gameObject.SetActive(true);
-			MapLuaParser.Current.EditMenu.LightingMenu.SpecularRed.SetTitle("Texture Blending Blurriness");
+			MapLuaParser.Current.EditMenu.LightingMenu.SpecularRed.gameObject.SetActive(false);
+			MapLuaParser.Current.EditMenu.TexturesMenu.ShaderSettings.gameObject.SetActive(true);
+			// arguments are: blurriness, contrast increase, cos(30), sin(30)
+			map.SpecularColor = new Vector4(map.SpecularColor.x, 0.6f, 0.866f, 0.5f);
+			Shader.SetGlobalVector("SpecularColor", map.SpecularColor);
 		}
 		else if (shaderId >= 100)
 		{
 			MapLuaParser.Current.EditMenu.LightingMenu.Specular.gameObject.SetActive(false);
 			MapLuaParser.Current.EditMenu.LightingMenu.SpecularRed.gameObject.SetActive(false);
+			MapLuaParser.Current.EditMenu.TexturesMenu.ShaderSettings.gameObject.SetActive(false);
 		}
 		else if (shaderId == -10)  //TTerrain
 		{
 			MapLuaParser.Current.EditMenu.LightingMenu.Specular.gameObject.SetActive(false);
 			MapLuaParser.Current.EditMenu.LightingMenu.SpecularRed.gameObject.SetActive(true);
-			MapLuaParser.Current.EditMenu.LightingMenu.SpecularRed.SetTitle("Specularity");
+			MapLuaParser.Current.EditMenu.TexturesMenu.ShaderSettings.gameObject.SetActive(false);
 		}
 		else
 		{
 			MapLuaParser.Current.EditMenu.LightingMenu.Specular.gameObject.SetActive(true);
 			MapLuaParser.Current.EditMenu.LightingMenu.SpecularRed.gameObject.SetActive(false);
+			MapLuaParser.Current.EditMenu.TexturesMenu.ShaderSettings.gameObject.SetActive(false);
 		}
 		
 		Shader.SetGlobalInt("_ShaderID", shaderId);
