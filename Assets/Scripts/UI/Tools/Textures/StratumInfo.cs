@@ -8,6 +8,7 @@ using System.IO;
 using B83.Image.BMP;
 using SFB;
 using FAF.MapEditor;
+using UnityEngine.Serialization;
 using Debug = UnityEngine.Debug;
 using Image = UnityEngine.UI.Image;
 using Toggle = UnityEngine.UI.Toggle;
@@ -53,7 +54,7 @@ namespace EditMap
 
 		public UiTextField Scatter;
 
-		public Toggle LinearBrush;
+		[FormerlySerializedAs("LinearBrush")] public Toggle ScaledRange;
 
         public LayerMask TerrainMask;
 		public List<Toggle> BrushToggles;
@@ -263,15 +264,15 @@ namespace EditMap
 					}
 					else if (KeyboardManager.SwitchTypeNext())
 					{
-						LinearBrush.isOn = !LinearBrush.isOn;
+						ScaledRange.isOn = !ScaledRange.isOn;
 					}
 					else if (KeyboardManager.SwitchType1())
 					{
-						LinearBrush.isOn = false;
+						ScaledRange.isOn = false;
 					}
 					else if (KeyboardManager.SwitchType2())
 					{
-						LinearBrush.isOn = true;
+						ScaledRange.isOn = true;
 					}
 
 					if (KeyboardManager.IncreaseTarget())
@@ -749,10 +750,10 @@ namespace EditMap
 			size = (int)(BrushSize.value * SizeProportion);
 			ScatterValue = Scatter.value;
 
-			if (LinearBrush.isOn)
-				TargetPaintValue = TargetValue.value;
-			else
+			if (ScaledRange.isOn)
 				TargetPaintValue = Mathf.Clamp01((TargetValue.value + 1f) / 2f);
+			else
+				TargetPaintValue = TargetValue.value;
 
 			BrushGenerator.Current.GenerateSymmetry(BrushPos, 0, ScatterValue, size * 0.03f);
 
@@ -845,12 +846,6 @@ namespace EditMap
 			else
 				return;
 
-
-			int PaintType = PaintChannel;
-			if (LinearBrush.isOn)
-				PaintType += 10;
-
-
 			for (i = 0; i < SizeDown; i++)
 			{
 				for (j = 0; j < SizeLeft; j++)
@@ -889,7 +884,7 @@ namespace EditMap
 						{
 							int XY = j + i * SizeLeft;
 
-							switch (PaintType)
+							switch (PaintChannel)
 							{
 								case 0:
 										StratumData[XY].r = ToTarget(StratumData[XY].r, SampleBrush * LocalBrushStrength);
@@ -902,18 +897,6 @@ namespace EditMap
 									break;
 								case 3:
 										StratumData[XY].a = ToTarget(StratumData[XY].a, SampleBrush * LocalBrushStrength);
-									break;
-								case 10:
-										StratumData[XY].r = ConvertToLinear(StratumData[XY].r, SampleBrush * LocalBrushStrength);
-									break;
-								case 11:
-										StratumData[XY].g = ConvertToLinear(StratumData[XY].g, SampleBrush * LocalBrushStrength);
-									break;
-								case 12:
-										StratumData[XY].b = ConvertToLinear(StratumData[XY].b, SampleBrush * LocalBrushStrength);
-									break;
-								case 13:
-										StratumData[XY].a = ConvertToLinear(StratumData[XY].a, SampleBrush * LocalBrushStrength);
 									break;
 							}
 						}
@@ -959,22 +942,6 @@ namespace EditMap
 			{
 				return Mathf.Clamp(source - addValue, TargetPaintValue, 1);
 			}
-		}
-
-		static float ConvertToLinear(float value, float addValue)
-		{
-			value = value * 2f - 1f;
-			//value = Mathf.Clamp(value + addValue, -0.05f, 1.05f);
-			value = ToTarget(value, addValue);
-			value += 1;
-			value /= 2f;
-			value = Mathf.Clamp01(value);
-
-			return value;
-			//return Mathf.Clamp01((Mathf.Clamp01(value * 0.5f + 0.5f) + addValue) * 2f - 1f);
-			//return Mathf.Pow(Mathf.Pow(value, 0.454545f) + addValue, 2.2f);
-			//return value + Mathf.Pow(addValue, 0.454545f);
-			//return value + addValue;
 		}
 
 		#region Select Texture
