@@ -316,7 +316,7 @@ public partial class ScmapEditor : MonoBehaviour
 					}
 					else
 					{
-						Textures[i].NormalPath = "env/tundra/layers/tund_sandlight_normal.dds";
+						Textures[i].NormalPath = "env/tundra/layers/tund_none_normal.dds";
 						Debug.Log("Add missing normalmap on stratum " + i);
 						NormalMapFix = true;
 					}
@@ -810,63 +810,11 @@ public partial class ScmapEditor : MonoBehaviour
 
 	public void UnloadMap()
 	{
-		Textures[0].AlbedoPath = "/env/evergreen2/layers/eg_gravel005_albedo.dds";
-		Textures[0].NormalPath = "/env/tundra/layers/des_none_normal.dds";
-		Textures[0].AlbedoScale = 4;
-		Textures[0].NormalScale = 4;
-
-		Textures[1].AlbedoPath = "";
-		Textures[1].NormalPath = "";
-		Textures[1].AlbedoScale = 4;
-		Textures[1].NormalScale = 4;
-
-		Textures[2].AlbedoPath = "";
-		Textures[2].NormalPath = "";
-		Textures[2].AlbedoScale = 4;
-		Textures[2].NormalScale = 4;
-
-		Textures[3].AlbedoPath = "";
-		Textures[3].NormalPath = "";
-		Textures[3].AlbedoScale = 4;
-		Textures[3].NormalScale = 4;
-
-		Textures[4].AlbedoPath = "";
-		Textures[4].NormalPath = "";
-		Textures[4].AlbedoScale = 4;
-		Textures[4].NormalScale = 4;
-
-		Textures[5].AlbedoPath = "";
-		Textures[5].NormalPath = "";
-		Textures[5].AlbedoScale = 4;
-		Textures[5].NormalScale = 4;
-
-		Textures[6].AlbedoPath = "";
-		Textures[6].NormalPath = "";
-		Textures[6].AlbedoScale = 4;
-		Textures[6].NormalScale = 4;
-
-		Textures[7].AlbedoPath = "";
-		Textures[7].NormalPath = "";
-		Textures[7].AlbedoScale = 4;
-		Textures[7].NormalScale = 4;
-
-		Textures[8].AlbedoPath = "";
-		Textures[8].NormalPath = "";
-		Textures[8].AlbedoScale = 4;
-		Textures[8].NormalScale = 4;
-
-		Textures[9].AlbedoPath = "/env/evergreen/layers/macrotexture000_albedo.dds";
-		Textures[9].NormalPath = "";
-		Textures[9].AlbedoScale = 128;
-		Textures[9].NormalScale = 4;
-
-
 		EditMap.PropsInfo.UnloadProps();
 		EditMap.UnitsInfo.UnloadUnits();
 		Markers.MarkersControler.UnloadMarkers();
 		DecalsControler.Current.UnloadDecals();
 		GenerateControlTex.StopAllTasks();
-
 	}
 #endregion
 

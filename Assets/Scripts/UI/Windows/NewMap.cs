@@ -213,6 +213,7 @@ namespace EditMap
 
 			//GenerateControlTex.GenerateWater();
 			ScmapEditor.Current.LoadHeights();
+			ScmapEditor.Current.LoadStratumScdTextures();
 
 			MapLuaParser.Current.EditMenu.MapInfoMenu.SaveAsFa.isOn = false;
 			MapLuaParser.Current.EditMenu.MapInfoMenu.ShaderName.SetValue("TTerrainXP");
