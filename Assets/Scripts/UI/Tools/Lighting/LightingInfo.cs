@@ -201,7 +201,10 @@ namespace EditMap
 				Scmap.map.EnvCubemapsFile[i] = EnvCube.text;
 			}
 
-			Scmap.map.SpecularColor = Specular.GetVector4Value();
+			if (Specular.gameObject.activeSelf)
+			{
+				Scmap.map.SpecularColor = Specular.GetVector4Value();
+			}
 			if (SpecularRed.gameObject.activeSelf)
 			{
 				Scmap.map.SpecularColor.x = SpecularRed.value;

@@ -64,6 +64,8 @@ namespace EditMap
 		public Transform BrushListPivot;
 		public Material TerrainMaterial;
 
+		public CanvasGroup ShaderSettings;
+		public UiTextField Blurriness;
 		public CanvasGroup ShaderTools;
 		public InputField JavaPathField;
 		public InputField ImagePathField;
@@ -130,6 +132,7 @@ namespace EditMap
 		{
 			JavaPathField.text = EnvPaths.GetJavaPath();
 			ImagePathField.text = EnvPaths.GetImagePath();
+			Blurriness.SetValue(ScmapEditor.Current.map.SpecularColor.x);
 			BrushGenerator.Current.LoadBrushes();
 			ReloadStratums();
 
@@ -611,6 +614,13 @@ namespace EditMap
 				}
 				//TerrainMaterial.SetFloat("_BrushSize", BrushSize.value);
 			}
+		}
+
+		public void updateShaderSettings()
+		{
+			Vector4 oldSpecular = ScmapEditor.Current.map.SpecularColor;
+			ScmapEditor.Current.map.SpecularColor = new Vector4(Blurriness.value, oldSpecular.y, oldSpecular.z, oldSpecular.w);
+			Shader.SetGlobalVector("SpecularColor", ScmapEditor.Current.map.SpecularColor);
 		}
         #endregion
 
