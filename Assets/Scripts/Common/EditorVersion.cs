@@ -1,6 +1,4 @@
-﻿//#define PRERELEASE // << -- Comment out for full release
-
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.Networking;
 using UnityEngine.UI;
 using System.Collections;
@@ -8,38 +6,25 @@ using System;
 
 public class EditorVersion : MonoBehaviour
 {
-
-	public const string EditorBuildVersion = "v0.901";
-
-#if PRERELEASE
-	// Prerelease
-	public const string EditorBuildTag = "Pre-Release";
-	public const double VersionOffset = -0.001f; // Prerelease
-#else
-	//Release
-	public const string EditorBuildTag = "";
-	//public const string EditorBuildTag = "HF1"; // Hotfix
-	public const float VersionOffset = 0f; // Release
-#endif
-
-	public static string LatestTag = "";
-	public static string FoundUrl;
+	private const string EditorBuildVersion = "v1.0";
+	private const string EditorPrereleaseTag = "rc4";
+	private static string FoundUrl;
 	public bool SearchForNew = true;
 
-	string TagString
+	string VersionString
 	{
 		get
 		{
-			if (EditorBuildTag.Length == 0)
-				return "";
+			if (EditorPrereleaseTag.Length == 0)
+				return EditorBuildVersion;
 
-			return " " + EditorBuildTag;
+			return EditorBuildVersion + "-" + EditorPrereleaseTag;
 		}
 	}
 
 	void Start()
 	{
-		GetComponent<Text>().text = EditorBuildVersion + TagString;
+		GetComponent<Text>().text = VersionString;
 		if(SearchForNew)
 			StartCoroutine(FindLatest());
 	}
@@ -47,56 +32,45 @@ public class EditorVersion : MonoBehaviour
 	public string url = "https://github.com/FAForever/FAForeverMapEditor/releases/latest";
 	IEnumerator FindLatest()
 	{
-
-		//using (WWW www = new WWW(url))
 		DownloadHandler dh = new DownloadHandlerBuffer();
         using UnityWebRequest www = new(url, "GET", dh, null);
         yield return www.SendWebRequest();
-
-        //yield return www;
-        /*if (www.responseHeaders.Count > 0)
-        {
-            foreach (KeyValuePair<string, string> entry in www.responseHeaders)
-            {
-                Debug.Log(entry.Key + " = " + entry.Value);
-            }
-        }*/
         string[] Tags = www.url.Replace("\\", "/").Split("/".ToCharArray());
-
-
         if (Tags.Length > 0)
         {
-            LatestTag = Tags[^1];
+	        string LatestRelease = Tags[^1];
             FoundUrl = www.url;
-
-            double Latest = Math.Round(BuildFloat(LatestTag), 3);
-            double Current = Math.Round(BuildFloat(EditorBuildVersion), 3);
-            double CurrentWithOffset = Math.Round(Current + VersionOffset, 3);
-            if (CurrentWithOffset < Latest)
+            Debug.Log("Editor version: " + VersionString);
+            if (shouldUpdate(LatestRelease))
             {
-                Debug.Log("New version avaiable: " + Latest + "\n" + (Current + VersionOffset));
+                Debug.Log("New version available: " + LatestRelease);
                 GenericPopup.ShowPopup(GenericPopup.PopupTypes.TwoButton, "New version",
-                    "New version of Map Editor is avaiable.\nCurrent: " + EditorBuildVersion.ToLower() + TagString + "\t\tNew: " + LatestTag + "\nDo you want to download it now?",
+                    "New version of Map Editor is avaiable.\nCurrent: " + VersionString + "\t\tNew: " + LatestRelease + "\nDo you want to download it now?",
                     "Download", DownloadLatest,
                     "Cancel", CancelDownload
                     );
             }
-            else
-            {
-                Debug.Log("Latest version: " + Math.Max(Latest, Current) + " " + EditorBuildTag);
-            }
-
         }
     }
 
+	static bool shouldUpdate(string LatestRelease)
+	{
+		double Latest = Math.Round(BuildFloat(LatestRelease), 3);
+		double Current = Math.Round(BuildFloat(EditorBuildVersion), 3);
+		if (Latest == 0 || Current == 0) return false;
+		if (EditorPrereleaseTag.Length > 0) Current -= 0.0001;
+                    
+		return Current < Latest;
+	}
+
 	static string CleanBuildVersion(string tag)
 	{
-		return tag.ToLower().Replace(" ", "").Replace("-alpha", "").Replace("-beta", "");
+		return tag.ToLower().Replace(" ", "").Replace("v", "");
 	}
 
 	static float BuildFloat(string tag)
 	{
-        string ToParse = CleanBuildVersion(tag).Replace("v", "");
+        string ToParse = CleanBuildVersion(tag);
 
         if (float.TryParse(ToParse, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture.NumberFormat, out float Found))
         {
