@@ -25,6 +25,10 @@ public partial class AppMenu : MonoBehaviour
 	public Toggle AIGridToggle;
 	public Toggle SlopeToggle;
 	public Toggle RulerToggle;
+	public Toggle TexturesToggle;
+	public Toggle NormalsToggle;
+	public Toggle RoughnessToggle;
+	public Toggle AOToggle;
 
 	//Local
 	bool MenuOpen = false;
@@ -164,6 +168,18 @@ public partial class AppMenu : MonoBehaviour
 				break;
 			case "Ruler":
 				Ruler.Toggle(RulerToggle.isOn);
+				break;
+			case "HideTextures":
+				ScmapEditor.Current.ToggleTexturesView(TexturesToggle.isOn);
+				break;
+			case "ShowNormals":
+				ScmapEditor.Current.ToggleNormalsView(NormalsToggle.isOn);
+				break;
+			case "ShowRoughness":
+				ScmapEditor.Current.ToggleRoughnessView(RoughnessToggle.isOn);
+				break;
+			case "ShowAO":
+				ScmapEditor.Current.ToggleAOView(AOToggle.isOn);
 				break;
 			case "Discord":
 				Application.OpenURL("https://discord.gg/mXahVSKGVb");
