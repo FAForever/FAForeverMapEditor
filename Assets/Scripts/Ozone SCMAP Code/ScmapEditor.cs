@@ -548,10 +548,6 @@ public partial class ScmapEditor : MonoBehaviour
 				Textures[i + 1].Albedo = TextureScale.Bilinear(Textures[i + 1].Albedo, AlbedoSize, AlbedoSize);
 			}
 
-
-			//if (i == 0)
-			//	MipMapCount = Textures[i + 1].Albedo.mipmapCount;
-
 			if (MipMapCount != Textures[i + 1].Albedo.mipmapCount)
 				Debug.LogWarning("Wrong mipmap Count: " + Textures[i + 1].Albedo.mipmapCount + " for texture" + Textures[i + 1].AlbedoPath);
 			for (int m = 0; m < MipMapCount; m++)
