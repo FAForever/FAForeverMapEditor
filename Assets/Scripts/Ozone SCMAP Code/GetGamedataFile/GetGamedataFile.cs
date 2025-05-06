@@ -216,7 +216,7 @@ public partial struct GetGamedataFile
 			}
 			else if (ScmapEditor.Current.Textures[Id].Albedo.width > 4 && ScmapEditor.Current.Textures[Id].Albedo.height > 4 && ScmapEditor.Current.Textures[Id].Albedo.mipmapCount <= 1)
 			{
-				//Debug.Log("Force mipmaps: " + LocalPath + " has " + ScmapEditor.Current.Textures[Id].Albedo.mipmapCount + " mipmaps");
+				Debug.Log("Force mipmaps: " + LocalPath + " has " + ScmapEditor.Current.Textures[Id].Albedo.mipmapCount + " mipmaps");
 				ScmapEditor.Current.Textures[Id].Albedo = ConvertWithMipmaps(ScmapEditor.Current.Textures[Id].Albedo);
 			}
 		}
