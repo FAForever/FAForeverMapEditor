@@ -1034,6 +1034,11 @@ public partial class ScmapEditor : MonoBehaviour
 	{
 		Shader.SetGlobalInt("_ShowAO", on ? 1 : 0);
 	}
+	
+	public void ToggleMaskView(bool on)
+	{
+		Shader.SetGlobalInt("_ShowMask", on ? 1 : 0);
+	}
 
 	public void ToogleSlope(bool To)
 	{

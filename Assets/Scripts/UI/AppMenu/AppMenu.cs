@@ -29,6 +29,7 @@ public partial class AppMenu : MonoBehaviour
 	public Toggle NormalsToggle;
 	public Toggle RoughnessToggle;
 	public Toggle AOToggle;
+	public Toggle MaskToggle;
 
 	//Local
 	bool MenuOpen = false;
@@ -180,6 +181,9 @@ public partial class AppMenu : MonoBehaviour
 				break;
 			case "ShowAO":
 				ScmapEditor.Current.ToggleAOView(AOToggle.isOn);
+				break;
+			case "ShowMask":
+				ScmapEditor.Current.ToggleMaskView(MaskToggle.isOn);
 				break;
 			case "Discord":
 				Application.OpenURL("https://discord.gg/mXahVSKGVb");
