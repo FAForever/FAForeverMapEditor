@@ -265,6 +265,7 @@ namespace EditMap
 		        return;
 	        EnvCube.text = ResourceBrowser.Current.LoadedPaths[ResourceBrowser.DragedObject.InstanceId];
 	        ResourceBrowser.ClearDrag();
+	        UpdateLightingData();
         }
         
         public void ClickSkyCubeButton()
