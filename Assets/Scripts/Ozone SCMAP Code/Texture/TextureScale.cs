@@ -147,10 +147,8 @@ public class TextureScale
 			NewTex.SetPixels(newColors, m);
 		}
 
-
-		//tex.Resize(newWidth, newHeight);
-		//tex.SetPixels(newColors);
-		NewTex.Apply(true);
+		// Don't recalculate the mipmaps as we have just spent effort to preserve the mipmaps
+		NewTex.Apply(false);
 		return NewTex;
 	}
 
