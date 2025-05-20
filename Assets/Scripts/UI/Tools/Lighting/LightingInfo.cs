@@ -224,6 +224,7 @@ namespace EditMap
 
 			if (MapLuaParser.Current.EditMenu.WaterMenu.UseLightingSettings.isOn)
 			{
+				MapLuaParser.Current.EditMenu.WaterMenu.SunDirection = SunDir;
 				MapLuaParser.Current.EditMenu.WaterMenu.WaterSettingsChanged(false);
             }
 

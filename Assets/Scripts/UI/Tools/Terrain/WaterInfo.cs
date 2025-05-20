@@ -28,7 +28,7 @@ namespace EditMap
 		public UiColor WaterColor;
 		public UiColor SunColor;
 		public Toggle UseLightingSettings;
-		private Vector3 SunDirection;
+		public Vector3 SunDirection;
 
 		public UiTextField SunShininess;
 		public UiTextField UnitReflection;
@@ -88,6 +88,7 @@ namespace EditMap
 
 			WaterColor.SetColorField(ScmapEditor.Current.map.Water.SurfaceColor.x, ScmapEditor.Current.map.Water.SurfaceColor.y, ScmapEditor.Current.map.Water.SurfaceColor.z);
             SunColor.SetColorField(ScmapEditor.Current.map.Water.SunColor.x, ScmapEditor.Current.map.Water.SunColor.y, ScmapEditor.Current.map.Water.SunColor.z);
+            SunDirection.Set(ScmapEditor.Current.map.Water.SunDirection.x, ScmapEditor.Current.map.Water.SunDirection.y, ScmapEditor.Current.map.Water.SunDirection.z);
 
 			SunShininess.SetValue(ScmapEditor.Current.map.Water.SunShininess);
 			UnitReflection.SetValue(ScmapEditor.Current.map.Water.UnitReflection);
