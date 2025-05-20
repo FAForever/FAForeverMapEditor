@@ -390,6 +390,7 @@ public partial class ScmapEditor : MonoBehaviour
 		WaterMaterial.SetVector("SunColor", map.Water.SunColor);
         WaterMaterial.SetVector("waterLerp", map.Water.ColorLerp);
 		WaterMaterial.SetVector("SunDirection", map.Water.SunDirection);
+		WaterMaterial.SetFloat("SunReflectionAmount", map.Water.SunReflection);
 		WaterMaterial.SetFloat("SunShininess", map.Water.SunShininess);
 		WaterMaterial.SetFloat("skyreflectionAmount", map.Water.SkyReflection);
         WaterMaterial.SetFloat("refractionScale", map.Water.RefractionScale);

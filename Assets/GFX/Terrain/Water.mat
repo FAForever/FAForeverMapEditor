@@ -109,6 +109,8 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
+    - SunReflection: 0
+    - SunReflectionAmount: 2.02
     - SunShininess: 78.9
     - _BumpScale: 1
     - _Cutoff: 0.5
