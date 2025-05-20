@@ -217,7 +217,7 @@ public partial class ScmapEditor : MonoBehaviour
 		Teren.materialType = Terrain.MaterialType.Custom;
 #endif
 		Teren.materialTemplate = TerrainMaterial;
-		Teren.heightmapPixelError = 4f;
+		Teren.heightmapPixelError = 1f;
 		Teren.basemapDistance = 10000;
 		Teren.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
 		Teren.drawTreesAndFoliage = false;
@@ -390,6 +390,7 @@ public partial class ScmapEditor : MonoBehaviour
 		WaterMaterial.SetVector("SunColor", map.Water.SunColor);
         WaterMaterial.SetVector("waterLerp", map.Water.ColorLerp);
 		WaterMaterial.SetVector("SunDirection", map.Water.SunDirection);
+		WaterMaterial.SetFloat("SunReflectionAmount", map.Water.SunReflection);
 		WaterMaterial.SetFloat("SunShininess", map.Water.SunShininess);
 		WaterMaterial.SetFloat("skyreflectionAmount", map.Water.SkyReflection);
         WaterMaterial.SetFloat("refractionScale", map.Water.RefractionScale);
@@ -547,10 +548,6 @@ public partial class ScmapEditor : MonoBehaviour
 				//Debug.Log("Rescale texture from" + Textures[i + 1].Albedo.width + "x" + Textures[i + 1].Albedo.height + " to: " + AlbedoSize);
 				Textures[i + 1].Albedo = TextureScale.Bilinear(Textures[i + 1].Albedo, AlbedoSize, AlbedoSize);
 			}
-
-
-			//if (i == 0)
-			//	MipMapCount = Textures[i + 1].Albedo.mipmapCount;
 
 			if (MipMapCount != Textures[i + 1].Albedo.mipmapCount)
 				Debug.LogWarning("Wrong mipmap Count: " + Textures[i + 1].Albedo.mipmapCount + " for texture" + Textures[i + 1].AlbedoPath);

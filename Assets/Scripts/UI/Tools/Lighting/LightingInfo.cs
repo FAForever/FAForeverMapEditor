@@ -224,6 +224,7 @@ namespace EditMap
 
 			if (MapLuaParser.Current.EditMenu.WaterMenu.UseLightingSettings.isOn)
 			{
+				MapLuaParser.Current.EditMenu.WaterMenu.SunDirection = SunDir;
 				MapLuaParser.Current.EditMenu.WaterMenu.WaterSettingsChanged(false);
             }
 
@@ -265,6 +266,7 @@ namespace EditMap
 		        return;
 	        EnvCube.text = ResourceBrowser.Current.LoadedPaths[ResourceBrowser.DragedObject.InstanceId];
 	        ResourceBrowser.ClearDrag();
+	        UpdateLightingData();
         }
         
         public void ClickSkyCubeButton()

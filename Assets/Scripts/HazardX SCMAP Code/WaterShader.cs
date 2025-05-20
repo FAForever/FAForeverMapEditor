@@ -66,7 +66,7 @@ public class WaterShader
         SunStrength = 0f;
         SunDirection = new Vector3(0.09954818f, -0.9626309f, 0.2518569f);
         SunColor = new Vector3(0.52f, 0.47f, 0.35f);
-        SunReflection = 0f;
+        SunReflection = 1f;
         SunGlow = 0f;
 
         TexPathCubemap = "/textures/environment/skycube_evergreen01a.dds";

@@ -203,7 +203,7 @@
                     normal.xz = tex2D(Stratum7NormalSampler, TerrainScale * v.mTexWT.xy).ag * 2 - 1;
                     normal.z = normal.z * -1;
                     // reconstruct y component
-                    normal.y = sqrt(1 - dot(normal.xz, normal.xz));
+                    normal.y = sqrt(abs(1 - dot(normal.xz, normal.xz)));
 
                     // when we read the terrain normals from a texture, we need to build our own TBN matrix
                     float3 tangent = cross(normal, float3(0, 0, 1));

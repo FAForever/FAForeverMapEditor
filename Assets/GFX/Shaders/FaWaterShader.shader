@@ -4,6 +4,7 @@
 		SunColor  ("Sun Color", Color) = (0, 0, 0, 0)
 		waterLerp ("water Lerp", Vector) = (0, 0, 0, 0)
 		SunDirection  ("Sun Direction", Vector) = (0, 0, 0, 0)
+		SunReflectionAmount ("Sun Reflection Amount", Float) = 0
 		SunShininess ("SunShininess", Float) = 0
 		skyreflectionAmount ("sky reflection Amount", Float) = 0
 		refractionScale ("refraction Scale", Float) = 0
@@ -56,6 +57,7 @@
 		float2 normal3Movement;
 		float2 normal4Movement;
 
+		float SunReflectionAmount;
 		float SunShininess;
 	    float3 SunDirection;
 		float4 SunColor;
@@ -141,12 +143,8 @@
 
 		float3 calculateSunReflection(float3 R, float3 v, float3 n)
 		{
-			// for unknown reasons the game seems to mess with the SunColor, so we also need to correct
-			if (_ShaderID == -10) {
-				SunColor *= 2;
-			} else {
-				SunColor *= 0.75;
-			}
+			// the game alters the SunColor internally
+			SunColor *= SunReflectionAmount;
 
 			float3 color;
 			// Legacy fallback for the old behaviour, so we don't change all maps accidentally.

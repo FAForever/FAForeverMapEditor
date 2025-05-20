@@ -28,11 +28,12 @@ namespace EditMap
 		public UiColor WaterColor;
 		public UiColor SunColor;
 		public Toggle UseLightingSettings;
-		private Vector3 SunDirection;
+		public Vector3 SunDirection;
 
 		public UiTextField SunShininess;
 		public UiTextField UnitReflection;
 		public UiTextField SkyReflection;
+		public UiTextField SunReflection;
 		public UiTextField RefractionScale;
 
 		public InputField WaterRamp;
@@ -88,10 +89,12 @@ namespace EditMap
 
 			WaterColor.SetColorField(ScmapEditor.Current.map.Water.SurfaceColor.x, ScmapEditor.Current.map.Water.SurfaceColor.y, ScmapEditor.Current.map.Water.SurfaceColor.z);
             SunColor.SetColorField(ScmapEditor.Current.map.Water.SunColor.x, ScmapEditor.Current.map.Water.SunColor.y, ScmapEditor.Current.map.Water.SunColor.z);
+            SunDirection.Set(ScmapEditor.Current.map.Water.SunDirection.x, ScmapEditor.Current.map.Water.SunDirection.y, ScmapEditor.Current.map.Water.SunDirection.z);
 
 			SunShininess.SetValue(ScmapEditor.Current.map.Water.SunShininess);
 			UnitReflection.SetValue(ScmapEditor.Current.map.Water.UnitReflection);
 			SkyReflection.SetValue(ScmapEditor.Current.map.Water.SkyReflection);
+			SunReflection.SetValue(ScmapEditor.Current.map.Water.SunReflection);
 			RefractionScale.SetValue(ScmapEditor.Current.map.Water.RefractionScale);
 
 			WaterRamp.text = ScmapEditor.Current.map.Water.TexPathWaterRamp;
@@ -243,6 +246,7 @@ namespace EditMap
 			ScmapEditor.Current.map.Water.SunShininess = SunShininess.value;
 			ScmapEditor.Current.map.Water.UnitReflection = UnitReflection.value;
 			ScmapEditor.Current.map.Water.SkyReflection = SkyReflection.value;
+			ScmapEditor.Current.map.Water.SunReflection = SunReflection.value;
 			ScmapEditor.Current.map.Water.RefractionScale = RefractionScale.value;
 			
 			ScmapEditor.Current.map.Water.TexPathWaterRamp = WaterRamp.text;
@@ -276,6 +280,7 @@ namespace EditMap
 		        || !Mathf.Approximately(ScmapEditor.Current.map.Water.SunShininess, SunShininess.value)
 		        || !Mathf.Approximately(ScmapEditor.Current.map.Water.UnitReflection, UnitReflection.value)
 		        || !Mathf.Approximately(ScmapEditor.Current.map.Water.SkyReflection, SkyReflection.value)
+		        || !Mathf.Approximately(ScmapEditor.Current.map.Water.SunReflection, SunReflection.value)
 		        || !Mathf.Approximately(ScmapEditor.Current.map.Water.RefractionScale, RefractionScale.value)
 		        || ScmapEditor.Current.map.Water.TexPathWaterRamp != WaterRamp.text
 		        || ScmapEditor.Current.map.Water.TexPathCubemap != Cubemap.text
