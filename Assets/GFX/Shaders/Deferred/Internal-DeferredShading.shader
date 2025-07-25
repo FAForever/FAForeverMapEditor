@@ -154,8 +154,10 @@ float3 PBR(float3 wpos, float3 viewDirection, float3 albedo, float3 n, float rou
     // See https://blog.selfshadow.com/publications/s2013-shading-course/
 
     float facingSpecular = 0.04;
-    float underwater = step(wpos, WaterElevation);
-    facingSpecular *= 1 - 0.9 * underwater;
+    if (_Water) {
+        float underwater = step(wpos.y, WaterElevation);
+        facingSpecular *= 1 - 0.9 * underwater;
+    }
 
     float3 v = -viewDirection;
     float3 F0 = float3(facingSpecular, facingSpecular, facingSpecular);
