@@ -512,105 +512,125 @@ public partial class ScmapEditor : MonoBehaviour
 	// but we exclude stratum 7 as it might hold very large textures.
 	void GenerateArrays()
 	{
-		int AlbedoSize = 256;
-		int MipMapCount = 10;
-
+		int ArraySize = 4;
+		int ArrayMipMapCount = 3;
 		for (int i = 0; i < 7; i++)
 		{
-			if (Textures[i + 1].Albedo.width > AlbedoSize)
-			{
-				AlbedoSize = Textures[i + 1].Albedo.width;
-				MipMapCount = Textures[i + 1].Albedo.mipmapCount;
-			}
-			if (Textures[i + 1].Albedo.height > AlbedoSize)
-			{
-				AlbedoSize = Textures[i + 1].Albedo.height;
-				MipMapCount = Textures[i + 1].Albedo.mipmapCount;
-			}
+			Texture2D stratumTexture = Textures[i + 1].Albedo;
+			ArraySize = FindArraySize(stratumTexture, ArraySize);
+			ArrayMipMapCount = FindArrayMipMapCount(stratumTexture, ArrayMipMapCount);
 		}
 
-		Texture2DArray AlbedoArray = new Texture2DArray(AlbedoSize, AlbedoSize, 7, TextureFormat.RGBA32, true);
+		Texture2DArray AlbedoArray = new Texture2DArray(ArraySize, ArraySize, 7, TextureFormat.RGBA32, true);
 
 		for (int i = 0; i < 7; i++)
 		{
-			if(!Textures[i + 1].Albedo.isReadable)
+			Texture2D stratumAlbedo = Textures[i + 1].Albedo;
+			if(!stratumAlbedo.isReadable)
 			{
-				if(Textures[i + 1].Albedo != Texture2D.whiteTexture)
+				if(stratumAlbedo != Texture2D.whiteTexture)
 					Debug.LogWarning("Assigned albedo texture is not readable! " + Textures[i + 1].AlbedoPath);
 				continue;
 			}
 
-			if (Textures[i + 1].Albedo.width <= 4 && Textures[i + 1].Albedo.height <= 4)
+			if (stratumAlbedo.width <= 4 && stratumAlbedo.height <= 4)
 				continue;
 
-			if (Textures[i + 1].Albedo.width != AlbedoSize || Textures[i + 1].Albedo.height != AlbedoSize)
-			{
-				//Debug.Log("Rescale texture from" + Textures[i + 1].Albedo.width + "x" + Textures[i + 1].Albedo.height + " to: " + AlbedoSize);
-				Textures[i + 1].Albedo = TextureScale.Bilinear(Textures[i + 1].Albedo, AlbedoSize, AlbedoSize);
-			}
+			stratumAlbedo = ScaleStratumTextureIfNeeded(stratumAlbedo, ArraySize, ArrayMipMapCount);
 
-			if (MipMapCount != Textures[i + 1].Albedo.mipmapCount)
-				Debug.LogWarning("Wrong mipmap Count: " + Textures[i + 1].Albedo.mipmapCount + " for texture" + Textures[i + 1].AlbedoPath);
-			for (int m = 0; m < MipMapCount; m++)
+			for (int m = 0; m < ArrayMipMapCount; m++)
 			{
-				AlbedoArray.SetPixels(Textures[i + 1].Albedo.GetPixels(m), i, m);
+				AlbedoArray.SetPixels(stratumAlbedo.GetPixels(m), i, m);
 			}
 		}
 
-		//AlbedoArray.mipMapBias = 0.5f;
 		AlbedoArray.filterMode = FilterMode.Bilinear;
 		AlbedoArray.anisoLevel = 4;
-		AlbedoArray.mipMapBias = 0.0f;
-
 		AlbedoArray.Apply(false);
 		TerrainMaterial.SetTexture("_StratumAlbedoArray", AlbedoArray);
 
-		AlbedoSize = 256;
-
+		ArraySize = 4;
+		ArrayMipMapCount = 3;
 		for (int i = 0; i < 7; i++)
 		{
-			if (Textures[i + 1].Normal == null)
-				continue;
-			if (Textures[i + 1].Normal.width > AlbedoSize)
-			{
-				AlbedoSize = Textures[i + 1].Normal.width;
-			}
-			if (Textures[i + 1].Normal.height > AlbedoSize)
-			{
-				AlbedoSize = Textures[i + 1].Normal.height;
-			}
+			Texture2D stratumTexture = Textures[i + 1].Normal;
+			ArraySize = FindArraySize(stratumTexture, ArraySize);
+			ArrayMipMapCount = FindArrayMipMapCount(stratumTexture, ArrayMipMapCount);
 		}
 
-		Texture2DArray NormalArray = new Texture2DArray(AlbedoSize, AlbedoSize, 7, TextureFormat.RGBA32, true);
+		Texture2DArray NormalArray = new Texture2DArray(ArraySize, ArraySize, 7, TextureFormat.RGBA32, true);
 
 		for (int i = 0; i < 7; i++)
 		{
-			if (!Textures[i + 1].Normal.isReadable)
+			Texture2D stratumNormal = Textures[i + 1].Normal;
+			if (!stratumNormal.isReadable)
 			{
 				Debug.LogWarning("Assigned normal texture is not readable! " + Textures[i + 1].NormalPath);
 				continue;
 			}
 
-			if (Textures[i + 1].Normal == null)
+			if (stratumNormal == null)
 				continue;
 
-			if (Textures[i + 1].Normal.width != AlbedoSize || Textures[i + 1].Normal.height != AlbedoSize)
-			{
-				Textures[i + 1].Normal = TextureScale.Bilinear(Textures[i + 1].Normal, AlbedoSize, AlbedoSize);
-			}
+			stratumNormal = ScaleStratumTextureIfNeeded(stratumNormal, ArraySize, ArrayMipMapCount);
 
-			for (int m = 0; m < Textures[i + 1].Normal.mipmapCount; m++)
+			for (int m = 0; m < stratumNormal.mipmapCount; m++)
 			{
-				NormalArray.SetPixels(Textures[i + 1].Normal.GetPixels(m), i, m);
+				NormalArray.SetPixels(stratumNormal.GetPixels(m), i, m);
 			}
 		}
 
-		//NormalArray.mipMapBias = -0.5f;
 		NormalArray.filterMode = FilterMode.Bilinear;
 		NormalArray.anisoLevel = 2;
 		NormalArray.Apply(false);
-
 		TerrainMaterial.SetTexture("_StratumNormalArray", NormalArray);
+	}
+
+	private static int FindArraySize(Texture2D stratumTexture, int ArraySize)
+	{
+		if (stratumTexture == null)
+			return ArraySize;
+		if (stratumTexture.width > ArraySize)
+		{
+			ArraySize = stratumTexture.width;
+		}
+		if (stratumTexture.height > ArraySize)
+		{
+			ArraySize = stratumTexture.height;
+		}
+
+		return ArraySize;
+	}
+
+	private static int FindArrayMipMapCount(Texture2D stratumTexture, int ArrayMipMapCount)
+	{
+		if (stratumTexture.mipmapCount > ArrayMipMapCount)
+		{
+			ArrayMipMapCount = stratumTexture.mipmapCount;
+		}
+
+		if (stratumTexture.mipmapCount > ArrayMipMapCount)
+		{
+			ArrayMipMapCount = stratumTexture.mipmapCount;
+		}
+
+		return ArrayMipMapCount;
+	}
+
+	private static Texture2D ScaleStratumTextureIfNeeded(Texture2D stratumTexture, int ArraySize, int ArrayMipMapCount)
+	{
+		if (stratumTexture.width != ArraySize || stratumTexture.height != ArraySize)
+		{
+			Texture2D unscaledTexture = stratumTexture;
+			int MipMaps = stratumTexture.mipmapCount;
+			stratumTexture = TextureScale.Bilinear(stratumTexture, ArraySize, ArraySize);
+			for (int k = 1; k <= ArrayMipMapCount - MipMaps; k++)
+			{
+				stratumTexture.SetPixels(unscaledTexture.GetPixels(MipMaps - k), ArrayMipMapCount - k);
+			}
+		}
+
+		return stratumTexture;
 	}
 
 	public void UpdateScales(int id)
