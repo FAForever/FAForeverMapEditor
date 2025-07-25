@@ -1055,18 +1055,17 @@
                 return Emit;
             }
 
-            float3 renderSlope(Input IN){
-                float3 Emit = 0;
+            float3 renderSlope(float3 albedo, float3 mTexWT){
                 if (_Slope > 0) {
-					float2 uv = TerrainScale * IN.mTexWT;
+					float2 uv = TerrainScale * mTexWT;
 					uv.y = 1 - uv.y;
 					half3 SlopeColor = tex2D(_SlopeTex, uv).rgb * 0.8;
-                    if (IN.mTexWT.z < WaterElevation * 10) {
+                    if (mTexWT.z < WaterElevation * 10) {
                         SlopeColor += half3(0, 0, 0.1);
                     }
-                    Emit = SlopeColor;
+                    albedo = lerp(albedo, SlopeColor, 0.8);
 				}
-                return Emit;
+                return albedo;
             }
 
             float3 renderTerrainType(float3 albedo, float2 uv){
@@ -1618,7 +1617,7 @@
                 #endif
 
                 o.Emission = renderBrush(position.xy);
-                o.Emission += renderSlope(inV);
+                o.Albedo = renderSlope(o.Albedo, inV.mTexWT);
                 o.Albedo = renderTerrainType(o.Albedo, position.xy);
                 o.Emission += renderGridOverlay(position.xy);
 
