@@ -1141,7 +1141,7 @@
                 float3 Emit = 0;
                 if (_Lines > 0)
                 {
-                    half CenterGridSize = lerp(0.005, 0.015, _GridCamDist) / _GridScale;
+                    half CenterGridSize = lerp(0.05, 0.15, _GridCamDist) * TerrainScale;
                     if (uv.x > 0.5 - CenterGridSize && uv.x < 0.5 + CenterGridSize)
                         Emit = float3(0.4, 1, 0);
                     else if (uv.y > 0.5 - CenterGridSize && uv.y < 0.5 + CenterGridSize)
