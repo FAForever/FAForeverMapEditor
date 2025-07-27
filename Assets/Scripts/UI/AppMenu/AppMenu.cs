@@ -292,17 +292,21 @@ public partial class AppMenu : MonoBehaviour
 				Popups[1].SetActive(true);
 				Buttons[1].interactable = false;
 				break;
-			case "Tools":
+			case "View":
 				Popups[2].SetActive(true);
 				Buttons[2].interactable = false;
 				break;
-			case "Symmetry":
+			case "Tools":
 				Popups[3].SetActive(true);
 				Buttons[3].interactable = false;
 				break;
-			case "Help":
+			case "Symmetry":
 				Popups[4].SetActive(true);
 				Buttons[4].interactable = false;
+				break;
+			case "Help":
+				Popups[5].SetActive(true);
+				Buttons[5].interactable = false;
 				break;
 		}
 
