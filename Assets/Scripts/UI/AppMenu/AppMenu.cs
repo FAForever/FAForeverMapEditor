@@ -25,6 +25,11 @@ public partial class AppMenu : MonoBehaviour
 	public Toggle AIGridToggle;
 	public Toggle SlopeToggle;
 	public Toggle RulerToggle;
+	public Toggle TexturesToggle;
+	public Toggle NormalsToggle;
+	public Toggle RoughnessToggle;
+	public Toggle AOToggle;
+	public Toggle MaskToggle;
 
 	//Local
 	bool MenuOpen = false;
@@ -147,8 +152,8 @@ public partial class AppMenu : MonoBehaviour
 			case "Symmetry":
 				Symmetry.SetActive(true);
 				break;
-			case "Grid":
-				ScmapEditor.Current.ToogleGrid(GridToggle.isOn);
+			case "CenterLines":
+				ScmapEditor.Current.ToogleCenterLines(GridToggle.isOn);
 				break;
 			case "BuildGrid":
 				ScmapEditor.Current.ToogleBuildGrid(BuildGridToggle.isOn);
@@ -164,6 +169,21 @@ public partial class AppMenu : MonoBehaviour
 				break;
 			case "Ruler":
 				Ruler.Toggle(RulerToggle.isOn);
+				break;
+			case "HideTextures":
+				ScmapEditor.Current.ToggleTexturesView(TexturesToggle.isOn);
+				break;
+			case "ShowNormals":
+				ScmapEditor.Current.ToggleNormalsView(NormalsToggle.isOn);
+				break;
+			case "ShowRoughness":
+				ScmapEditor.Current.ToggleRoughnessView(RoughnessToggle.isOn);
+				break;
+			case "ShowAO":
+				ScmapEditor.Current.ToggleAOView(AOToggle.isOn);
+				break;
+			case "ShowMask":
+				ScmapEditor.Current.ToggleMaskView(MaskToggle.isOn);
 				break;
 			case "Discord":
 				Application.OpenURL("https://discord.gg/mXahVSKGVb");
@@ -228,10 +248,6 @@ public partial class AppMenu : MonoBehaviour
 	{
 		switch (ScmapEditor.Current.GridType)
 		{
-			case ScmapEditor.GridTypes.Standard:
-				GridToggle.isOn = !GridToggle.isOn;
-				ScmapEditor.Current.ToogleGrid(GridToggle.isOn);
-				break;
 			case ScmapEditor.GridTypes.Build:
 				BuildGridToggle.isOn = !BuildGridToggle.isOn;
 				ScmapEditor.Current.ToogleBuildGrid(BuildGridToggle.isOn);
@@ -244,7 +260,6 @@ public partial class AppMenu : MonoBehaviour
 				AIGridToggle.isOn = !AIGridToggle.isOn;
 				ScmapEditor.Current.ToogleAIGrid(AIGridToggle.isOn);
 				break;
-
 		}
 	}
 
@@ -272,17 +287,21 @@ public partial class AppMenu : MonoBehaviour
 				Popups[1].SetActive(true);
 				Buttons[1].interactable = false;
 				break;
-			case "Tools":
+			case "View":
 				Popups[2].SetActive(true);
 				Buttons[2].interactable = false;
 				break;
-			case "Symmetry":
+			case "Tools":
 				Popups[3].SetActive(true);
 				Buttons[3].interactable = false;
 				break;
-			case "Help":
+			case "Symmetry":
 				Popups[4].SetActive(true);
 				Buttons[4].interactable = false;
+				break;
+			case "Help":
+				Popups[5].SetActive(true);
+				Buttons[5].interactable = false;
 				break;
 		}
 

@@ -59,8 +59,8 @@
 	    _TerrainTypeCapacity ("Terrain Type Capacity", Range(0,1)) = 0.228
 
         [MaterialToggle] _Grid("Grid", Integer) = 0
+        [MaterialToggle] _Lines("Center Lines", Integer) = 0
         _GridType("Grid type", Integer) = 0
-        // This should be refactored so we can use TerrainScale instead
         _GridScale ("Grid Scale", Range (0, 2048)) = 512
 	    _GridTexture ("Grid Texture", 2D) = "white" {}
 
@@ -96,7 +96,12 @@
             int _UseSlopeTex;
 			sampler2D _SlopeTex;
 
-			int _Grid, _GridType;
+			uniform int _ShowMask;
+			uniform int _SelectedStratum;
+
+			uniform int _Grid;
+			uniform int _Lines;
+			uniform int _GridType;
             half _GridScale;
 			half _GridCamDist;
 			sampler2D _GridTexture;
@@ -1077,42 +1082,72 @@
                 return albedo;
             }
 
-            float4 RenderGrid(sampler2D _GridTex, float2 uv_Control, float Offset, float GridScale) {
-				fixed4 GridColor = tex2D(_GridTex, uv_Control * GridScale + float2(-Offset, Offset));
-				fixed4 GridFinal = fixed4(0, 0, 0, GridColor.a);
-				if (_GridCamDist < 1) {
-					GridFinal.rgb = lerp(GridFinal.rgb, fixed3(1, 1, 1), GridColor.r * lerp(1, 0, _GridCamDist));
-					GridFinal.rgb = lerp(GridFinal.rgb, fixed3(0, 1, 0), GridColor.g * lerp(1, 0, _GridCamDist));
-					GridFinal.rgb = lerp(GridFinal.rgb, fixed3(0, 1, 0), GridColor.b * lerp(0, 1, _GridCamDist));
+			float3 renderMask(float3 albedo, float2 uv){
+                if(_ShowMask == 1) {
+                    float4 mask0 = tex2D(UtilitySamplerA, uv.xy);
+                    float4 mask1 = tex2D(UtilitySamplerB, uv.xy);
+					if(_SelectedStratum == 1)
+                    albedo = mask0.xxx;
+                    else if(_SelectedStratum == 2)
+                    albedo = mask0.yyy;
+                    else if(_SelectedStratum == 3)
+                    albedo = mask0.zzz;
+                    else if(_SelectedStratum == 4)
+                    albedo = mask0.www;
+                    else if(_SelectedStratum == 5)
+                    albedo = mask1.xxx;
+                    else if(_SelectedStratum == 6)
+                    albedo = mask1.yyy;
+                    else if(_SelectedStratum == 7)
+                    albedo = mask1.zzz;
+                    else if(_SelectedStratum == 8)
+                    albedo = mask1.www;
 				}
-				else {
-					GridFinal.rgb = lerp(GridFinal.rgb, fixed3(0, 1, 0), GridColor.b);
+                return albedo;
+            }
+
+            float3 renderGridOverlay(float2 uv) {
+                float3 Emit = 0;
+                float GridCells = 1 / TerrainScale;
+                if (_Grid > 0) {
+					if(_GridType == 0) // build
+					{
+					    fixed4 gridTex = tex2D(_GridTexture, uv * GridCells / 2);
+					    fixed4 gridTex2 = tex2D(_GridTexture, uv * GridCells / 8);
+					    Emit += fixed3(1, 1, 1) * gridTex.b * smoothstep(1.5, 0, _GridCamDist);
+					    Emit = lerp(Emit, fixed3(0, 1, 0), gridTex2.b);
+					}
+					else if (_GridType == 1) // ogrid
+					{
+					    fixed4 gridTex = tex2D(_GridTexture, uv * GridCells);
+                        fixed4 gridTex2 = tex2D(_GridTexture, uv * GridCells / 16);
+                        fixed4 gridTex3 = tex2D(_GridTexture, uv * GridCells / 128);
+                        Emit += fixed3(1, 1, 1) * gridTex.b * smoothstep(1, 0, _GridCamDist);
+                        Emit = lerp(Emit, fixed3(1, 0, 0), gridTex2.b * smoothstep(10, 3, _GridCamDist));
+                        Emit += fixed3(0, 0, 1) * gridTex3.g;
+					}
+					else if (_GridType == 2) // AI
+					{
+					    if (GridCells <= 256) // 5 km maps only use a 8x8 AI grid
+					        uv *= 0.5;
+					    fixed4 gridTex = tex2D(_GridTexture, uv * 16);
+                        Emit += fixed3(0, 1, 0) * gridTex.g;
+					}
 				}
-
-				GridFinal *= GridColor.a;
-
-                // central axes
-				half CenterGridSize = lerp(0.005, 0.015, _GridCamDist) / _GridScale;
-				if (uv_Control.x > 0.5 - CenterGridSize && uv_Control.x < 0.5 + CenterGridSize)
-					GridFinal.rgb = fixed3(0.4, 1, 0);
-				else if (uv_Control.y > 0.5 - CenterGridSize && uv_Control.y < 0.5 + CenterGridSize)
-					GridFinal.rgb = fixed3(0.4, 1, 0);
-
-				return GridFinal;
+				return Emit;
 			}
 
-            float3 renderGridOverlay(float2 uv){
+			float3 renderCenterLines(float2 uv)
+            {
                 float3 Emit = 0;
-                if (_Grid > 0) {
-					if(_GridType == 1) // build
-						Emit += RenderGrid(_GridTexture, uv, 0, _GridScale);
-					else if (_GridType == 2) // general
-						Emit += RenderGrid(_GridTexture, uv, 0.0015, _GridScale / 5.12);
-					else if (_GridType == 3) // AI
-						Emit += RenderGrid(_GridTexture, uv, 0.0015, 16);
-					else //standard
-						Emit += RenderGrid(_GridTexture, uv, 0, _GridScale);
-				}
+                if (_Lines > 0)
+                {
+                    half CenterGridSize = lerp(0.005, 0.015, _GridCamDist) / _GridScale;
+                    if (uv.x > 0.5 - CenterGridSize && uv.x < 0.5 + CenterGridSize)
+                        Emit = float3(0.4, 1, 0);
+                    else if (uv.y > 0.5 - CenterGridSize && uv.y < 0.5 + CenterGridSize)
+                        Emit = float3(0.4, 1, 0);
+                }
                 return Emit;
             }
 
@@ -1620,7 +1655,9 @@
                 o.Emission = renderBrush(position.xy);
                 o.Emission += renderSlope(inV);
                 o.Albedo = renderTerrainType(o.Albedo, position.xy);
+                o.Albedo = renderMask(o.Albedo, position.xy);
                 o.Emission += renderGridOverlay(position.xy);
+                o.Emission += renderCenterLines(position.xy);
 
                 // fog
                 o.Albedo = lerp(0, o.Albedo, inV.fog);

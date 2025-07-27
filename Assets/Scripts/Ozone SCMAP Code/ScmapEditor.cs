@@ -403,9 +403,6 @@ public partial class ScmapEditor : MonoBehaviour
 		*/
 
 		Shader.SetGlobalFloat("WaterElevation", map.Water.Elevation / 10.0f);
-		//TerrainMaterial.SetFloat("_DepthLevel", map.Water.ElevationDeep / 10.0f);
-		//TerrainMaterial.SetFloat("_AbyssLevel", map.Water.ElevationAbyss / 10.0f);
-		//TerrainMaterial.SetInt("_Water", map.Water.HasWater ? 1 : 0);
 		Shader.SetGlobalInt("_Water", map.Water.HasWater ? 1 : 0);
 	}
 
@@ -969,7 +966,7 @@ public partial class ScmapEditor : MonoBehaviour
 
 	public enum GridTypes
 	{
-		Standard, Build, General, AI
+		Build, General, AI
 	}
 
 	public bool ToogleCurrent()
@@ -979,12 +976,9 @@ public partial class ScmapEditor : MonoBehaviour
 		return Grid;
 	}
 
-	public void ToogleGrid(bool To)
+	public void ToogleCenterLines(bool To)
 	{
-		if(To)
-			GridType = GridTypes.Standard;
-		Grid = To;
-		UpdateGrid();
+		TerrainMaterial.SetInteger("_Lines", To ? 1 : 0);
 	}
 
 	public void ToogleBuildGrid(bool To)
@@ -1013,9 +1007,34 @@ public partial class ScmapEditor : MonoBehaviour
 
 	void UpdateGrid()
 	{
-		TerrainMaterial.SetTexture("_GridTexture", GridTextures[(int) GridType]);
+		TerrainMaterial.SetTexture("_GridTexture", GridTextures[0]);
 		TerrainMaterial.SetInteger("_Grid", Grid ? 1 : 0);
 		TerrainMaterial.SetInteger("_GridType", (int) GridType);
+	}
+
+	public void ToggleTexturesView(bool on)
+	{
+		Shader.SetGlobalInt("_HideTextures", on ? 1 : 0);
+	}
+	
+	public void ToggleNormalsView(bool on)
+	{
+		Shader.SetGlobalInt("_ShowNormals", on ? 1 : 0);
+	}
+
+	public void ToggleRoughnessView(bool on)
+	{
+		Shader.SetGlobalInt("_ShowRoughness", on ? 1 : 0);
+	}
+	
+	public void ToggleAOView(bool on)
+	{
+		Shader.SetGlobalInt("_ShowAO", on ? 1 : 0);
+	}
+	
+	public void ToggleMaskView(bool on)
+	{
+		Shader.SetGlobalInt("_ShowMask", on ? 1 : 0);
 	}
 
 	public void ToogleSlope(bool To)

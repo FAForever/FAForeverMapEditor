@@ -47,6 +47,11 @@ uniform half4 _AreaRect;
 half _GridScale;
 uniform int _ShaderID;
 uniform int _Water;
+uniform int _HideTextures;
+uniform int _ShowNormals;
+uniform int _ShowRoughness;
+uniform int _ShowAO;
+uniform int _ShowMask;
 uniform half LightingMultiplier;
 uniform fixed4 SunColor;
 uniform fixed4 SunDirection;
@@ -225,6 +230,8 @@ half4 CalculateLight (unity_v2f_deferred i)
 
 	float4 color;
 
+    if (_HideTextures) albedo = float3(0.5, 0.5, 0.5);
+
     if (_ShaderID == -10) {
         color.rgb = CalculateLighting(worldNormal, eyeVec, albedo, 1-alpha, atten);
     } else if (_ShaderID == -20 || _ShaderID == 20 || _ShaderID == 0 || _ShaderID == 50) {
@@ -235,10 +242,12 @@ half4 CalculateLight (unity_v2f_deferred i)
         color.rgb = albedo;
     }
 
-    // The game does not have this check. This is to make it possible to debug the map in the editor
-    if (_Water) {
-        color.rgb = ApplyWaterColor(wpos, -eyeVec, waterDepth, color.rgb);
-    }
+    // The game does not have these checks. This is to make it possible to debug the map in the editor
+    if (_Water) color.rgb = ApplyWaterColor(wpos, -eyeVec, waterDepth, color.rgb);
+    if (_ShowNormals) color.rgb = gbuffer2.rbg;
+    if (_ShowRoughness) color.rgb = roughness.xxx;
+    if (_ShowAO) color.rgb = ambientOcclusion.xxx;
+    if (_ShowMask) color.rgb = albedo.rgb;
 
     color.a = 1;
     if(_Area > 0){
