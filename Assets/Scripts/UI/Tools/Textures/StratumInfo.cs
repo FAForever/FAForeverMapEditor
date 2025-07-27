@@ -390,6 +390,7 @@ namespace EditMap
 		{
 			LoadingStratum = true;
 			Selected = newid;
+			TerrainMaterial.SetInteger("_SelectedStratum", newid);
 
 			foreach (GameObject obj in Stratum_Selections) obj.SetActive(false);
 

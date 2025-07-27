@@ -96,7 +96,12 @@
             int _UseSlopeTex;
 			sampler2D _SlopeTex;
 
-			int _Grid, _Lines, _GridType;
+			uniform int _ShowMask;
+			uniform int _SelectedStratum;
+
+			uniform int _Grid;
+			uniform int _Lines;
+			uniform int _GridType;
             half _GridScale;
 			half _GridCamDist;
 			sampler2D _GridTexture;
@@ -1077,6 +1082,30 @@
                 return albedo;
             }
 
+			float3 renderMask(float3 albedo, float2 uv){
+                if(_ShowMask == 1) {
+                    float4 mask0 = tex2D(UtilitySamplerA, uv.xy);
+                    float4 mask1 = tex2D(UtilitySamplerB, uv.xy);
+					if(_SelectedStratum == 1)
+                    albedo = mask0.xxx;
+                    else if(_SelectedStratum == 2)
+                    albedo = mask0.yyy;
+                    else if(_SelectedStratum == 3)
+                    albedo = mask0.zzz;
+                    else if(_SelectedStratum == 4)
+                    albedo = mask0.www;
+                    else if(_SelectedStratum == 5)
+                    albedo = mask1.xxx;
+                    else if(_SelectedStratum == 6)
+                    albedo = mask1.yyy;
+                    else if(_SelectedStratum == 7)
+                    albedo = mask1.zzz;
+                    else if(_SelectedStratum == 8)
+                    albedo = mask1.www;
+				}
+                return albedo;
+            }
+
             float3 renderGridOverlay(float2 uv) {
                 float3 Emit = 0;
                 float GridCells = 1 / TerrainScale;
@@ -1626,6 +1655,7 @@
                 o.Emission = renderBrush(position.xy);
                 o.Emission += renderSlope(inV);
                 o.Albedo = renderTerrainType(o.Albedo, position.xy);
+                o.Albedo = renderMask(o.Albedo, position.xy);
                 o.Emission += renderGridOverlay(position.xy);
                 o.Emission += renderCenterLines(position.xy);
 

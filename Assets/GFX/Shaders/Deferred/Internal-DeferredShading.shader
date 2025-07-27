@@ -51,6 +51,7 @@ uniform int _HideTextures;
 uniform int _ShowNormals;
 uniform int _ShowRoughness;
 uniform int _ShowAO;
+uniform int _ShowMask;
 uniform half LightingMultiplier;
 uniform fixed4 SunColor;
 uniform fixed4 SunDirection;
@@ -246,6 +247,7 @@ half4 CalculateLight (unity_v2f_deferred i)
     if (_ShowNormals) color.rgb = gbuffer2.rbg;
     if (_ShowRoughness) color.rgb = roughness.xxx;
     if (_ShowAO) color.rgb = ambientOcclusion.xxx;
+    if (_ShowMask) color.rgb = albedo.rgb;
 
     color.a = 1;
     if(_Area > 0){
