@@ -152,8 +152,8 @@ public partial class AppMenu : MonoBehaviour
 			case "Symmetry":
 				Symmetry.SetActive(true);
 				break;
-			case "Grid":
-				ScmapEditor.Current.ToogleGrid(GridToggle.isOn);
+			case "CenterLines":
+				ScmapEditor.Current.ToogleCenterLines(GridToggle.isOn);
 				break;
 			case "BuildGrid":
 				ScmapEditor.Current.ToogleBuildGrid(BuildGridToggle.isOn);
@@ -248,10 +248,6 @@ public partial class AppMenu : MonoBehaviour
 	{
 		switch (ScmapEditor.Current.GridType)
 		{
-			case ScmapEditor.GridTypes.Standard:
-				GridToggle.isOn = !GridToggle.isOn;
-				ScmapEditor.Current.ToogleGrid(GridToggle.isOn);
-				break;
 			case ScmapEditor.GridTypes.Build:
 				BuildGridToggle.isOn = !BuildGridToggle.isOn;
 				ScmapEditor.Current.ToogleBuildGrid(BuildGridToggle.isOn);
@@ -264,7 +260,6 @@ public partial class AppMenu : MonoBehaviour
 				AIGridToggle.isOn = !AIGridToggle.isOn;
 				ScmapEditor.Current.ToogleAIGrid(AIGridToggle.isOn);
 				break;
-
 		}
 	}
 

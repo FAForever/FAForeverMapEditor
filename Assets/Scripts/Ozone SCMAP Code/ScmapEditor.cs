@@ -966,7 +966,7 @@ public partial class ScmapEditor : MonoBehaviour
 
 	public enum GridTypes
 	{
-		Standard, Build, General, AI
+		Build, General, AI
 	}
 
 	public bool ToogleCurrent()
@@ -976,12 +976,9 @@ public partial class ScmapEditor : MonoBehaviour
 		return Grid;
 	}
 
-	public void ToogleGrid(bool To)
+	public void ToogleCenterLines(bool To)
 	{
-		if(To)
-			GridType = GridTypes.Standard;
-		Grid = To;
-		UpdateGrid();
+		TerrainMaterial.SetInteger("_Lines", To ? 1 : 0);
 	}
 
 	public void ToogleBuildGrid(bool To)
@@ -1010,7 +1007,7 @@ public partial class ScmapEditor : MonoBehaviour
 
 	void UpdateGrid()
 	{
-		TerrainMaterial.SetTexture("_GridTexture", GridTextures[(int) GridType]);
+		TerrainMaterial.SetTexture("_GridTexture", GridTextures[0]);
 		TerrainMaterial.SetInteger("_Grid", Grid ? 1 : 0);
 		TerrainMaterial.SetInteger("_GridType", (int) GridType);
 	}
