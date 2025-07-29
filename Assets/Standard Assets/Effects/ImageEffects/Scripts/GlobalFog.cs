@@ -12,17 +12,6 @@ namespace UnityStandardAssets.ImageEffects
         public bool  distanceFog = true;
 		[Tooltip("Exclude far plane pixels from distance-based fog? (Skybox or clear color)")]
 		public bool  excludeFarPixels = true;
-		[Tooltip("Distance fog is based on radial distance from camera when checked")]
-		public bool  useRadialDistance = false;
-		[Tooltip("Apply height-based fog?")]
-		public bool  heightFog = true;
-		[Tooltip("Fog top Y coordinate")]
-        public float height = 1.0f;
-        [Range(0.001f,10.0f)]
-        public float heightDensity = 2.0f;
-		[Tooltip("Push fog away from the camera by this amount")]
-        public float startDistance = 0.0f;
-
         public Shader fogShader = null;
         private Material fogMaterial = null;
 
@@ -38,10 +27,9 @@ namespace UnityStandardAssets.ImageEffects
             return isSupported;
         }
 
-        [ImageEffectOpaque]
         void OnRenderImage(RenderTexture source, RenderTexture destination)
         {
-            if (CheckResources() == false || (!distanceFog && !heightFog))
+            if (CheckResources() == false || !distanceFog)
             {
                 Graphics.Blit(source, destination);
                 return;
@@ -64,37 +52,22 @@ namespace UnityStandardAssets.ImageEffects
             frustumCornersArray.SetRow(3, topRight);
 
             var camPos = camtr.position;
-            float FdotC = camPos.y - height;
-            float paramK = (FdotC <= 0.0f ? 1.0f : 0.0f);
+            
             float excludeDepth = (excludeFarPixels ? 1.0f : 2.0f);
             fogMaterial.SetMatrix("_FrustumCornersWS", frustumCornersArray);
             fogMaterial.SetVector("_CameraWS", camPos);
-            fogMaterial.SetVector("_HeightParams", new Vector4(height, FdotC, paramK, heightDensity * 0.5f));
-            fogMaterial.SetVector("_DistanceParams", new Vector4(-Mathf.Max(startDistance, 0.0f), excludeDepth, 0, 0));
-
-            var sceneMode = RenderSettings.fogMode;
-            var sceneDensity = RenderSettings.fogDensity;
-            var sceneStart = RenderSettings.fogStartDistance;
-            var sceneEnd = RenderSettings.fogEndDistance;
-            Vector4 sceneParams;
-            bool linear = (sceneMode == FogMode.Linear);
-            float diff = linear ? sceneEnd - sceneStart : 0.0f;
-            float invDiff = Mathf.Abs(diff) > 0.0001f ? 1.0f / diff : 0.0f;
-            sceneParams.x = sceneDensity * 1.2011224087f; // density / sqrt(ln(2)), used by Exp2 fog mode
-            sceneParams.y = sceneDensity * 1.4426950408f; // density / ln(2), used by Exp fog mode
-            sceneParams.z = linear ? -invDiff : 0.0f;
-            sceneParams.w = linear ? sceneEnd * invDiff : 0.0f;
-            fogMaterial.SetVector("_SceneFogParams", sceneParams);
-            fogMaterial.SetVector("_SceneFogMode", new Vector4((int)sceneMode, useRadialDistance ? 1 : 0, 0, 0));
-
-            int pass = 0;
-            if (distanceFog && heightFog)
-                pass = 0; // distance + height
-            else if (distanceFog)
-                pass = 1; // distance only
-            else
-                pass = 2; // height only
-            Graphics.Blit(source, destination, fogMaterial, pass);
+            fogMaterial.SetFloat("excludeDepth", excludeDepth);
+            
+            float fogStart = RenderSettings.fogStartDistance;
+            float fogEnd = RenderSettings.fogEndDistance;
+            
+            float invDiff = 1 / Mathf.Max(fogEnd - fogStart, 0.0001f);
+            
+            fogMaterial.SetFloat("invDiff", invDiff);
+            fogMaterial.SetFloat("fogEnd", fogEnd);
+            fogMaterial.SetVector("viewForward", cam.transform.forward);
+            
+            Graphics.Blit(source, destination, fogMaterial, 0);
         }
     }
 }
