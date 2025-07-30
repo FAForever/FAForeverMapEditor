@@ -60,11 +60,10 @@ namespace UnityStandardAssets.ImageEffects
             
             float fogStart = RenderSettings.fogStartDistance;
             float fogEnd = RenderSettings.fogEndDistance;
-            
             float invDiff = 1 / Mathf.Max(fogEnd - fogStart, 0.0001f);
-            
+
+            fogMaterial.SetFloat("fogStart", fogStart);
             fogMaterial.SetFloat("invDiff", invDiff);
-            fogMaterial.SetFloat("fogEnd", fogEnd);
             fogMaterial.SetVector("viewForward", cam.transform.forward);
             
             Graphics.Blit(source, destination, fogMaterial, 0);

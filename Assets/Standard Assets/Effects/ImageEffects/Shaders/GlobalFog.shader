@@ -1,4 +1,4 @@
-Shader "Hidden/GlobalFog" {
+Shader "FA/GlobalFog" {
 Properties {
 	_MainTex ("Base (RGB)", 2D) = "black" {}
 }
@@ -22,7 +22,7 @@ CGINCLUDE
 	uniform float4 _CameraWS;
 	
 	uniform float excludeDepth;
-	uniform float fogEnd;
+	uniform float fogStart;
 	uniform float invDiff;
 	uniform float3 viewForward;
 
@@ -37,6 +37,7 @@ CGINCLUDE
 		float2 uv : TEXCOORD0;
 		float2 uv_depth : TEXCOORD1;
 		float4 interpolatedRay : TEXCOORD2;
+		float4 centerRay : TEXCOORD3;
 	};
 	
 	v2f vert (appdata_fog v)
@@ -55,6 +56,10 @@ CGINCLUDE
 		int frustumIndex = v.texcoord.x + (2 * o.uv.y);
 		o.interpolatedRay = _FrustumCornersWS[frustumIndex];
 		o.interpolatedRay.w = frustumIndex;
+		o.centerRay = lerp(
+        lerp(_FrustumCornersWS[0], _FrustumCornersWS[2], 0.5),
+        lerp(_FrustumCornersWS[1], _FrustumCornersWS[3], 0.5),
+        0.5);
 		
 		return o;
 	}
@@ -72,12 +77,12 @@ CGINCLUDE
 
 		half4 fogColor = unity_FogColor;
 
-		
-		float distance = dot(viewForward, wsPos.xyz - _WorldSpaceCameraPos.xyz);
+		float2 forwardHorizontal = normalize(viewForward.xz);
+		float centerDepth = Linear01Depth(SAMPLE_DEPTH_TEXTURE(_CameraDepthTexture, UnityStereoTransformScreenSpaceTex(float2(0.5, 0.5))));
+		float3 centerPos = _CameraWS + centerDepth * i.centerRay;
+		float distance = dot(forwardHorizontal, wsPos.xz - centerPos.xz);
 
-		
-	    // factor = (dist-end)/(end-start)
-	    float fogFactor = (distance - fogEnd) * invDiff;
+	    float fogFactor = exp2((distance - fogStart) * invDiff) - 1;
 		// Do not fog skybox
     	if (dpth == excludeDepth)
     		fogFactor = 0.0;
