@@ -17,15 +17,14 @@ public class UiScaler : MonoBehaviour
 
 	public static void UpdateUiScale()
 	{
-		float value = Mathf.Clamp(FafEditorSettings.GetUiScale(), 0.25f, 4f);
+		float value = Mathf.Clamp(FafEditorSettings.GetUiScale(), 1f, 2.5f);
 		instance.canvasScaler.scaleFactor = value;
 		instance.canvasScaler.referencePixelsPerUnit = 100f / value;
 	}
 
 	public static void TempChangeUiScale(float value)
 	{
-		value = Mathf.Clamp(value, 0.25f, 4f);
-
+		value = Mathf.Clamp(value, 1f, 2.5f);
 		instance.canvasScaler.scaleFactor = value;
 		instance.canvasScaler.referencePixelsPerUnit = 100f / value;
 	}
