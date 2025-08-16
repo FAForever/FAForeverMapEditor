@@ -139,7 +139,7 @@ public class Map
 
 		//Version
 		VersionMajor = 2;
-		VersionMinor = 56;
+		VersionMinor = 60;
 
 		HeightScale = 0.0078125f;
 
@@ -248,7 +248,7 @@ public class Map
 
 		//Version
 		VersionMajor = 2;
-		VersionMinor = 56;
+		VersionMinor = 60;
 
 		HeightScale = 0.0078125f;
 

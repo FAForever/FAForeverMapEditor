@@ -457,25 +457,27 @@ namespace Selection
 
 			if (On)
 			{
-				Vector2 diference = Input.mousePosition - BeginMousePos;
+				Vector2 startPosition = BeginMousePos / FafEditorSettings.GetUiScale();
+				Vector2 currentPosition = Input.mousePosition / FafEditorSettings.GetUiScale();
+				Vector2 difference = currentPosition - startPosition;
 
-				SelBox.sizeDelta = new Vector2(Mathf.Abs(diference.x), Mathf.Abs(diference.y));
+				SelBox.sizeDelta = new Vector2(Mathf.Abs(difference.x), Mathf.Abs(difference.y));
 
-				if (diference.x < 0 && diference.y < 0)
+				if (difference.x < 0 && difference.y < 0)
 				{
-					SelBox.anchoredPosition = Input.mousePosition;
+					SelBox.anchoredPosition = currentPosition;
 				}
-				else if (diference.x < 0)
+				else if (difference.x < 0)
 				{
-					SelBox.anchoredPosition = new Vector2(Input.mousePosition.x, BeginMousePos.y);
+					SelBox.anchoredPosition = new Vector2(currentPosition.x, startPosition.y);
 				}
-				else if (diference.y < 0)
+				else if (difference.y < 0)
 				{
-					SelBox.anchoredPosition = new Vector2(BeginMousePos.x, Input.mousePosition.y);
+					SelBox.anchoredPosition = new Vector2(startPosition.x, currentPosition.y);
 				}
-				else {
-					SelBox.sizeDelta = diference;
-					SelBox.anchoredPosition = BeginMousePos;
+				else
+				{
+					SelBox.anchoredPosition = startPosition;
 				}
 			}
 
