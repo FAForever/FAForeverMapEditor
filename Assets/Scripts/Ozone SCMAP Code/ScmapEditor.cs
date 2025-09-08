@@ -1177,6 +1177,7 @@ public partial class ScmapEditor : MonoBehaviour
         {
             Textures[8].AlbedoScale = 10000;  // Use terrain info texture
             Textures[8].NormalScale = 10000;  // Use terrain normal texture
+            SetTextures(8);
             MapLuaParser.Current.EditMenu.TexturesMenu.ShaderTools.interactable = true;
             MapLuaParser.Current.EditMenu.TexturesMenu.ShaderTools.alpha = 1;
             if (shaderId >= 100)
