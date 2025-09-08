@@ -32,10 +32,15 @@ namespace EditMap
 
 		public RawImage Stratum_Albedo;
 		public RawImage Stratum_Normal;
-		public Text Stratum_Albedo_Name;
-		public Text Stratum_Normal_Name;
+		public Text Stratum_Albedo_Path;
+		public Text Stratum_Normal_Path;
+		public UiTitle Stratum_Albedo_Title;
+		public UiTitle Stratum_Normal_Title;
+		public UiTitle Stratum_Settings_Title;
 
 		public UiTextField Stratum_Albedo_Input;
+		// We need a copy because we sometimes need to display this slider in a different place
+		public UiTextField Stratum_Albedo_Input2;
 		public UiTextField Stratum_Normal_Input;
 
 		// Brush
@@ -397,50 +402,63 @@ namespace EditMap
 			Stratum_Selections[Selected].SetActive(true);
 
 			Stratum_Albedo.texture = ScmapEditor.Current.Textures[Selected].Albedo;
-			Stratum_Albedo_Name.text = ScmapEditor.Current.Textures[Selected].AlbedoPath;
+			Stratum_Albedo_Path.text = ScmapEditor.Current.Textures[Selected].AlbedoPath;
 			Stratum_Albedo_Input.SetValue(ScmapEditor.Current.Textures[Selected].AlbedoScale);
+			Stratum_Albedo_Input2.SetValue(ScmapEditor.Current.Textures[Selected].AlbedoScale);
 
-			if (Selected != 9)
+			// Set default visibility
+			Stratum_Settings_Title.gameObject.SetActive(false);
+			Stratum_Albedo_Input.gameObject.SetActive(true);
+			Stratum_Albedo_Input2.gameObject.SetActive(false);
+			
+			if (Selected == 9)
 			{
-				Stratum_Normal.texture = ScmapEditor.Current.Textures[Selected].Normal;
-				Stratum_Normal_Name.text = ScmapEditor.Current.Textures[Selected].NormalPath;
-				Stratum_Normal_Input.SetValue(ScmapEditor.Current.Textures[Selected].NormalScale);
-                Stratum_Normal.gameObject.SetActive(true);
-                Stratum_Normal_Name.gameObject.SetActive(true);
-                Stratum_Normal_Input.gameObject.SetActive(true);
-            }
-			else
-			{
+				Stratum_Albedo_Title.Title.text = "Macrotexture";
+				Stratum_Normal_Title.gameObject.SetActive(false);
 				Stratum_Normal.gameObject.SetActive(false);
-				Stratum_Normal_Name.gameObject.SetActive(false);
+				Stratum_Normal_Path.gameObject.SetActive(false);
 				Stratum_Normal_Input.gameObject.SetActive(false);
 			}
-
-			if (Shader.GetGlobalInt("_ShaderID") >= 200)
-			{
-				if (Selected == 9)
-				{
-                    Stratum_Albedo_Input.gameObject.SetActive(false);
-                }
-				else if (Selected == 8)
-				{
-                    Stratum_Albedo_Input.gameObject.SetActive(false);
-                    Stratum_Normal_Input.gameObject.SetActive(false);
-                }
-				else
-				{
-					Stratum_Albedo_Input.SetTitle("Scale");
-					Stratum_Normal_Input.SetTitle("Secondary Blending Scale");
-					Stratum_Albedo_Input.gameObject.SetActive(true);
-                    Stratum_Normal_Input.gameObject.SetActive(true);
-                }
-            }
 			else
 			{
-                Stratum_Albedo_Input.SetTitle("Albedo Scale");
-                Stratum_Normal_Input.SetTitle("Normal Scale");
-                Stratum_Albedo_Input.gameObject.SetActive(true);
-            }
+				Stratum_Albedo_Title.Title.text = "Albedo";
+				Stratum_Normal.texture = ScmapEditor.Current.Textures[Selected].Normal;
+				Stratum_Normal_Path.text = ScmapEditor.Current.Textures[Selected].NormalPath;
+				Stratum_Normal_Input.SetValue(ScmapEditor.Current.Textures[Selected].NormalScale);
+				Stratum_Normal_Title.Title.text = "Normal";
+				Stratum_Normal_Title.gameObject.SetActive(true);
+				Stratum_Normal.gameObject.SetActive(true);
+				Stratum_Normal_Path.gameObject.SetActive(true);
+				Stratum_Normal_Input.gameObject.SetActive(true);
+				Stratum_Normal_Input.SetTitle("Scale");
+			}
+			
+			if (Shader.GetGlobalInt("_ShaderID") >= 0 && Selected == 8)
+			{
+				Stratum_Albedo_Title.Title.text = "Terrain Info Texture";
+				Stratum_Normal_Title.Title.text = "Terrain Normal Texture";
+				Stratum_Albedo_Input.gameObject.SetActive(false);
+				Stratum_Normal_Input.gameObject.SetActive(false);
+			}
+			
+			if (Shader.GetGlobalInt("_ShaderID") >= 100 && Selected == 9)
+			{
+				Stratum_Albedo_Title.Title.text = "PBR Texture Atlas";
+				Stratum_Albedo_Input.gameObject.SetActive(false);
+			}
+			else if (Shader.GetGlobalInt("_ShaderID") >= 100 && Selected == 0)
+			{
+				Stratum_Albedo_Title.Title.text = "Albedo / Macrotexture";
+			}
+
+			if (Shader.GetGlobalInt("_ShaderID") >= 200 && Selected > 0 && Selected < 8)
+			{
+				Stratum_Settings_Title.gameObject.SetActive(true);
+				Stratum_Albedo_Input.gameObject.SetActive(false);
+				Stratum_Albedo_Input2.gameObject.SetActive(true);
+				Stratum_Normal_Input.SetTitle("Secondary Blending Scale");
+			}
+			
 			LoadingStratum = false;
 		}
 
@@ -561,7 +579,14 @@ namespace EditMap
 				}
 				if (!LoadingStratum)
 				{
-					ScmapEditor.Current.Textures[Selected].AlbedoScale = Stratum_Albedo_Input.value;
+					if (Stratum_Albedo_Input.gameObject.activeSelf)
+					{
+						ScmapEditor.Current.Textures[Selected].AlbedoScale = Stratum_Albedo_Input.value;
+					}
+					if (Stratum_Albedo_Input2.gameObject.activeSelf)
+					{
+						ScmapEditor.Current.Textures[Selected].AlbedoScale = Stratum_Albedo_Input2.value;
+					}
 					ScmapEditor.Current.Textures[Selected].NormalScale = Stratum_Normal_Input.value;
 				}
 
