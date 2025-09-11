@@ -69,13 +69,15 @@ jobs:
         with:
           targetPlatform: ${{ matrix.targetPlatform }}
           buildName: FAForeverMapEditor
-          versioning: Tag
+          versioning: Semantic
           unityVersion: 2022.3.26f1
 
       - name: Add the Structure Directory to the Built Projects
         shell: bash
         run: |
-            mv -f ./Structure build/${{ matrix.targetPlatform }}/FAForeverMapEditor_Data/
+          echo 'Project Version: ${{ steps.buildStep.outputs.buildVersion }}'
+          ls build/
+          mv -f ./Structure build/${{ matrix.targetPlatform }}/FAForeverMapEditor_Data/
 
       - name: Upload Build
         uses: actions/upload-artifact@v4
