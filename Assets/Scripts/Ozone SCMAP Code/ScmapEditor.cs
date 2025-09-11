@@ -747,20 +747,7 @@ public partial class ScmapEditor : MonoBehaviour
 
 		map.PreviewTex = PreviewRenderer.RenderPreview(((LowestElevation + HighestElevation) / 2) * 0.1f);
 
-
-		for (int i = 0; i < map.Layers.Count; i++)
-		{
-			Textures[i].AlbedoPath = GetGamedataFile.FixMapsPath(Textures[i].AlbedoPath);
-			Textures[i].NormalPath = GetGamedataFile.FixMapsPath(Textures[i].NormalPath);
-
-			map.Layers[i].PathTexture = Textures[i].AlbedoPath;
-			map.Layers[i].PathNormalmap = Textures[i].NormalPath;
-
-			map.Layers[i].ScaleTexture = Textures[i].AlbedoScale;
-			map.Layers[i].ScaleNormalmap = Textures[i].NormalScale;
-		}
-
-
+		FixCustomAssetsPaths();
 
 		List<Prop> AllProps = new List<Prop>();
 		if (EditMap.PropsInfo.AllPropsTypes != null)
@@ -780,6 +767,34 @@ public partial class ScmapEditor : MonoBehaviour
 		}
 
 		map.Save(path,  map.VersionMinor);
+	}
+
+	private void FixCustomAssetsPaths()
+	{
+		for (int i = 0; i < map.Layers.Count; i++)
+		{
+			Textures[i].AlbedoPath = GetGamedataFile.FixMapsPath(Textures[i].AlbedoPath);
+			Textures[i].NormalPath = GetGamedataFile.FixMapsPath(Textures[i].NormalPath);
+
+			map.Layers[i].PathTexture = Textures[i].AlbedoPath;
+			map.Layers[i].PathNormalmap = Textures[i].NormalPath;
+
+			map.Layers[i].ScaleTexture = Textures[i].AlbedoScale;
+			map.Layers[i].ScaleNormalmap = Textures[i].NormalScale;
+		}
+		
+		for (int i = 0; i < map.EnvCubemapsFile.Length; i++)
+		{
+			map.EnvCubemapsFile[i] = GetGamedataFile.FixMapsPath(map.EnvCubemapsFile[i]);
+		}
+		
+		map.Water.TexPathWaterRamp = GetGamedataFile.FixMapsPath(map.Water.TexPathWaterRamp);
+		map.Water.TexPathCubemap = GetGamedataFile.FixMapsPath(map.Water.TexPathCubemap);
+		
+		for (int i = 0; i < 4; i++)
+		{
+			map.Water.WaveTextures[i].TexPath = GetGamedataFile.FixMapsPath(map.Water.WaveTextures[i].TexPath);
+		}
 	}
 
 #endregion
