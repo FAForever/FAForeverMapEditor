@@ -30,8 +30,7 @@ on: [workflow_dispatch]
 jobs:
   build:
     name: Build for ${{ matrix.targetPlatform }}
-    # We use the Windows runner because there are compile errors in the Ubuntu runner
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
