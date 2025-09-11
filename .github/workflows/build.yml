@@ -19,7 +19,7 @@
 # SOFTWARE.
 
 
-name: Build artifact
+name: Build editor
 
 # Relevant sources:
 # - https://game.ci/
@@ -44,15 +44,14 @@ jobs:
         with:
           lfs: true
           
-      - name: Cache Libary
+      - name: Cache Library
         uses: actions/cache@v3
         with:
           path: Library
           key: Library-${{ matrix.targetPlatform }}
           restore-keys: |
             Library- 
-
-      - name: Build Windows Version 
+      - name: Build project
         uses: game-ci/unity-builder@v4 
         id: buildStep
         env:
