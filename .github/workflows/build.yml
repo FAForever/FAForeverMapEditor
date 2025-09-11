@@ -48,6 +48,7 @@ jobs:
 
       - name: Build project
         uses: game-ci/unity-builder@v4
+        id: buildStep
         env:
           # The unity email and password can be found in the 'Game assets' vault of:
           # - https://vaultwarden.faforever.com/#
@@ -65,7 +66,7 @@ jobs:
           customImage: 'unityci/editor:windows-2022.3.26f1-windows-il2cpp-3'
           targetPlatform: StandaloneWindows64
           buildName: FAForeverMapEditor
-          versioning: Tag
+          versioning: Semantic
           unityVersion: 2022.3.26f1
 
       - name: Add the Structure Directory to the Built Project
@@ -76,5 +77,5 @@ jobs:
       - name: Upload Build
         uses: actions/upload-artifact@v4
         with:
-          name: FAForever Map Editor
+          name: FAForever Map Editor ${{ steps.buildStep.outputs.buildVersion }}
           path: build

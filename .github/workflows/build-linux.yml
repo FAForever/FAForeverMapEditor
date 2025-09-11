@@ -46,7 +46,8 @@ jobs:
             Library- 
 
       - name: Build project 
-        uses: game-ci/unity-builder@v4 
+        uses: game-ci/unity-builder@v4
+        id: buildStep
         env:
           # The unity email and password can be found in the 'Game assets' vault of:
           # - https://vaultwarden.faforever.com/#
@@ -74,5 +75,5 @@ jobs:
       - name: Upload Build
         uses: actions/upload-artifact@v4
         with:
-          name: FAForever Map Editor
+          name: FAForever Map Editor ${{ steps.buildStep.outputs.buildVersion }}
           path: build
