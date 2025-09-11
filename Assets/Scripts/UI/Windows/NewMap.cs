@@ -215,7 +215,7 @@ namespace EditMap
 			ScmapEditor.Current.LoadHeights();
 			ScmapEditor.Current.LoadStratumScdTextures();
 
-			MapLuaParser.Current.EditMenu.MapInfoMenu.SaveAsFa.isOn = false;
+			MapLuaParser.Current.EditMenu.MapInfoMenu.SaveAsFa.isOn = true;
 			MapLuaParser.Current.EditMenu.MapInfoMenu.ShaderName.SetValue("TTerrainXP");
 
 			yield return new WaitForSeconds(0.5f);
