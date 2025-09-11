@@ -72,13 +72,12 @@ jobs:
           versioning: Semantic
           unityVersion: 2022.3.26f1
 
-      - name: Add the Structure Directory to the Built Projects
+      - name: Add the Structure Directory to the Built Project
         shell: bash
+        continue-on-error: true
         run: |
-          echo 'Project Version: ${{ steps.buildStep.outputs.buildVersion }}'
-          ls build/
-          ls build/${{ matrix.targetPlatform }}/FAForeverMapEditor_Data/
-          mv -f ./Structure build/${{ matrix.targetPlatform }}/FAForeverMapEditor_Data/
+          ls -l build/${{ matrix.targetPlatform }}/FAForeverMapEditor_Data/
+          mv ./Structure build/${{ matrix.targetPlatform }}/FAForeverMapEditor_Data/
 
       - name: Upload Build
         uses: actions/upload-artifact@v4
