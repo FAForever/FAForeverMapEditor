@@ -29,9 +29,15 @@ on: [workflow_dispatch]
 
 jobs:
   build:
-    name: Build
-    # We use the WIndows runner because there are compile errors in the Ubuntu runner
+    name: Build for ${{ matrix.targetPlatform }}
+    # We use the Windows runner because there are compile errors in the Ubuntu runner
     runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        targetPlatform:
+          - StandaloneWindows64
+          - StandaloneLinux64
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -42,12 +48,13 @@ jobs:
         uses: actions/cache@v3
         with:
           path: Library
-          key: Library-${{ hashFiles('Assets/**', 'Packages/**', 'ProjectSettings/**', 'Structure/**') }}
+          key: Library-${{ matrix.targetPlatform }}
           restore-keys: |
             Library- 
 
-      - name: Build project 
+      - name: Build Windows Version 
         uses: game-ci/unity-builder@v4 
+        id: buildStep
         env:
           # The unity email and password can be found in the 'Game assets' vault of:
           # - https://vaultwarden.faforever.com/#
@@ -62,19 +69,18 @@ jobs:
           # - (5) The generated license can be found in C:\ProgramData\Unity\Unity_lic.ulf
           UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
         with:
-          customImage: 'unityci/editor:windows-2022.3.26f1-windows-il2cpp-3'
-          targetPlatform: StandaloneWindows64
+          targetPlatform: ${{ matrix.targetPlatform }}
           buildName: FAForeverMapEditor
           versioning: Tag
           unityVersion: 2022.3.26f1
 
-      - name: Add the Structure Directory to the Built Project
+      - name: Add the Structure Directory to the Built Projects
         shell: bash
         run: |
-            mv -f ./Structure build/StandaloneWindows64/FAForeverMapEditor_Data/
+            mv -f ./Structure build/${{ matrix.targetPlatform }}/FAForeverMapEditor_Data/
 
       - name: Upload Build
         uses: actions/upload-artifact@v4
         with:
-          name: FAForever Map Editor
-          path: build
+          name: FAForever Map Editor ${{ steps.buildStep.outputs.buildVersion }} ${{ matrix.targetPlatform }}
+          path: build/${{ matrix.targetPlatform }}
