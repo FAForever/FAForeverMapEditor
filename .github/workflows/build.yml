@@ -25,7 +25,11 @@ name: Build editor
 # - https://game.ci/
 
 
-on: [workflow_dispatch]
+on:
+  push:
+    tags:
+      - v**
+  workflow_dispatch:
 
 jobs:
   build:
