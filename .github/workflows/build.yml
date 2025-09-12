@@ -59,4 +59,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: FAForever Map Editor ${{ steps.buildStep.outputs.buildVersion }} Windows
-          path: build
+          path: build/StandaloneWindows64

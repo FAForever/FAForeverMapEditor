@@ -59,4 +59,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: FAForever Map Editor ${{ steps.buildStep.outputs.buildVersion }} Linux
-          path: build
+          path: build/StandaloneLinux64
