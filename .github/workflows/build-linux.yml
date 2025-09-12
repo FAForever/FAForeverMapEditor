@@ -5,6 +5,7 @@ name: Build linux editor
 
 on:
   release:
+    types: [published]
   workflow_dispatch:
 
 jobs:
@@ -60,9 +61,10 @@ jobs:
           path: build/StandaloneLinux64
           
       - name: Add Build to Release
+        if: github.event_name == 'release'
         shell: bash
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           zip -r FAForever.Map.Editor.${{ steps.buildStep.outputs.buildVersion }}.Linux.zip build/StandaloneLinux64
-          gh release upload v1.0 FAForever.Map.Editor.${{ steps.buildStep.outputs.buildVersion }}.Linux.zip
+          gh release upload $GITHUB_REF FAForever.Map.Editor.${{ steps.buildStep.outputs.buildVersion }}.Linux.zip
