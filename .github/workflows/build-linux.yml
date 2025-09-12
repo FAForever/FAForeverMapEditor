@@ -61,4 +61,8 @@ jobs:
           
       - name: Add Build to Release
         shell: bash
-        run: gh release upload v1.0 build/StandaloneLinux64
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          zip -r FAForever.Map.Editor.${{ steps.buildStep.outputs.buildVersion }}.Linux.zip build/StandaloneLinux64
+          gh release upload v1.0 FAForever.Map.Editor.${{ steps.buildStep.outputs.buildVersion }}.Linux.zip
