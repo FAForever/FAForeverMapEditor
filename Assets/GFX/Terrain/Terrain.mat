@@ -11,11 +11,9 @@ Material:
   m_Shader: {fileID: 4800000, guid: 07332981e20e66d40a9ee102d13a9be8, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
-  m_ValidKeywords:
-  - Terrain202B
+  m_ValidKeywords: []
   m_InvalidKeywords:
   - _AREA_ON
-  - _LINES_ON
   m_LightmapFlags: 5
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
@@ -306,32 +304,31 @@ Material:
     - _HideStratum7: 0
     - _HideStratum8: 0
     - _HideTerrainType: 0
-    - _Lines: 1
     - _Slope: 0
     - _UseSlopeTex: 0
     m_Floats:
     - LightingMultiplier: 1
-    - LowerAlbedoTile: 1
-    - LowerNormalTile: 146.28572
-    - Stratum0AlbedoTile: 90.459366
-    - Stratum0NormalTile: 128
-    - Stratum1AlbedoTile: 81.528656
-    - Stratum1NormalTile: 70.81605
-    - Stratum2AlbedoTile: 83.66013
-    - Stratum2NormalTile: 37.101448
-    - Stratum3AlbedoTile: 76.99248
-    - Stratum3NormalTile: 56.263733
-    - Stratum4AlbedoTile: 75.51622
-    - Stratum4NormalTile: 37.317783
-    - Stratum5AlbedoTile: 42.666668
-    - Stratum5NormalTile: 134.03142
-    - Stratum6AlbedoTile: 98.46154
-    - Stratum6NormalTile: 28.42865
-    - Stratum7AlbedoTile: 0.0512
-    - Stratum7NormalTile: 0.0512
-    - TerrainScale: 0.001953125
-    - UpperAlbedoTile: 0.0512
-    - UpperNormalTile: 256
+    - LowerAlbedoTile: 256
+    - LowerNormalTile: 117.02857
+    - Stratum0AlbedoTile: 256
+    - Stratum0NormalTile: 256
+    - Stratum1AlbedoTile: 292.57144
+    - Stratum1NormalTile: 89.04348
+    - Stratum2AlbedoTile: 60.952385
+    - Stratum2NormalTile: 512
+    - Stratum3AlbedoTile: 170.66667
+    - Stratum3NormalTile: 256
+    - Stratum4AlbedoTile: 256
+    - Stratum4NormalTile: 256
+    - Stratum5AlbedoTile: 256
+    - Stratum5NormalTile: 256
+    - Stratum6AlbedoTile: 256
+    - Stratum6NormalTile: 256
+    - Stratum7AlbedoTile: 256
+    - Stratum7NormalTile: 256
+    - TerrainScale: 0.0009765625
+    - UpperAlbedoTile: 8
+    - UpperNormalTile: 1
     - WaterElevation: 0
     - _AbyssLevel: 0.25
     - _Area: 1
@@ -342,8 +339,8 @@ Material:
     - _Brush: 0
     - _BrushPainting: 0
     - _BrushSize: 0
-    - _BrushUvX: 0.38575113
-    - _BrushUvY: 0.67141783
+    - _BrushUvX: 0.5716179
+    - _BrushUvY: 0.06824475
     - _BuildGrid: 0
     - _DeepLevel: 1.675625
     - _DepthLevel: 1.5

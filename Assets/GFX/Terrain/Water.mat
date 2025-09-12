@@ -110,8 +110,8 @@ Material:
     m_Ints: []
     m_Floats:
     - SunReflection: 0
-    - SunReflectionAmount: 1
-    - SunShininess: 80
+    - SunReflectionAmount: 2.02
+    - SunShininess: 78.9
     - _BumpScale: 1
     - _Cutoff: 0.5
     - _DetailNormalMapScale: 1
@@ -128,19 +128,19 @@ Material:
     - _WaterScaleX: 1024
     - _WaterScaleZ: 1024
     - _ZWrite: 1
-    - refractionScale: 0.38
-    - skyreflectionAmount: 0.9
+    - refractionScale: 0.38000003
+    - skyreflectionAmount: 0.67800003
     m_Colors:
-    - SunColor: {r: 1.6251, g: 1.5125, b: 1.4078, a: 0}
-    - SunDirection: {r: -0.72986984, g: 0.57357645, b: 0.3718872, a: 0}
+    - SunColor: {r: 0.52, g: 0.47, b: 0.35, a: 0}
+    - SunDirection: {r: 0.09954818, g: -0.9626309, b: 0.2518569, a: 0}
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
-    - normal1Movement: {r: -0.0000000010490733, g: -0.012, b: 0, a: 0}
-    - normal2Movement: {r: -0.0013023602, g: 0.0073860604, b: 0, a: 0}
-    - normal3Movement: {r: -0.0029999998, g: 0.0051961504, b: 0, a: 0}
-    - normal4Movement: {r: -0.0010499952, g: -0.0060000005, b: 0, a: 0}
-    - normalRepeatRate: {r: 0.05, g: 0.083333336, b: 0.5, a: 0.8}
+    - normal1Movement: {r: -0, g: 0.01, b: 0, a: 0}
+    - normal2Movement: {r: -0.086602546, g: 0.049999997, b: 0, a: 0}
+    - normal3Movement: {r: 0.001307336, g: 0.014942921, b: 0, a: 0}
+    - normal4Movement: {r: 0.0049497476, g: 0.0049497476, b: 0, a: 0}
+    - normalRepeatRate: {r: 0.08, g: 0.009, b: 0.06, a: 0.5}
     - sunColor: {r: 0.40637133, g: 0.23704992, b: 0.16932137, a: 1}
-    - waterColor: {r: 0.1, g: 0.1, b: 0.1, a: 0}
-    - waterLerp: {r: 0.06, g: 0.06, b: 0, a: 0}
+    - waterColor: {r: 0, g: 0.7, b: 1.5, a: 0}
+    - waterLerp: {r: 0.064, g: 0.119, b: 0, a: 0}
   m_BuildTextureStacks: []
