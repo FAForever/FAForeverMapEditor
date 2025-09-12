@@ -48,9 +48,7 @@ jobs:
       - name: Add the Structure Directory to the Built Project
         shell: bash
         run: |
-          ls -ld build/StandaloneLinux64/FAForeverMapEditor_Data/
-          whoami
-          sudo chown -R $(whoami) build/StandaloneWindows64/FAForeverMapEditor_Data
+          sudo chown -R $(whoami) build/StandaloneLinux64/FAForeverMapEditor_Data
           mv ./Structure build/StandaloneLinux64/FAForeverMapEditor_Data/
 
       - name: Upload Build
