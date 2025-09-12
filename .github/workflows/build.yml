@@ -3,7 +3,6 @@ name: Build editor
 # Relevant sources:
 # - https://game.ci/
 
-
 on:
   push:
     tags:

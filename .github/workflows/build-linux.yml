@@ -3,7 +3,11 @@ name: Build linux editor
 # Relevant sources:
 # - https://game.ci/
 
-on: [workflow_dispatch, push]
+on:
+  push:
+    tags:
+      - v**
+  workflow_dispatch:
 
 jobs:
   build:
