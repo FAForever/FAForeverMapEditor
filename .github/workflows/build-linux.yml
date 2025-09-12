@@ -48,7 +48,10 @@ jobs:
       - name: Add the Structure Directory to the Built Project
         shell: bash
         run: |
-            mv ./Structure build/StandaloneLinux64/FAForeverMapEditor_Data/
+          ls -ld build/StandaloneLinux64/FAForeverMapEditor_Data/
+          whoami
+          sudo chown -R $(whoami) build/StandaloneWindows64/FAForeverMapEditor_Data
+          mv ./Structure build/StandaloneLinux64/FAForeverMapEditor_Data/
 
       - name: Upload Build
         uses: actions/upload-artifact@v4
