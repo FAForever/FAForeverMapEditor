@@ -1,6 +1,5 @@
-﻿using UnityEngine;
-using System.Collections;
-using Microsoft.Win32;
+﻿using System;
+using UnityEngine;
 
 public class EnvPaths : MonoBehaviour {
 
@@ -230,9 +229,14 @@ public class EnvPaths : MonoBehaviour {
     }
 
     public static void GenerateGamedataPath() {
-		DefaultGamedataPath = FindByDisplayName(regKey, "Supreme Commander: Forged Alliance").Replace("\\", "/");
-
-
+	    try
+	    {
+			DefaultGamedataPath = FindByDisplayName(regKey, "Supreme Commander: Forged Alliance").Replace("\\", "/");
+	    }
+	    catch (NullReferenceException)
+	    {
+		    Debug.Log("Could not access registry key for game installation directory. This is expected on linux");
+	    }
 
 		if (!string.IsNullOrEmpty(DefaultGamedataPath)) {
 			if (!DefaultGamedataPath.EndsWith("/"))
