@@ -4,9 +4,8 @@ name: Build editor
 # - https://game.ci/
 
 on:
-  push:
-    tags:
-      - v**
+  release:
+    types: [published]
   workflow_dispatch:
 
 jobs:
@@ -47,7 +46,7 @@ jobs:
         with:
           targetPlatform: StandaloneWindows64
           buildName: FAForeverMapEditor
-          versioning: Semantic
+          versioning: Tag
           unityVersion: 2022.3.26f1
 
       - name: Add the Structure Directory to the Built Project
@@ -60,3 +59,13 @@ jobs:
         with:
           name: FAForever Map Editor ${{ steps.buildStep.outputs.buildVersion }} Windows
           path: build/StandaloneWindows64
+
+      - name: Add Build to Release
+        if: github.event_name == 'release'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          zip -r FAForever.Map.Editor.${{ steps.buildStep.outputs.buildVersion }}.Windows.zip build/StandaloneWindows64
+          gh release upload $GITHUB_REF FAForever.Map.Editor.${{ steps.buildStep.outputs.buildVersion }}.Windows.zip
+

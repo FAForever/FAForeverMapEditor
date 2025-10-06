@@ -4,9 +4,8 @@ name: Build linux editor
 # - https://game.ci/
 
 on:
-  push:
-    tags:
-      - v**
+  release:
+    types: [published]
   workflow_dispatch:
 
 jobs:
@@ -60,3 +59,12 @@ jobs:
         with:
           name: FAForever Map Editor ${{ steps.buildStep.outputs.buildVersion }} Linux
           path: build/StandaloneLinux64
+          
+      - name: Add Build to Release
+        if: github.event_name == 'release'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          zip -r FAForever.Map.Editor.${{ steps.buildStep.outputs.buildVersion }}.Linux.zip build/StandaloneLinux64
+          gh release upload $GITHUB_REF FAForever.Map.Editor.${{ steps.buildStep.outputs.buildVersion }}.Linux.zip
