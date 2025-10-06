@@ -66,6 +66,6 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          zip -r FAForever.Map.Editor.${{ steps.buildStep.outputs.buildVersion }}.Windows.zip build/StandaloneWindows64
+          7z a FAForever.Map.Editor.${{ steps.buildStep.outputs.buildVersion }}.Windows.zip build/StandaloneWindows64
           gh release upload ${{ github.event.release.tag_name }} FAForever.Map.Editor.${{ steps.buildStep.outputs.buildVersion }}.Windows.zip
 
