@@ -26,14 +26,7 @@ public class EnvPaths : MonoBehaviour {
 	}
 
 	public static void SetInstallationPath(string value) {
-		value = value.Replace("\\", "/");
-		if (value[value.Length - 1].ToString() != "/") value += "/";
-		if (value[0].ToString() == "/") value = value.Remove(0, 1);
-
-		if (value.ToLower().EndsWith(InstallationGamedata))
-		{
-			value = value.Remove(value.Length - InstallationGamedata.Length);
-		}
+		value = SanitizeGamedataPath(value);
 
 		PlayerPrefs.SetString(InstallationPath, value);
 
@@ -43,21 +36,27 @@ public class EnvPaths : MonoBehaviour {
 		}
     }
 
-    public static string GetFafDataPath()
+	private static string SanitizeGamedataPath(string value)
+	{
+		value = value.Replace("\\", "/");
+		if (value[value.Length - 1].ToString() != "/") value += "/";
+
+		if (value.ToLower().EndsWith(InstallationGamedata))
+		{
+			value = value.Remove(value.Length - InstallationGamedata.Length);
+		}
+
+		return value;
+	}
+
+	public static string GetFafDataPath()
     {
         return PlayerPrefs.GetString(FafDataPath, EnvPaths.DefaultFafDataPath);
     }
 
     public static void SetFafDataPath(string value)
     {
-        value = value.Replace("\\", "/");
-        if (value[value.Length - 1].ToString() != "/") value += "/";
-        if (value[0].ToString() == "/") value = value.Remove(0, 1);
-
-        if (value.ToLower().EndsWith(InstallationGamedata))
-        {
-            value = value.Remove(value.Length - InstallationGamedata.Length);
-        }
+	    value = SanitizeGamedataPath(value);
 
         PlayerPrefs.SetString(FafDataPath, value);
 
@@ -76,7 +75,6 @@ public class EnvPaths : MonoBehaviour {
     {
 	    value = value.Replace("\\", "/");
 	    if (value[value.Length - 1].ToString() != "/") value += "/";
-	    if (value[0].ToString() == "/") value = value.Remove(0, 1);
 
 	    PlayerPrefs.SetString(JavaPath, value);
 
@@ -95,7 +93,6 @@ public class EnvPaths : MonoBehaviour {
     {
 	    value = value.Replace("\\", "/");
 	    if (value[value.Length - 1].ToString() != "/") value += "/";
-	    if (value[0].ToString() == "/") value = value.Remove(0, 1);
 
 	    PlayerPrefs.SetString(ImagePath, value);
 
@@ -171,7 +168,6 @@ public class EnvPaths : MonoBehaviour {
 	public static void SetMapsPath(string value) {
 		value = value.Replace("\\", "/");
 		if (value[value.Length - 1].ToString() != "/") value += "/";
-		if (value[0].ToString() == "/") value = value.Remove(0, 1);
 
 		PlayerPrefs.SetString(MapsPath, value);
 
@@ -192,7 +188,6 @@ public class EnvPaths : MonoBehaviour {
 		{
 			value = value.Replace("\\", "/");
 			if (value[value.Length - 1].ToString() != "/") value += "/";
-			if (value.Length > 0 && value[0].ToString() == "/") value = value.Remove(0, 1);
 		}
 
 		PlayerPrefs.SetString(BackupPath, value);
