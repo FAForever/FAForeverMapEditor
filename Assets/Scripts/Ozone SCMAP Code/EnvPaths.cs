@@ -1,6 +1,5 @@
-﻿using UnityEngine;
-using System.Collections;
-using Microsoft.Win32;
+﻿using System;
+using UnityEngine;
 
 public class EnvPaths : MonoBehaviour {
 
@@ -27,14 +26,7 @@ public class EnvPaths : MonoBehaviour {
 	}
 
 	public static void SetInstallationPath(string value) {
-		value = value.Replace("\\", "/");
-		if (value[value.Length - 1].ToString() != "/") value += "/";
-		if (value[0].ToString() == "/") value = value.Remove(0, 1);
-
-		if (value.ToLower().EndsWith(InstallationGamedata))
-		{
-			value = value.Remove(value.Length - InstallationGamedata.Length);
-		}
+		value = SanitizeGamedataPath(value);
 
 		PlayerPrefs.SetString(InstallationPath, value);
 
@@ -44,21 +36,27 @@ public class EnvPaths : MonoBehaviour {
 		}
     }
 
-    public static string GetFafDataPath()
+	private static string SanitizeGamedataPath(string value)
+	{
+		value = value.Replace("\\", "/");
+		if (value[value.Length - 1].ToString() != "/") value += "/";
+
+		if (value.ToLower().EndsWith(InstallationGamedata))
+		{
+			value = value.Remove(value.Length - InstallationGamedata.Length);
+		}
+
+		return value;
+	}
+
+	public static string GetFafDataPath()
     {
         return PlayerPrefs.GetString(FafDataPath, EnvPaths.DefaultFafDataPath);
     }
 
     public static void SetFafDataPath(string value)
     {
-        value = value.Replace("\\", "/");
-        if (value[value.Length - 1].ToString() != "/") value += "/";
-        if (value[0].ToString() == "/") value = value.Remove(0, 1);
-
-        if (value.ToLower().EndsWith(InstallationGamedata))
-        {
-            value = value.Remove(value.Length - InstallationGamedata.Length);
-        }
+	    value = SanitizeGamedataPath(value);
 
         PlayerPrefs.SetString(FafDataPath, value);
 
@@ -77,7 +75,6 @@ public class EnvPaths : MonoBehaviour {
     {
 	    value = value.Replace("\\", "/");
 	    if (value[value.Length - 1].ToString() != "/") value += "/";
-	    if (value[0].ToString() == "/") value = value.Remove(0, 1);
 
 	    PlayerPrefs.SetString(JavaPath, value);
 
@@ -96,7 +93,6 @@ public class EnvPaths : MonoBehaviour {
     {
 	    value = value.Replace("\\", "/");
 	    if (value[value.Length - 1].ToString() != "/") value += "/";
-	    if (value[0].ToString() == "/") value = value.Remove(0, 1);
 
 	    PlayerPrefs.SetString(ImagePath, value);
 
@@ -172,7 +168,6 @@ public class EnvPaths : MonoBehaviour {
 	public static void SetMapsPath(string value) {
 		value = value.Replace("\\", "/");
 		if (value[value.Length - 1].ToString() != "/") value += "/";
-		if (value[0].ToString() == "/") value = value.Remove(0, 1);
 
 		PlayerPrefs.SetString(MapsPath, value);
 
@@ -193,7 +188,6 @@ public class EnvPaths : MonoBehaviour {
 		{
 			value = value.Replace("\\", "/");
 			if (value[value.Length - 1].ToString() != "/") value += "/";
-			if (value.Length > 0 && value[0].ToString() == "/") value = value.Remove(0, 1);
 		}
 
 		PlayerPrefs.SetString(BackupPath, value);
@@ -230,9 +224,14 @@ public class EnvPaths : MonoBehaviour {
     }
 
     public static void GenerateGamedataPath() {
-		DefaultGamedataPath = FindByDisplayName(regKey, "Supreme Commander: Forged Alliance").Replace("\\", "/");
-
-
+	    try
+	    {
+			DefaultGamedataPath = FindByDisplayName(regKey, "Supreme Commander: Forged Alliance").Replace("\\", "/");
+	    }
+	    catch (NullReferenceException)
+	    {
+		    Debug.Log("Could not access registry key for game installation directory. This is expected on linux");
+	    }
 
 		if (!string.IsNullOrEmpty(DefaultGamedataPath)) {
 			if (!DefaultGamedataPath.EndsWith("/"))
