@@ -72,7 +72,6 @@ namespace EditMap
 		public CanvasGroup ShaderSettings;
 		public UiTextField Blurriness;
 		public CanvasGroup ShaderTools;
-		public InputField JavaPathField;
 		public InputField ImagePathField;
 		public OutputWindow OutputWindow;
 		private ConcurrentQueue<string> outputQueue = new ();
@@ -135,7 +134,6 @@ namespace EditMap
 
 		void OnEnable()
 		{
-			JavaPathField.text = EnvPaths.GetJavaPath();
 			ImagePathField.text = EnvPaths.GetImagePath();
 			Blurriness.SetValue(ScmapEditor.Current.map.SpecularColor.x);
 			BrushGenerator.Current.LoadBrushes();
@@ -1099,25 +1097,6 @@ namespace EditMap
         #endregion
 
         #region TextureGeneration
-        public void BrowseJavaPath()
-        {
-
-            var paths = StandaloneFileBrowser.OpenFolderPanel("Select folder containing java.exe.", EnvPaths.GetJavaPath(), false);
-
-            if (paths.Length > 0 && !string.IsNullOrEmpty(paths[0]))
-            {
-                JavaPathField.text = paths[0];
-                EnvPaths.SetJavaPath(paths[0]);
-            }
-        }
-        
-        public void UpdateJavaPath()
-        {
-	        if (!string.IsNullOrEmpty(JavaPathField.text))
-	        {
-		        EnvPaths.SetJavaPath(JavaPathField.text);
-	        }
-        }
 		
         public void BrowseImagePath()
         {
@@ -1143,10 +1122,9 @@ namespace EditMap
         {
 	        OutputWindow.Initialize();
 	        Process neroxisToolsuite = new Process();
-            neroxisToolsuite.StartInfo.FileName = EnvPaths.GetJavaPath() + "/java.exe";
-            var jarPath = MapLuaParser.StructurePath + "Neroxis/toolsuite-all.jar";
-            neroxisToolsuite.StartInfo.Arguments = "-jar \"" + jarPath + "\" " + arguments;
-            outputQueue.Enqueue("Starting Java process: " + neroxisToolsuite.StartInfo.FileName + neroxisToolsuite.StartInfo.Arguments);
+            neroxisToolsuite.StartInfo.FileName = MapLuaParser.StructurePath + "Neroxis/neroxis-toolsuite.exe";
+            neroxisToolsuite.StartInfo.Arguments = arguments;
+            outputQueue.Enqueue("Starting Neroxis Toolsuite: " + neroxisToolsuite.StartInfo.FileName + " " + neroxisToolsuite.StartInfo.Arguments);
             
             neroxisToolsuite.StartInfo.CreateNoWindow = true;
             neroxisToolsuite.StartInfo.UseShellExecute = false;
@@ -1160,7 +1138,7 @@ namespace EditMap
             neroxisToolsuite.BeginErrorReadLine();
             neroxisToolsuite.WaitForExit();
             
-            outputQueue.Enqueue("Java process exited with code: " + neroxisToolsuite.ExitCode);
+            outputQueue.Enqueue("Process exited with code: " + neroxisToolsuite.ExitCode);
             OutputWindow.Close();
             if (neroxisToolsuite.ExitCode != 0) GenericInfoPopup.ShowInfo("Command failed! Check the log for more information.");
             return neroxisToolsuite.ExitCode;

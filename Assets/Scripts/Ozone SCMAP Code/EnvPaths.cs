@@ -18,7 +18,6 @@ public class EnvPaths : MonoBehaviour {
 	const string InstallationMods = "mods/";
 	const string MapsPath = "MapsPath";
 	const string BackupPath = "BackupPath";
-	const string JavaPath = "JavaPath";
 	const string ImagePath = "ImagePath";
 
 	public static string GetInstallationPath() {
@@ -64,24 +63,6 @@ public class EnvPaths : MonoBehaviour {
         {
             GenericInfoPopup.ShowInfo("Wrong faf installation path!\nCheck preferences.");
         }
-    }
-    
-    public static string GetJavaPath()
-    {
-	    return PlayerPrefs.GetString(JavaPath, DefaultJavaPath);
-    }
-
-    public static void SetJavaPath(string value)
-    {
-	    value = value.Replace("\\", "/");
-	    if (value[value.Length - 1].ToString() != "/") value += "/";
-
-	    PlayerPrefs.SetString(JavaPath, value);
-
-	    if (!System.IO.Directory.Exists(value))
-	    {
-		    GenericInfoPopup.ShowInfo("This directory does not exist!");
-	    }
     }
         
     public static string GetImagePath()
