@@ -1,0 +1,2 @@
+JAVA_VERSION="21.0.8"
+MODULES="java.base java.datatransfer java.xml java.prefs java.desktop java.logging NeroxisGen.merged.module info.picocli io.avaje.json io.avaje.jsonb org.antlr.antlr4.runtime com.faforever.neroxis.shared com.faforever.neroxis.toolsuite"

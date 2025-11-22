@@ -1,0 +1,9 @@
+#!/bin/sh
+SCRIPT_NAME=$(basename "$0")
+APP_NAME=${SCRIPT_NAME%.sh}
+
+DIR="${0%/*}"
+
+
+
+"$DIR/java" $CDS_JVM_OPTS -XX:+AutoCreateSharedArchive "-XX:SharedArchiveFile=$DIR/neroxis-toolsuite.jsa" -p "$DIR/../app" -m com.faforever.neroxis.toolsuite/com.faforever.neroxis.toolsuite.MapToolSuite  "$@"
