@@ -13,7 +13,6 @@ namespace EditMap
 
 		public UiTextField Name;
 		public UiTextField Desc;
-		public Dropdown TextureSet;
 		public Dropdown MapType;
 		public Dropdown ArmyCount;
 		public Dropdown Width;
