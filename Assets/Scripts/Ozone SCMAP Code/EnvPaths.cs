@@ -6,7 +6,7 @@ public class EnvPaths : MonoBehaviour {
 	public static string DefaultMapPath;
 	public static string DefaultGamedataPath;
 	public static string DefaultFafDataPath;
-	public static string DefaultJavaPath;
+	public static string DefaultImagePath;
 
 	static Microsoft.Win32.RegistryKey regKey = Microsoft.Win32.Registry.LocalMachine.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Uninstall");
 	//static RegistryKey regKey = Registry. .OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Uninstall");
@@ -21,7 +21,7 @@ public class EnvPaths : MonoBehaviour {
 	const string ImagePath = "ImagePath";
 
 	public static string GetInstallationPath() {
-		return PlayerPrefs.GetString(InstallationPath, EnvPaths.DefaultGamedataPath);
+		return PlayerPrefs.GetString(InstallationPath, DefaultGamedataPath);
 	}
 
 	public static void SetInstallationPath(string value) {
@@ -50,7 +50,7 @@ public class EnvPaths : MonoBehaviour {
 
 	public static string GetFafDataPath()
     {
-        return PlayerPrefs.GetString(FafDataPath, EnvPaths.DefaultFafDataPath);
+        return PlayerPrefs.GetString(FafDataPath, DefaultFafDataPath);
     }
 
     public static void SetFafDataPath(string value)
@@ -67,7 +67,7 @@ public class EnvPaths : MonoBehaviour {
         
     public static string GetImagePath()
     {
-	    return PlayerPrefs.GetString(ImagePath, "");
+	    return PlayerPrefs.GetString(ImagePath, DefaultImagePath);
     }
 
     public static void SetImagePath(string value)
@@ -159,7 +159,7 @@ public class EnvPaths : MonoBehaviour {
 	}
 
 	public static string GetMapsPath() {
-		return PlayerPrefs.GetString(MapsPath, EnvPaths.DefaultMapPath);
+		return PlayerPrefs.GetString(MapsPath, DefaultMapPath);
 	}
 
 	public static void SetBackupPath(string value)
@@ -184,7 +184,7 @@ public class EnvPaths : MonoBehaviour {
 		GenerateMapPath();
 		GenerateFafDataPath();
 		GenerateGamedataPath();
-		GenerateJavaPath();
+		GenerateImagePath();
 	}
 
 	public static void GenerateMapPath() {
@@ -230,13 +230,13 @@ public class EnvPaths : MonoBehaviour {
 			DefaultGamedataPath = "gamedata/";
 	}
     
-	public static void GenerateJavaPath()
+	public static void GenerateImagePath()
 	{
-		DefaultJavaPath = Programs + "/FAF Client/jre/bin";
-		if (!System.IO.Directory.Exists(DefaultJavaPath))
+		DefaultImagePath = "FAForeverMapEditor_Data/Structure/Presets/PBR Textures";
+		if (!System.IO.Directory.Exists(DefaultImagePath))
 		{
-			Debug.LogWarning("Default Java directory does not exist: " + DefaultJavaPath);
-			DefaultJavaPath = "";
+			Debug.LogWarning("Default Image directory does not exist: " + DefaultImagePath);
+			DefaultImagePath = "";
 		}
 	}
 
