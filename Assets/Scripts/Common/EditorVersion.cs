@@ -6,7 +6,7 @@ using System;
 
 public class EditorVersion : MonoBehaviour
 {
-	private const string EditorBuildVersion = "v1.1.1";
+	private const string EditorBuildVersion = "v1.2";
 	private const string EditorPrereleaseTag = "";  // add rcX here for release candidates
 	private static string FoundUrl;
 	public bool SearchForNew = true;
