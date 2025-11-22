@@ -695,7 +695,7 @@ namespace EditMap
 					{
 						reader.Dispose();
 						file.Dispose();
-						GenericPopup.ShowPopup(GenericPopup.PopupTypes.Error, "Error", "Selected heightmap is in wrong size.\nIs: " + FileLength + "B, should be: " + CheckValue + "B", "OK", null);
+						GenericPopup.ShowPopup(GenericPopup.PopupTypes.Error, "Error", "Selected heightmap has wrong size. Remember that heightmaps need to be map size plus one. E.g. 513px.\nFilesize is: " + FileLength + " Byte, should be: " + CheckValue + " Byte.", "OK", null);
 						return;
 					}
 
