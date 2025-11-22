@@ -17,7 +17,6 @@ namespace UI.Windows.Neroxis
 
         private ConcurrentQueue<string> logQueue = new();
         private StringBuilder sb = new();
-        private Process neroxisToolsuite;
 
         public async Task<int> invokeToolsuite(string arguments)
         {
@@ -28,7 +27,7 @@ namespace UI.Windows.Neroxis
             // Give Unity time to render ui
             await Task.Yield();
             
-            neroxisToolsuite = new Process();
+            Process neroxisToolsuite = new Process();
             neroxisToolsuite.StartInfo.FileName = MapLuaParser.StructurePath + "Neroxis/neroxis-toolsuite.exe";
             neroxisToolsuite.StartInfo.Arguments = arguments;
             logQueue.Enqueue("Starting Neroxis Toolsuite: " + neroxisToolsuite.StartInfo.FileName + " " + neroxisToolsuite.StartInfo.Arguments);
@@ -39,16 +38,11 @@ namespace UI.Windows.Neroxis
             neroxisToolsuite.StartInfo.RedirectStandardError = true;
             neroxisToolsuite.OutputDataReceived += (sender, args) => 
             {
-                Debug.Log(args.Data);
-                // Swallow messages related to java class data sharing
-                if (!args.Data.Contains("[cds]"))
-                    logQueue.Enqueue(args.Data);
+                writeLog(args.Data);
             };
             neroxisToolsuite.ErrorDataReceived += (sender, args) =>
             {
-                Debug.Log(args.Data);
-                if (!args.Data.Contains("[cds]"))
-                    logQueue.Enqueue(args.Data);
+                writeLog(args.Data);
             };
 
             neroxisToolsuite.Start();
@@ -63,6 +57,16 @@ namespace UI.Windows.Neroxis
             Invoke(nameof(HideWindow), 1);
             if (exitCode != 0) GenericInfoPopup.ShowInfo("Command failed! Check the log for more information.");
             return exitCode;
+        }
+        
+        private void writeLog(string data)
+        {
+            if (string.IsNullOrEmpty(data)) 
+                return;
+            Debug.Log(data);
+            // Swallow messages related to java class data sharing
+            if (!data.Contains("[cds]"))
+                logQueue.Enqueue(data);
         }
         
         private void HideWindow()
