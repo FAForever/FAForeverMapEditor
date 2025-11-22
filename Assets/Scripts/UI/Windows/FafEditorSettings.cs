@@ -19,7 +19,6 @@ public class FafEditorSettings : MonoBehaviour
 	public Dropdown PlayAs;
 	public Toggle FogOfWar;
 	public Toggle Markers2D;
-	public Toggle HeightmapClamp;
 
 	public UiTextField UiScale;
 
@@ -36,7 +35,6 @@ public class FafEditorSettings : MonoBehaviour
 		PlayAs.value = GetFaction();
 		FogOfWar.isOn = GetFogOfWar();
 		Markers2D.isOn = GetMarkers2D();
-		HeightmapClamp.isOn = GetHeightmapClamp();
 
 		UiScale.SetValue(GetUiScale());
 		UiScaler.UpdateUiScale();
@@ -108,12 +106,6 @@ public class FafEditorSettings : MonoBehaviour
 				Markers.MarkersControler.ForceResetMarkers2D();
 			}
 			PlayerPrefs.SetInt("Markers_2D", Markers2D.isOn ? 1 : 0);
-		}
-
-		if (GetHeightmapClamp() != HeightmapClamp.isOn)
-		{
-
-			PlayerPrefs.SetInt("Heightmap_Clamp", HeightmapClamp.isOn ? 1 : 0);
 		}
 
 		PlayerPrefs.SetFloat("UiScale", UiScale.value);
@@ -205,21 +197,6 @@ public class FafEditorSettings : MonoBehaviour
 	public static bool GetMarkers2D()
 	{
 		return PlayerPrefs.GetInt("Markers_2D", 0) == 1;
-	}
-
-	static bool _heightmapClamp;
-	public static bool IsHeightmapClamp
-	{
-		get
-		{
-			return _heightmapClamp;
-		}
-	}
-
-	public static bool GetHeightmapClamp()
-	{
-		_heightmapClamp = PlayerPrefs.GetInt("Heightmap_Clamp", 1) > 0;
-		return _heightmapClamp;
 	}
 
 	public static float GetUiScale()
