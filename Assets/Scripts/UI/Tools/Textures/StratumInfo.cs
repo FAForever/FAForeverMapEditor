@@ -1,13 +1,11 @@
-﻿using System.Collections.Concurrent;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.UI;
 using System.Collections.Generic;
-using System.Diagnostics;
 using Ozone.UI;
 using System.IO;
-using B83.Image.BMP;
 using SFB;
 using FAF.MapEditor;
+using UI.Windows.Neroxis;
 using UnityEngine.Serialization;
 using Debug = UnityEngine.Debug;
 using Image = UnityEngine.UI.Image;
@@ -73,8 +71,7 @@ namespace EditMap
 		public UiTextField Blurriness;
 		public CanvasGroup ShaderTools;
 		public InputField ImagePathField;
-		public OutputWindow OutputWindow;
-		private ConcurrentQueue<string> outputQueue = new ();
+		public NeroxisProcessRunner neroxisRunner;
 
 		[Header("State")]
 		public bool Invert;
@@ -175,12 +172,6 @@ namespace EditMap
 		bool ChangingSize;
 		void Update()
 		{
-			// Process queued messages from Java CLI output
-			if (outputQueue.TryDequeue(out string output))
-			{
-				OutputWindow.WriteOutput(output);
-			}
-			
 			if (StratumChangeCheck)
 				if (Input.GetMouseButtonUp(0))
 					StratumChangeCheck = false;
@@ -1118,36 +1109,10 @@ namespace EditMap
 	        }
         }
 
-        private int invokeToolsuite(string arguments)
-        {
-	        OutputWindow.Initialize();
-	        Process neroxisToolsuite = new Process();
-            neroxisToolsuite.StartInfo.FileName = MapLuaParser.StructurePath + "Neroxis/neroxis-toolsuite.exe";
-            neroxisToolsuite.StartInfo.Arguments = arguments;
-            outputQueue.Enqueue("Starting Neroxis Toolsuite: " + neroxisToolsuite.StartInfo.FileName + " " + neroxisToolsuite.StartInfo.Arguments);
-            
-            neroxisToolsuite.StartInfo.CreateNoWindow = true;
-            neroxisToolsuite.StartInfo.UseShellExecute = false;
-            neroxisToolsuite.StartInfo.RedirectStandardOutput = true;
-            neroxisToolsuite.StartInfo.RedirectStandardError = true;
-            neroxisToolsuite.OutputDataReceived += (sender, args) => outputQueue.Enqueue(args.Data);
-            neroxisToolsuite.ErrorDataReceived += (sender, args) => outputQueue.Enqueue(args.Data);
-
-            neroxisToolsuite.Start();
-            neroxisToolsuite.BeginOutputReadLine();
-            neroxisToolsuite.BeginErrorReadLine();
-            neroxisToolsuite.WaitForExit();
-            
-            outputQueue.Enqueue("Process exited with code: " + neroxisToolsuite.ExitCode);
-            OutputWindow.Close();
-            if (neroxisToolsuite.ExitCode != 0) GenericInfoPopup.ShowInfo("Command failed! Check the log for more information.");
-            return neroxisToolsuite.ExitCode;
-        }
-
-        public void GenerateMapInfoTexture()
+        public async void GenerateMapInfoTexture()
         {
 	        string toolsuiteArguments = "export-map-info --map-path=\"" + MapLuaParser.LoadedMapFolderPath + "\"";
-	        int exitcode = invokeToolsuite(toolsuiteArguments);
+	        int exitcode = await neroxisRunner.invokeToolsuite(toolsuiteArguments);
 	        if (exitcode != 0) return;
 	        
 	        Undo.RegisterUndo(new UndoHistory.HistoryStratumChange(), new UndoHistory.HistoryStratumChange.StratumChangeHistoryParameter(9));
@@ -1161,10 +1126,10 @@ namespace EditMap
             SelectStratum(8);
         }
         
-        public void GenerateMapNormalTexture()
+        public async void GenerateMapNormalTexture()
         {
 	        string toolsuiteArguments = "export-map-normals --map-path=\"" + MapLuaParser.LoadedMapFolderPath + "\"";
-	        int exitcode = invokeToolsuite(toolsuiteArguments);
+	        int exitcode = await neroxisRunner.invokeToolsuite(toolsuiteArguments);
 	        if (exitcode != 0) return;
 	        
 	        Undo.RegisterUndo(new UndoHistory.HistoryStratumChange(), new UndoHistory.HistoryStratumChange.StratumChangeHistoryParameter(9));
@@ -1178,7 +1143,7 @@ namespace EditMap
 	        SelectStratum(8);
         }
         
-        public void GenerateHeightRoughnessTexture()
+        public async void GenerateHeightRoughnessTexture()
         {
 	        if (ImagePathField.text == "")
 	        {
@@ -1186,8 +1151,8 @@ namespace EditMap
 		        return;
 	        }
 	        string toolsuiteArguments = "generate-pbr --in-path=\"" + ImagePathField.text + "\"" +
-	                                    " --out-path=\"" + MapLuaParser.LoadedMapFolderPath + "/env/layers/\"";
-	        int exitcode = invokeToolsuite(toolsuiteArguments);
+	                                    " --out-path=\"" + MapLuaParser.LoadedMapFolderPath + "env/layers/\"";
+	        int exitcode = await neroxisRunner.invokeToolsuite(toolsuiteArguments);
 	        if (exitcode != 0) return;
 	        
 	        Undo.RegisterUndo(new UndoHistory.HistoryStratumChange(), new UndoHistory.HistoryStratumChange.StratumChangeHistoryParameter(9));
