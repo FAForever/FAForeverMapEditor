@@ -112,7 +112,7 @@ namespace EditMap
 		}
 
 
-		#region Load all brushesh
+		#region Load all brushes
 		bool BrusheshLoaded = false;
 		string StructurePath;
 		public void LoadBrushes()
@@ -285,7 +285,6 @@ namespace EditMap
 							GenerateControlTex.StopGenerateNormal();
 							ScmapEditor.Current.TerrainMaterial.SetInteger("_GeneratingNormal", 1);
 							PaintStarted = true;
-							RecalcTerrainClamp();
 							SymmetryPaint();
 						}
 					}
@@ -296,7 +295,6 @@ namespace EditMap
 							if (UpdateBrushPosition(false))
 							{
 							}
-							RecalcTerrainClamp();
 							SymmetryPaint();
 						}
 					}
@@ -386,12 +384,8 @@ namespace EditMap
 
 			BrushGenerator.RegeneratePaintBrushIfNeeded();
 		}
-		public float Min = 0;
-		public float Max = 512;
-
-		public float HeightmapMin = 0;
-		public float HeightmapMax = 512;
-		public float HeightmapDistance = 50;
+		public float NormalizedMin = 0;
+		public float NormalizedMax = 1;
 
 		int LastRotation = 0;
 		public void UpdateMenu(bool Slider = false)
@@ -400,20 +394,9 @@ namespace EditMap
 			{
 
 			}
-			else
-			{
 
-			}
-
-
-
-			Min = BrushMini.value / ScmapEditor.Current.Data.size.y;
-			Max = BrushMax.value / ScmapEditor.Current.Data.size.y;
-
-			Min /= 10f;
-			Max /= 10f;
-
-			RecalcTerrainClamp();
+			NormalizedMin = BrushMini.value / ScmapEditor.Current.Data.size.y / 10f;
+			NormalizedMax = BrushMax.value / ScmapEditor.Current.Data.size.y / 10f;
 
 			if (LastRotation != BrushRotation.intValue)
 			{
@@ -716,35 +699,8 @@ namespace EditMap
 			OnTerrainChanged();
 			EnvPaths.SetLastPath(ExportPathKey, Path.GetDirectoryName(paths[0]));
 			GenericInfoPopup.ShowInfo("Heightmap import success!\n" + Path.GetFileName(paths[0]));
-
-
-			if (ScmapEditor.IsOverMinMaxDistance())
-			{
-				GenericPopup.ShowPopup(GenericPopup.PopupTypes.TriButton, "Importing heightmap", "Distance between lowest and highest point is higher than 50.\nClamp it?", "Clamp Top", ClampTop, "Clamp Bottom", ClampBottom, "Ignore", null);
-			}
-
 		}
 		#endregion
-
-		void ClampTop()
-		{
-			//RecalcTerrainClamp();
-
-			ScmapEditor.ClampTop((ScmapEditor.Current.Data.bounds.min.y + 5) / ScmapEditor.Current.Data.size.y);
-
-			RegenerateMaps();
-			OnTerrainChanged();
-		}
-
-		void ClampBottom()
-		{
-			//RecalcTerrainClamp();
-
-			ScmapEditor.ClampBottom((ScmapEditor.Current.Data.bounds.max.y - 5) / ScmapEditor.Current.Data.size.y);
-
-			RegenerateMaps();
-			OnTerrainChanged();
-		}
 
 		public void RegenerateMaps()
 		{
@@ -842,24 +798,6 @@ namespace EditMap
 			{
 				return _Painting;
 			}
-		}
-
-		void RecalcTerrainClamp()
-		{
-			FafEditorSettings.GetHeightmapClamp();
-
-			float bmin = ScmapEditor.Current.Data.bounds.min.y;
-			float bmax = ScmapEditor.Current.Data.bounds.max.y;
-
-			HeightmapMin = (bmax - 5f) / ScmapEditor.Current.Data.size.y;
-			HeightmapMax = (bmin + 5f) / ScmapEditor.Current.Data.size.y;
-
-			if (HeightmapMin < 0f)
-				HeightmapMin = 0f;
-			if (HeightmapMax > 1f)
-				HeightmapMax = 1f;
-
-			//Debug.Log(bmin + " > " + bmax);
 		}
 
 		void SymmetryPaint()
@@ -986,7 +924,7 @@ namespace EditMap
 			}
 
 
-			float TargetHeight = Mathf.Clamp(((Invert ? (256) : (BrushTarget.value)) / ScmapEditor.Current.Data.size.y) / 10f, Min, Max);
+			float TargetHeight = Mathf.Clamp((Invert ? 256 : BrushTarget.value) / ScmapEditor.Current.Data.size.y / 10f, NormalizedMin, NormalizedMax);
 
 			float BrushStrenghtValue = BrushStrength.value;
 			//float PaintStrength = BrushStrenghtValue * 0.00005f * (Invert ? (-1) : 1);
@@ -1044,10 +982,10 @@ namespace EditMap
 							case 3: // Sharp
 								PixelPower = Mathf.Pow(Mathf.Abs(ScmapEditor.ReturnValues[i, j] - CenterHeight), 0.454545f) + 1;
 								PixelPower /= 2f;
-								ScmapEditor.ReturnValues[i, j] = MoveToValue(ScmapEditor.ReturnValues[i, j], CenterHeight, -StrengthMultiplier * SampleBrush * PixelPower, Min, Max);
+								ScmapEditor.ReturnValues[i, j] = MoveToValue(ScmapEditor.ReturnValues[i, j], CenterHeight, -StrengthMultiplier * SampleBrush * PixelPower, NormalizedMin, NormalizedMax);
 								break;
 							default:
-								ScmapEditor.ReturnValues[i, j] = MoveToValue(ScmapEditor.ReturnValues[i, j], TargetHeight, SampleBrush * StrengthMultiplier, Min, Max);
+								ScmapEditor.ReturnValues[i, j] = MoveToValue(ScmapEditor.ReturnValues[i, j], TargetHeight, SampleBrush * StrengthMultiplier, NormalizedMin, NormalizedMax);
 								break;
 						}
 
@@ -1086,34 +1024,10 @@ namespace EditMap
 
 			if (current > target)
 			{
-				if (FafEditorSettings.IsHeightmapClamp)
-				{
-					if (speed > 0)
-					{
-						target = Mathf.Max(target, HeightmapMin);
-					}
-					else
-					{
-						max = Mathf.Min(max, HeightmapMax);
-					}
-				}
-
 				return Mathf.Clamp(current - speed, target, max);
 			}
 			else
 			{
-				if (FafEditorSettings.IsHeightmapClamp)
-				{
-					if (speed > 0)
-					{
-						target = Mathf.Min(target, HeightmapMax);
-					}
-					else
-					{
-						min = Mathf.Max(min, HeightmapMin);
-					}
-				}
-
 				return Mathf.Clamp(current + speed, min, target);
 			}
 		}

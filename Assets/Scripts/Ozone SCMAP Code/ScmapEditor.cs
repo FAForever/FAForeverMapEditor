@@ -691,16 +691,6 @@ public partial class ScmapEditor : MonoBehaviour
 		HighestElevation = (HighestElevation * TerrainHeight) / 0.1f;
 
 
-		if (HighestElevation - LowestElevation > 49.9)
-		{
-			Debug.Log("Lowest point: " + LowestElevation);
-			Debug.Log("Highest point: " + HighestElevation);
-
-			Debug.LogWarning("Height difference is too high! it might couse rendering issues! Height difference is: " + (HighestElevation - LowestElevation));
-			GenericInfoPopup.ShowInfo("Height difference " + (HighestElevation - LowestElevation) + " is too high!\nIt might cause rendering issues!");
-		}
-
-
 		if (MapLuaParser.Current.EditMenu.MapInfoMenu.SaveAsFa.isOn)
 		{
 			if(map.AdditionalSkyboxData == null || map.AdditionalSkyboxData.Data == null || map.AdditionalSkyboxData.Data.Position.x == 0)
