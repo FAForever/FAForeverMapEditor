@@ -208,30 +208,27 @@ public partial class AppMenu : MonoBehaviour
 				{
 					string Arguments = "";
 					Arguments += "/map \"" + "/maps/" + MapLuaParser.Current.FolderName + "/" + MapLuaParser.Current.ScenarioFileName + ".lua" + "\"";
-					//Arguments += "/map \"" + MapLuaParser.LoadedMapFolderPath + MapLuaParser.Current.ScenarioFileName + ".lua" + "\"";
-					Arguments += " /faction " + (FafEditorSettings.GetFaction() + 1).ToString();
+					Arguments += " /faction " + (FafEditorSettings.GetFaction() + 1);
 					Arguments += " /victory sandbox";
-					Arguments += " /gamespeed adjustable";
-					Arguments += " /civilians";
 					Arguments += " /enablediskwatch";
-					//Arguments += " / predeployed/";
+					Arguments += " /noAi";
 
 					if (!FafEditorSettings.GetFogOfWar())
 						Arguments += " /nofog";
 
-					string GamePath = EnvPaths.GetInstallationPath() + "bin/SupremeCommander.exe";
+					string GamePath = EnvPaths.GetFafDataPath() + "bin/ForgedAlliance.exe";
 
-					if (!System.IO.File.Exists(GamePath))
+					if (!File.Exists(GamePath))
 					{
-						string OtherPath = EnvPaths.GetInstallationPath() + "bin/ForgedAlliance.exe";
-						if (System.IO.File.Exists(OtherPath))
+						Debug.Log("Game executable does not exist at given path: " + GamePath + " Trying base game path.");
+						string OtherPath = EnvPaths.GetInstallationPath() + "bin/SupremeCommander.exe";
+						if (File.Exists(OtherPath))
 						{
 							GamePath = OtherPath;
 						}
 						else
 						{
-
-							Debug.LogWarning("Game executable not exist at given path: " + EnvPaths.GetInstallationPath() + "bin/");
+							Debug.LogWarning("Game executable does not exist at given path: " + GamePath +  "Aborting.");
 							return;
 						}
 					}
