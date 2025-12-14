@@ -78,7 +78,7 @@ Shader "Custom/PropShader" {
 
 			UNITY_BRANCH
 			if(_GlowAlpha > 0){
-				o.Emission = c.rgb * c.a;
+				o.Emission = 0;
 			}
 			else{
 				clip(c.a * 2 - _Clip);
