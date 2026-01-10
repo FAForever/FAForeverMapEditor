@@ -281,7 +281,7 @@ namespace EditMap
 					{
 						if (UpdateBrushPosition(true))
 						{
-							ScmapEditor.Current.Teren.heightmapPixelError = 20;
+							ScmapEditor.Current.Teren.heightmapPixelError = 8;
 							GenerateControlTex.StopGenerateNormal();
 							ScmapEditor.Current.TerrainMaterial.SetInteger("_GeneratingNormal", 1);
 							PaintStarted = true;
@@ -377,7 +377,7 @@ namespace EditMap
 				}
 
 				PaintStarted = false;
-				ScmapEditor.Current.Teren.heightmapPixelError = 4;
+				ScmapEditor.Current.Teren.heightmapPixelError = 2;
 			}
 
 
