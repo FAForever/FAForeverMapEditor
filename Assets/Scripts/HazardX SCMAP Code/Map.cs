@@ -359,9 +359,9 @@ public class Map
 
 			// 9
 			NewLayer = new Layer();
-			NewLayer.PathTexture = "env/evergreen/layers/macrotexture000_albedo.dds";
+			NewLayer.PathTexture = "env/lava/layers/macrotexture000_albedo.dds";
 			NewLayer.PathNormalmap = "";
-			NewLayer.ScaleTexture = 128;
+			NewLayer.ScaleTexture = 180;
 			NewLayer.ScaleNormalmap = 1;
 			Layers.Add(NewLayer);
 		}
