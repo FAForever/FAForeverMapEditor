@@ -262,10 +262,10 @@ public class Map
 		Bloom = 0.03f;
 
 		TerrainShader = "TTerrainXP";
-		LightingMultiplier = 1.6f;
-		SunDirection = new Vector3(0.616f, 0.559f, 0.55473f).normalized;
-		SunAmbience = new Vector3(0.54f, 0.54f, 0.7f);
-		SunColor = new Vector3(1.38f, 1.29f, 1.14f);
+		LightingMultiplier = 1.3f;
+		SunDirection = new Vector3(-0.616f, 0.559f, -0.554f).normalized;
+		SunAmbience = new Vector3(0.41f, 0.44f, 0.55f);
+		SunColor = new Vector3(0.95f, 0.84f, 0.76f);
 		ShadowFillColor = Vector3.zero;
 		SpecularColor = new Vector4(0.1f, 0.1f, 0.1f, 0.1f);
 
