@@ -18,7 +18,8 @@ struct CustomSurfaceOutput
     // this only exists to make the surface shader compile and is unused
     float3 Normal;
 };
-			
+
+// Used by props
 inline float4 LightingSimpleLambertLight(CustomSurfaceOutput s, UnityLight l)
 {
     float4 c;
