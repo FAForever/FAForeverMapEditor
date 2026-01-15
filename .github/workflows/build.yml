@@ -59,6 +59,7 @@ jobs:
           
       - name: Get short commit sha
         id: vars
+        shell: bash
         run: echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
 
       - name: Upload Build
