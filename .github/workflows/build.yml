@@ -4,6 +4,9 @@ name: Build editor
 # - https://game.ci/
 
 on:
+  push:
+  pull_request:
+    branches: [ develop ]
   release:
     types: [published]
   workflow_dispatch:
@@ -57,7 +60,7 @@ jobs:
       - name: Upload Build
         uses: actions/upload-artifact@v4
         with:
-          name: FAForever Map Editor ${{ steps.buildStep.outputs.buildVersion }} Windows
+          name: FAForever Map Editor ${{ steps.buildStep.outputs.buildVersion || github.sha.substring(0, 7) }} Windows
           path: build/StandaloneWindows64
 
       - name: Add Build to Release
