@@ -56,11 +56,15 @@ jobs:
         shell: bash
         run: |
           mv ./Structure build/StandaloneWindows64/FAForeverMapEditor_Data/
+          
+      - name: Get short commit sha
+        id: vars
+        run: echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
 
       - name: Upload Build
         uses: actions/upload-artifact@v4
         with:
-          name: FAForever Map Editor ${{ steps.buildStep.outputs.buildVersion || github.sha.substring(0, 7) }} Windows
+          name: FAForever Map Editor ${{ steps.buildStep.outputs.buildVersion || steps.vars.outputs.sha_short }} Windows
           path: build/StandaloneWindows64
 
       - name: Add Build to Release

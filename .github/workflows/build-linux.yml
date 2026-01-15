@@ -57,10 +57,14 @@ jobs:
           sudo chown -R $(whoami) build/StandaloneLinux64/FAForeverMapEditor_Data
           mv ./Structure build/StandaloneLinux64/FAForeverMapEditor_Data/
 
+      - name: Get short commit sha
+        id: vars
+        run: echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+
       - name: Upload Build
         uses: actions/upload-artifact@v4
         with:
-          name: FAForever Map Editor ${{ steps.buildStep.outputs.buildVersion || github.sha.substring(0, 7) }} Linux
+          name: FAForever Map Editor ${{ steps.buildStep.outputs.buildVersion || steps.vars.outputs.sha_short }} Linux
           path: build/StandaloneLinux64
           
       - name: Add Build to Release
