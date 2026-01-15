@@ -6,7 +6,7 @@ name: Build editor
 on:
   push:
   pull_request:
-    branches: [ develop ]
+    branches: [ master ]
   release:
     types: [published]
   workflow_dispatch:
