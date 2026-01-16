@@ -74,7 +74,7 @@
 	    _BrushUvX ("Brush X", Range (0, 1)) = 0
 	    _BrushUvY ("Brush Y", Range (0, 1)) = 0
 
-        // Is this still needed?
+        // We need the precalculated normals to hide the low resolution terrain LODs when zooming out
         [MaterialToggle] _GeneratingNormal("Generating Normal", Integer) = 0
 	    _TerrainNormal ("Terrain Normal", 2D) = "bump" {}
 
@@ -106,6 +106,7 @@
 			half _GridCamDist;
 			sampler2D _GridTexture;
 
+			half _GeneratingNormal;
 			sampler2D _TerrainNormal;
 			sampler2D _TerrainTypeAlbedo;
 
@@ -203,9 +204,17 @@
 
             float3 TangentToWorldSpace(Input v, float3 tnormal) {
                 float3 worldNormal;
-                if (Stratum7NormalTile < 1.0 && _HideStratum7 == 0) {
+                if ((Stratum7NormalTile < 1.0 && _HideStratum7 == 0) || _GeneratingNormal == 0)
+                {
+                    half4 TerrainNormal;
+                    float2 uv = TerrainScale * v.mTexWT;
+                    if (Stratum7NormalTile < 1.0 && _HideStratum7 == 0)
+                        TerrainNormal = tex2D(Stratum7NormalSampler, uv);
+                    else if(_GeneratingNormal == 0)
+                        TerrainNormal = tex2D(_TerrainNormal, uv);
+
                     float3 normal;
-                    normal.xz = tex2D(Stratum7NormalSampler, TerrainScale * v.mTexWT.xy).ag * 2 - 1;
+                    normal.xz = TerrainNormal.ag * 2 - 1;
                     normal.z = normal.z * -1;
                     // reconstruct y component
                     normal.y = sqrt(abs(1 - dot(normal.xz, normal.xz)));
