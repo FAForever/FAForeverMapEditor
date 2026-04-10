@@ -811,12 +811,10 @@
                 float3 stratum6Normal = normalize(StratumNormalSampler(6, rotated_pos * Stratum6AlbedoTile.xx).rgb * 2 - 1);
 
                 // We need to rotate the normal vectors back.
-                // I thought we would have to flip the multiplication order,
-                // compared to the uv rotation, but empirically this is correct.
-                stratum0Normal.xy = mul(stratum0Normal.xy, rotationMatrix);
-                stratum2Normal.xy = mul(stratum2Normal.xy, rotationMatrix);
-                stratum4Normal.xy = mul(stratum4Normal.xy, rotationMatrix);
-                stratum6Normal.xy = mul(stratum6Normal.xy, rotationMatrix);
+			    stratum0Normal.xy = mul(rotationMatrix, stratum0Normal.xy);
+			    stratum2Normal.xy = mul(rotationMatrix, stratum2Normal.xy);
+			    stratum4Normal.xy = mul(rotationMatrix, stratum4Normal.xy);
+			    stratum6Normal.xy = mul(rotationMatrix, stratum6Normal.xy);
                 
                 float stratum0Height = sampleHeight(rotated_pos, Stratum0AlbedoTile.xx, Stratum0NormalTile.xx, float2(0.5, 0.0), true);
                 float stratum1Height = sampleHeight(position.xy, Stratum1AlbedoTile.xx, Stratum1NormalTile.xx, float2(0.0, 0.5), true);
@@ -927,10 +925,10 @@
                 float3 stratum5Normal = normalize(StratumNormalSampler(5, position.xy * Stratum5AlbedoTile.xx).rgb * 2 - 1);
                 float3 stratum6Normal = normalize(StratumNormalSampler(6, rotated_pos * Stratum6AlbedoTile.xx).rgb * 2 - 1);
 
-                // we need to rotate the normal vectors back
-                stratum0Normal.xy = mul(stratum0Normal.xy, rotationMatrix);
-                stratum4Normal.xy = mul(stratum4Normal.xy, rotationMatrix);
-                stratum6Normal.xy = mul(stratum6Normal.xy, rotationMatrix);
+                // We need to rotate the normal vectors back.
+			    stratum0Normal.xy = mul(rotationMatrix, stratum0Normal.xy);
+			    stratum4Normal.xy = mul(rotationMatrix, stratum4Normal.xy);
+			    stratum6Normal.xy = mul(rotationMatrix, stratum6Normal.xy);
                 
                 float stratum0Height = sampleHeight(rotated_pos, Stratum0AlbedoTile.xx, Stratum0NormalTile.xx, float2(0.5, 0.0), true);
                 float stratum1Height = sampleHeight(position.xy, Stratum1AlbedoTile.xx, Stratum1NormalTile.xx, float2(0.0, 0.5), true);
