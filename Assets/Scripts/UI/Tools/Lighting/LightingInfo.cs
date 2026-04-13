@@ -280,9 +280,9 @@ namespace EditMap
 
 			RA.SetValue(312);
 			DA.SetValue(34);
-			LightMultipiler.SetValue(1.6f);
-			LightColor.SetColorField(new Color(1.38f, 1.29f, 1.14f, 1));
-			AmbienceColor.SetColorField(new Color(0.54f, 0.54f, 0.7f));
+			LightMultipiler.SetValue(1.3f);
+			LightColor.SetColorField(new Color(0.95f, 0.84f, 0.76f, 1));
+			AmbienceColor.SetColorField(new Color(0.41f, 0.44f, 0.55f));
 			ShadowColor.SetColorField(Color.black);
 
 			UpdateMenu();
