@@ -70,7 +70,7 @@ public partial struct GetGamedataFile
 
 		string[] allPaths = EnvPaths.LoadGamedataPaths;
 
-		for(int i = 0; i < allPaths.Length; i++)
+		for (int i = 0; i < allPaths.Length; i++)
 		{
 			string path = allPaths[i];
 			if (!Directory.Exists(path))
@@ -80,47 +80,57 @@ public partial struct GetGamedataFile
 			}
 			var files = Directory.GetFiles(path, "*.*", SearchOption.AllDirectories).Where(s => s.EndsWith(".scd") || s.EndsWith(".nx2"));
 
-			foreach(string filePath in files)
+			foreach (string filePath in files)
 			{
 				bool isNx2 = filePath.EndsWith(".nx2");
 
 
-				FileStream fs = File.OpenRead(filePath);
-				ZipFile zipFile = new ZipFile(fs);
-				int addedFiles = 0;
-				foreach(ZipEntry ze in zipFile)
+				try
 				{
-					if (!ze.IsFile)
-						continue;
+					FileStream fs = File.OpenRead(filePath);
+					ZipFile zipFile = new ZipFile(fs);
+					int addedFiles = 0;
+					foreach (ZipEntry ze in zipFile)
+					{
+						if (!ze.IsFile)
+							continue;
 
-					//string entryPath = ze.Name.ToLower().Replace("\\", "/");
-					string entryPath = ze.Name.ToLower().Replace("\\", "/");
+						//string entryPath = ze.Name.ToLower().Replace("\\", "/");
+						string entryPath = ze.Name.ToLower().Replace("\\", "/");
 
-					if (entryPath.StartsWith("env/") || entryPath.StartsWith("textures/") || entryPath.StartsWith("units/"))
-					{ // Ignore other paths because they will never be used
+						if (entryPath.StartsWith("env/") || entryPath.StartsWith("textures/") || entryPath.StartsWith("units/"))
+						{ // Ignore other paths because they will never be used
 
-						if (gamedata.ContainsKey(entryPath))
-						{
-							gamedata[entryPath] = new GamedataZipEntry(zipFile, ze);
-							addedFiles++;
+							if (gamedata.ContainsKey(entryPath))
+							{
+								gamedata[entryPath] = new GamedataZipEntry(zipFile, ze);
+								addedFiles++;
+							}
+							else
+							{
+								gamedata.Add(entryPath, new GamedataZipEntry(zipFile, ze));
+								addedFiles++;
+								//Debug.Log(ze.Name);
+							}
+
 						}
-						else
-						{
-							gamedata.Add(entryPath, new GamedataZipEntry(zipFile, ze));
-							addedFiles++;
-							//Debug.Log(ze.Name);
-						}
-
+					}
+					if (addedFiles > 0)
+					{
+						//	Debug.Log("Load SCD: " + filePath + ", added subfiles: " + addedFiles);
+					}
+					else
+					{
+						zipFile.Close();
 					}
 				}
-				if (addedFiles > 0)
+				catch (System.Exception e)
 				{
-				//	Debug.Log("Load SCD: " + filePath + ", added subfiles: " + addedFiles);
+					Debug.LogError("Error loading file: " + filePath + "\n" + e);
+					GenericInfoPopup.ShowInfo("Can't load file: " + filePath + " not found in gamedata!");
+					continue;
 				}
-				else
-				{
-					zipFile.Close();
-				}
+
 
 			}
 		}
@@ -218,7 +228,7 @@ public partial struct GetGamedataFile
 	{
 		if (IsMapPath(LocalPath))
 		{
-			return LoadMapBytes(LocalPath); 
+			return LoadMapBytes(LocalPath);
 		}
 
 		if (string.IsNullOrEmpty(LocalPath)) return null;
@@ -325,7 +335,7 @@ public partial struct GetGamedataFile
 			SplitedName[1] = MapLuaParser.Current.FolderName;
 
 
-			for(int i = 0; i < SplitedName.Length; i++)
+			for (int i = 0; i < SplitedName.Length; i++)
 			{
 				if (i > 0)
 					NewPath += "/";
@@ -336,7 +346,7 @@ public partial struct GetGamedataFile
 		{
 			Debug.LogError(e);
 		}
-		return (StartChar?"/":"") +  NewPath;
+		return (StartChar ? "/" : "") + NewPath;
 	}
 
 	public static string FixMapsPath(string BlueprintPath)
@@ -345,9 +355,9 @@ public partial struct GetGamedataFile
 		{
 			//Debug.Log(MapLuaParser.Current.FolderName);
 			if (!BlueprintPath.StartsWith("/maps/" + MapLuaParser.Current.FolderName) && !BlueprintPath.StartsWith("maps/" + MapLuaParser.Current.FolderName))
-			{ 
-			//if (!System.IO.File.Exists(GetGamedataFile.MapAssetSystemPath(BlueprintPath)))
-			//{
+			{
+				//if (!System.IO.File.Exists(GetGamedataFile.MapAssetSystemPath(BlueprintPath)))
+				//{
 				string NewBlueprintPath = TryRecoverMapAsset(BlueprintPath);
 				Debug.Log("Before: " + BlueprintPath + ", after: " + NewBlueprintPath);
 
