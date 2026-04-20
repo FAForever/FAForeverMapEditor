@@ -30,6 +30,7 @@ public partial class AppMenu : MonoBehaviour
 	public Toggle RoughnessToggle;
 	public Toggle AOToggle;
 	public Toggle MaskToggle;
+	public Toggle FogOfWarToggle;
 
 	//Local
 	bool MenuOpen = false;
@@ -184,6 +185,9 @@ public partial class AppMenu : MonoBehaviour
 				break;
 			case "ShowMask":
 				ScmapEditor.Current.ToggleMaskView(MaskToggle.isOn);
+				break;
+			case "ShowFogOfWar":
+				ScmapEditor.Current.ToggleFogOfWarView(FogOfWarToggle.isOn);
 				break;
 			case "Discord":
 				Application.OpenURL("https://discord.gg/mXahVSKGVb");
