@@ -65,27 +65,27 @@ public partial class CameraControler : MonoBehaviour {
 		UpdateRect(NoRect);
 	}
 
-public void UpdateRect(bool NoRect = false)
-{
-    float RemoveCamPropHeight = 0;
-    float RemoveCamPropWidth = 0;
+	public void UpdateRect(bool NoRect = false)
+	{
+		float RemoveCamPropHeight = 0;
+		float RemoveCamPropWidth = 0;
 
-    if (!NoRect && Screen.height > 0 && Screen.width > 0)
-    {
-        RemoveCamPropHeight = 30f / (float)Screen.height;
-        RemoveCamPropWidth = 309f / (float)Screen.width;
-    }
+		if (!NoRect && Screen.height > 0 && Screen.width > 0)
+		{
+			RemoveCamPropHeight = 30f / (float)Screen.height;
+			RemoveCamPropWidth = 309f / (float)Screen.width;
+		}
 
-    Cam.rect = new Rect(RemoveCamPropWidth, 0, 1 - RemoveCamPropWidth, 1 - RemoveCamPropHeight);
+		Cam.rect = new Rect(RemoveCamPropWidth, 0, 1 - RemoveCamPropWidth, 1 - RemoveCamPropHeight);
 
-    LastWidth = Screen.width;
-    LastHeight = Screen.height;
+		LastWidth = Screen.width;
+		LastHeight = Screen.height;
 
-    for(int i = 0; i < OtherCams.Length; i++)
-    {
-        OtherCams[i].rect = Cam.rect;
-    }
-}
+		for(int i = 0; i < OtherCams.Length; i++)
+		{
+			OtherCams[i].rect = Cam.rect;
+		}
+	}
 
 	int LastWidth = 0;
 	int LastHeight;
@@ -138,17 +138,17 @@ public void UpdateRect(bool NoRect = false)
 		return Current.transform.localPosition.y * 10;
 	}
 
-public IEnumerator RenderCamera(int resWidth, int resHeight, string path){
-    for (int i = 0; i < 5; i++)
-        yield return new WaitForEndOfFrame();
+	public IEnumerator RenderCamera(int resWidth, int resHeight, string path){
+		for (int i = 0; i < 5; i++)
+			yield return new WaitForEndOfFrame();
 
-    Texture2D screenShot = ScmapEditor.Current.PreviewRenderer.RenderPreview(
-        0f, resWidth, resHeight, false, true
-    );
+		Texture2D screenShot = ScmapEditor.Current.PreviewRenderer.RenderPreview(
+			0f, resWidth, resHeight, false, true
+		);
 
-    yield return null;
-    SaveTexture(screenShot, path);
-}
+		yield return null;
+		SaveTexture(screenShot, path);
+	}
 
 	public static void SaveTexture(Texture2D screenShot, string path)
 	{
