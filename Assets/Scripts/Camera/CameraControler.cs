@@ -67,16 +67,14 @@ public partial class CameraControler : MonoBehaviour {
 
 	public void UpdateRect(bool NoRect = false)
 	{
-		float RemoveCamPropHeight = 30f / (float)Screen.height;
-		float RemoveCamPropWidth = 309f / (float)Screen.width;
+		float RemoveCamPropHeight = 0;
+		float RemoveCamPropWidth = 0;
 
-		if (NoRect)
+		if (!NoRect && Screen.height > 0 && Screen.width > 0)
 		{
-			RemoveCamPropHeight = 0;
-			RemoveCamPropWidth = 0;
+			RemoveCamPropHeight = 30f / (float)Screen.height;
+			RemoveCamPropWidth = 309f / (float)Screen.width;
 		}
-
-
 
 		Cam.rect = new Rect(RemoveCamPropWidth, 0, 1 - RemoveCamPropWidth, 1 - RemoveCamPropHeight);
 
@@ -141,35 +139,15 @@ public partial class CameraControler : MonoBehaviour {
 	}
 
 	public IEnumerator RenderCamera(int resWidth, int resHeight, string path){
-		// Set Camera
-		Cam.orthographic = true;
-		Cam.orthographicSize = MapSize * 0.05f;
-		Pivot.localPosition = new Vector3(MapSize * 0.05f, 0, -MapSize * 0.05f);
-		Pivot.rotation = Quaternion.identity;
-		yield return null;
-		// Take Screenshoot
-		RenderTexture rt = new RenderTexture(resWidth, resHeight, 24);
-		Cam.targetTexture = rt;
-		Texture2D screenShot = new Texture2D(resWidth, resHeight, TextureFormat.RGB24, false);
+		for (int i = 0; i < 5; i++)
+			yield return new WaitForEndOfFrame();
 
-		PreviewTex.ForcePreviewMode(true);
-		Cam.rect = new Rect(0, 0, 1, 1);
-		Cam.Render();
-		PreviewTex.ForcePreviewMode(false);
-
-		RenderTexture.active = rt;
-		screenShot.ReadPixels(new Rect(0, 0, resWidth, resHeight), 0, 0);
-		Cam.targetTexture = null;
-		RenderTexture.active = null; // JC: added to avoid errors
-		Destroy(rt);
+		Texture2D screenShot = ScmapEditor.Current.PreviewRenderer.RenderPreview(
+			0f, resWidth, resHeight, false, true
+		);
 
 		yield return null;
-
 		SaveTexture(screenShot, path);
-
-		// Restart Camera
-		Cam.orthographic = false;
-		RestartCam();
 	}
 
 	public static void SaveTexture(Texture2D screenShot, string path)

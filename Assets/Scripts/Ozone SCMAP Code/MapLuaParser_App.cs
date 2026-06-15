@@ -34,9 +34,6 @@ public partial class MapLuaParser : MonoBehaviour
 		}
 	}
 
-
-
-
 	public IEnumerator RenderImageAndClose(bool Props, bool Decals, int Width, int Height, string MapPath, string ImagePath)
 	{
 		var LoadScmapFile = MapLuaParser.Current.StartCoroutine(ForceLoadMapAtPath(MapPath, Props, Decals));
@@ -53,9 +50,12 @@ public partial class MapLuaParser : MonoBehaviour
 		}
 
 		CameraControler.Current.RestartCam(true);
-		yield return null;
-		CameraControler.Current.RenderCamera(Width, Height, ImagePath);
-		//ScmapEditor.Current.PreviewRenderer.RenderPreview()
+yield return new WaitForEndOfFrame();
+yield return new WaitForEndOfFrame();
+yield return new WaitForEndOfFrame();
+
+yield return CameraControler.Current.StartCoroutine(
+    CameraControler.Current.RenderCamera(Width, Height, ImagePath));
 
 
 		if (Decals)
