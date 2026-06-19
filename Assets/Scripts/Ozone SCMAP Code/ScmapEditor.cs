@@ -1062,6 +1062,11 @@ public partial class ScmapEditor : MonoBehaviour
 	{
 		Shader.SetGlobalInt("_ShowMask", on ? 1 : 0);
 	}
+	
+	public void ToggleFogOfWarView(bool on)
+	{
+		Shader.SetGlobalInt("_ShowFogOfWar", on ? 1 : 0);
+	}
 
 	public void ToogleSlope(bool To)
 	{
