@@ -338,6 +338,11 @@ public class UnitSource : MonoBehaviour
 	{
 		RenderAdaptiveMarkers.DrawGUIStatic();
 
+		if (Event.current.type != EventType.Repaint)
+		{
+			return;
+		}
+
 		if (BP.Footprint.x == 0 && BP.Footprint.y == 0)
 			return;
 
@@ -350,7 +355,7 @@ public class UnitSource : MonoBehaviour
 		Camera MainCam = CameraControler.Current.Cam;
 		Rect CamRect = MainCam.pixelRect;
 		Rect UiRect = new Rect(CamRect.x, CamRect.y + (Screen.height - CamRect.height), CamRect.width, CamRect.height);
-		GUI.BeginScrollView(UiRect, Vector2.zero, new Rect(0, (Screen.height - CamRect.height), CamRect.width, CamRect.height), false, false);
+		GUI.BeginGroup(UiRect);
 
 		Vector3 MapMaxPoint = ScmapEditor.ScmapPosToWorld(
 		new Vector3(MapLuaParser.Current.ScenarioLuaFile.Data.Size[0], 0, MapLuaParser.Current.ScenarioLuaFile.Data.Size[1])
@@ -390,7 +395,7 @@ public class UnitSource : MonoBehaviour
 		}
 		ListEnum.Dispose();
 
-		GUI.EndScrollView();
+		GUI.EndGroup();
 
 	}
 
@@ -403,7 +408,7 @@ public class UnitSource : MonoBehaviour
 		if (position.z < 0)
 			return;
 		Vector2 textSize = GUI.skin.label.CalcSize(new GUIContent(text));
-		GUI.Label(new Rect(position.x - CamRect.x, (Screen.height - position.y), textSize.x, textSize.y), text, Style);
+		GUI.Label(new Rect(position.x - CamRect.x, (CamRect.height - position.y), textSize.x, textSize.y), text, Style);
 	}
 	#endregion
 }
