@@ -79,3 +79,6 @@ crashlytics-build.properties
 
 # Editor related ignores
 /[Mm]aps[Bb]ackup/
+
+# macOS 
+.DS_Store

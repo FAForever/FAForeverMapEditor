@@ -29,6 +29,13 @@ public class PlacementManager : MonoBehaviour {
 	public GameObject PlacementObject;
 	public LayerMask RaycastMask;
 	public Camera Cam;
+	public Material lineMaterial;
+	public Camera RenderCamera;
+
+	private static readonly Color BorderColor = new(0f, 0.475f, 1f);
+	private static readonly Collider[] NearbyColliders = new Collider[128];
+	private const float NearbyDistanceThreshold = 1f;
+	private GetGamedataFile.UnitBluePrint PreviewUnitBP;
 
 	static bool _SnapToWater = false;
 	public static bool SnapToWater
@@ -66,6 +73,7 @@ public class PlacementManager : MonoBehaviour {
 		Current.PlacementObject = Instantiate(Prefab) as GameObject;
 		Current.PlacementObject.SetActive(true);
 		InstantiateAction?.Invoke(Current.PlacementObject);
+		Current.PreviewUnitBP = GetUnitBP(Current.PlacementObject);
 
 		Current.PlacementObject.transform.rotation = OldRot;
 		Current.PlacementObject.transform.localScale = OldScale;
@@ -81,6 +89,7 @@ public class PlacementManager : MonoBehaviour {
 
 	public static void Clear()
 	{
+		Current.PreviewUnitBP = null;
 		Destroy(Current.PlacementObject);
 		for (int i = 0; i < Current.PlacementSymmetry.Length; i++)
 			if (Current.PlacementSymmetry[i])
@@ -220,6 +229,106 @@ public class PlacementManager : MonoBehaviour {
 			for (int i = 0; i < PlacementSymmetry.Length; i++)
 				PlacementSymmetry[i].SetActive(false);
 		}
+	}
+
+	private static GetGamedataFile.UnitBluePrint GetUnitBP(GameObject obj)
+	{
+		UnitInstance unit = obj.GetComponent<UnitInstance>();
+		return unit == null ? null : unit.UnitRenderer.BP;
+	}
+
+	public void OnRenderObject()
+	{
+		if (Camera.current != RenderCamera || PreviewUnitBP == null || !PlacementObject.activeSelf)
+		{
+			return;
+		}
+
+		lineMaterial.SetPass(0);
+
+		GL.Begin(GL.LINES);
+		GL.Color(BorderColor);
+
+		DrawPlacementPreviewBorders(PlacementObject.transform);
+
+		for (int i = 0; i < PlacementSymmetry.Length; i++)
+		{
+			DrawPlacementPreviewBorders(PlacementSymmetry[i].transform);
+		}
+
+		GL.End();
+	}
+
+	private void DrawPlacementPreviewBorders(Transform preview)
+	{
+		Bounds previewBounds = DrawSkirtBorder(preview, PreviewUnitBP);
+
+		// take whatever the building's skirt boundign box is, scale it up and use it as collision check for nearby buildings
+		previewBounds.Expand(NearbyDistanceThreshold * 2f);
+
+
+		// in the event two buildings were different height bounds check failed, we'll just add a bunch of height to it
+		int count = Physics.OverlapBoxNonAlloc(previewBounds.center, previewBounds.extents + Vector3.up * 1000f, NearbyColliders, Quaternion.identity,
+			1 << SelectionManager.Current.DisableLayer);
+
+		for (int i = 0; i < count; i++)
+		{
+			GameObject obj = NearbyColliders[i].gameObject;
+			GetGamedataFile.UnitBluePrint bp = GetUnitBP(obj);
+
+			if (previewBounds.Intersects(GetSkirtRect(obj.transform, bp).Bounds))
+			{
+				DrawSkirtBorder(obj.transform, bp);
+			}
+		}
+	}
+
+	private readonly struct SkirtRect
+	{
+		public readonly Vector3 A, B, C, D;
+		public readonly Bounds Bounds;
+
+		public SkirtRect(Vector3 a, Vector3 b, Vector3 c, Vector3 d)
+		{
+			A = a;
+			B = b;
+			C = c;
+			D = d;
+
+			Bounds bounds = new(a, Vector3.zero);
+			bounds.Encapsulate(b);
+			bounds.Encapsulate(c);
+			bounds.Encapsulate(d);
+			Bounds = bounds;
+		}
+	}
+
+	private static Bounds DrawSkirtBorder(Transform tr, GetGamedataFile.UnitBluePrint bp)
+	{
+		SkirtRect rect = GetSkirtRect(tr, bp);
+
+		GL.Vertex(rect.A);
+		GL.Vertex(rect.B);
+		GL.Vertex(rect.B);
+		GL.Vertex(rect.C);
+		GL.Vertex(rect.C);
+		GL.Vertex(rect.D);
+		GL.Vertex(rect.D);
+		GL.Vertex(rect.A);
+
+		return rect.Bounds;
+	}
+
+	private static SkirtRect GetSkirtRect(Transform tr, GetGamedataFile.UnitBluePrint bp)
+	{
+		float halfX = bp.SkirtSize.x * 0.5f;
+		float halfZ = bp.SkirtSize.z * 0.5f;
+
+		return new SkirtRect(
+			tr.position + tr.rotation * new Vector3(-halfX, 0, -halfZ),
+			tr.position + tr.rotation * new Vector3(halfX, 0, -halfZ),
+			tr.position + tr.rotation * new Vector3(halfX, 0, halfZ),
+			tr.position + tr.rotation * new Vector3(-halfX, 0, halfZ));
 	}
 
 	void UpdateSymmetryObjects()

@@ -174293,6 +174293,8 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 1280
   Cam: {fileID: 436319623}
+  lineMaterial: {fileID: 2100000, guid: 7781e3239d535304989c5a1b23ebbd67, type: 2}
+  RenderCamera: {fileID: 786801688}
   SymmetryMatrix: []
   InvertRotation: 
   PlacementSymmetry: []
