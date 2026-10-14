@@ -46,7 +46,34 @@ namespace EditMap
 			ResourceBrowser.ClearDrag();
 		}
 
+		public void SelectBrowserUnit()
+		{
+			OnDropUnit();
+
+			if (!isActiveAndEnabled)
+			{
+				return;
+			}
+
+			if (Creating)
+			{
+				OnClickCreate(true);
+			}
+			else
+			{
+				SwitchCreate();
+			}
+		}
+
 		public void DestroyUnits(List<GameObject> MarkerObjects, bool RegisterUndo = true)
+		{
+			RemoveUnits(MarkerObjects, RegisterUndo);
+
+			SelectionManager.Current.CleanSelection();
+			GoToSelection();
+		}
+
+		void RemoveUnits(List<GameObject> MarkerObjects, bool RegisterUndo)
 		{
 			int Count = MarkerObjects.Count;
 
@@ -71,9 +98,6 @@ namespace EditMap
 				if (u.Parent != null)
 					u.Parent.RemoveUnit(u);
 			}
-
-			SelectionManager.Current.CleanSelection();
-			GoToSelection();
 		}
 
 		public void SelectUnit()
@@ -215,7 +239,7 @@ namespace EditMap
 				PlacementManager.InstantiateAction = CreatePrefabAction;
 				PlacementManager.MinRotAngle = FreeRotation.isOn ? (0) : (90);
 				PlacementManager.SnapToWater = false;
-				PlacementManager.BeginPlacement(CreationPrefab, Place);
+				PlacementManager.BeginDragPlacement(CreationPrefab, Place, RemoveUnits);
 			}
 			else
 			{

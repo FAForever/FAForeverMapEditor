@@ -6,7 +6,7 @@ using UnityEngine.EventSystems;
 
 namespace FAF.MapEditor
 {
-	public class ResourceObject : MonoBehaviour, IBeginDragHandler, IDragHandler
+	public class ResourceObject : MonoBehaviour, IBeginDragHandler, IDragHandler, IPointerClickHandler
 	{
 
 		//public ResourceBrowser Controler;
@@ -40,6 +40,17 @@ namespace FAF.MapEditor
 		public void Clicked()
 		{
 
+		}
+
+		public void OnPointerClick(PointerEventData eventData)
+		{
+			if (eventData.clickCount != 2 || ContentType != ContentTypes.Unit)
+			{
+				return;
+			}
+
+			ResourceBrowser.DragedObject = this;
+			EditMap.UnitsInfo.Current.SelectBrowserUnit();
 		}
 
 		public void OnDrag(PointerEventData eventData)
