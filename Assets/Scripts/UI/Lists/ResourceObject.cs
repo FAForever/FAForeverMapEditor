@@ -44,7 +44,7 @@ namespace FAF.MapEditor
 
 		public void OnPointerClick(PointerEventData eventData)
 		{
-			if (eventData.clickCount != 2 || ContentType != ContentTypes.Unit)
+			if (eventData.button != PointerEventData.InputButton.Left || ContentType != ContentTypes.Unit)
 			{
 				return;
 			}
