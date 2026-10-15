@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 using Selection;
@@ -69,9 +70,19 @@ namespace EditMap
 				}
 			}
 
+			if (SelectedGroups.Count == 0 && UnitGroups.Count > 0)
+			{
+				SelectDefaultGroup(UnitGroups.Where(u => u.IsRoot).Select(u => u.Source).First());
+			}
+
 			UpdateGroupSelection();
 		}
 
+		void SelectDefaultGroup(MapLua.SaveLua.Army.UnitsGroup armyUnits)
+		{
+			MapLua.SaveLua.Army.UnitsGroup target = armyUnits.UnitGroups.FirstOrDefault(g => g.Name == "INITIAL") ?? armyUnits;
+			AddToGrpSelection(target.Instance);
+		}
 
 		public void GenerateGroups(MapLua.SaveLua.Army Army, MapLua.SaveLua.Army.UnitsGroup Grp, UnitListObject ParentGrp)
 		{
@@ -101,6 +112,7 @@ namespace EditMap
 			ulo.DoubleClickAction = SelectGroupUnits;
 			ulo.RenameAction = RenameStart;
 			ulo.ExpandAction = ExpandAction;
+			ulo.VisibilityAction = ToggleGroupVisibility;
 			ulo.SetGroup(Army, Grp, Parent, Root);
 			UnitGroups.Add(ulo);
 
@@ -166,6 +178,7 @@ namespace EditMap
 
 			//parent.Source.UnitGroups.Add(NewGroup);
 			parent.Source.AddGroup(NewGroup);
+			parent.Source.Expanded = true;
 
 			StoreSelection.Clear();
 			StoreSelection.Add(NewGroup);
@@ -243,6 +256,7 @@ namespace EditMap
 						List<UnitInstance> SelectedInstances = new List<UnitInstance>(128);
 
 						parent.Source.GetAllUnitInstances(ref SelectedInstances);
+						SelectedInstances.RemoveAll(u => !u.gameObject.activeSelf);
 
 						GameObject[] NewSelection = new GameObject[SelectedInstances.Count];
 						
@@ -406,6 +420,106 @@ namespace EditMap
 			OldOwner.RemoveGroup(Source);
 			NewOwner.AddGroup(Source);
 		}
+		MapLua.SaveLua.Army.UnitsGroup SoloedGroup;
+
+		void ToggleGroupVisibility(UnitListObject ulo, bool solo)
+		{
+			if (solo)
+			{
+				SoloGroup(ulo.Source);
+			}
+			else
+			{
+				ulo.Source.Hidden = !ulo.Source.Hidden;
+				SoloedGroup = null;
+			}
+
+			RefreshVisibility();
+		}
+
+		void SoloGroup(MapLua.SaveLua.Army.UnitsGroup target)
+		{
+			bool unsolo = SoloedGroup == target;
+
+			foreach (MapLua.SaveLua.Army.UnitsGroup root in UnitGroups.Where(u => u.IsRoot).Select(u => u.Source))
+			{
+				SetHiddenRecursive(root, !unsolo);
+			}
+
+			SoloedGroup = unsolo ? null : target;
+			if (unsolo)
+			{
+				return;
+			}
+
+			SetHiddenRecursive(target, false);
+			ShowWithParents(target);
+		}
+
+		static void ShowWithParents(MapLua.SaveLua.Army.UnitsGroup group)
+		{
+			for (; group != null; group = group.Parent)
+			{
+				group.Hidden = false;
+			}
+		}
+
+		static void SetHiddenRecursive(MapLua.SaveLua.Army.UnitsGroup group, bool hidden)
+		{
+			group.Hidden = hidden;
+			foreach (MapLua.SaveLua.Army.UnitsGroup child in group.UnitGroups)
+			{
+				SetHiddenRecursive(child, hidden);
+			}
+		}
+
+		void RefreshVisibility()
+		{
+			foreach (MapLua.SaveLua.Army.UnitsGroup root in UnitGroups.Where(u => u.IsRoot).Select(u => u.Source))
+			{
+				ApplyVisibility(root);
+			}
+
+			foreach (UnitListObject ulo in UnitGroups)
+			{
+				ulo.UpdateVisibility();
+			}
+
+			if (!Creating)
+			{
+				GoToSelection();
+			}
+		}
+
+		static void ApplyVisibility(MapLua.SaveLua.Army.UnitsGroup group)
+		{
+			bool visible = group.IsVisible;
+			foreach (MapLua.SaveLua.Army.Unit unit in group.Units)
+			{
+				if (unit.Instance != null)
+				{
+					unit.Instance.gameObject.SetActive(visible);
+				}
+			}
+
+			foreach (MapLua.SaveLua.Army.UnitsGroup child in group.UnitGroups)
+			{
+				ApplyVisibility(child);
+			}
+		}
+
+		void EnsureTargetGroupVisible()
+		{
+			if (FirstSelected == null || FirstSelected.Source.IsVisible)
+			{
+				return;
+			}
+
+			ShowWithParents(FirstSelected.Source);
+			SoloedGroup = null;
+			RefreshVisibility();
+		}
+
 		#region Selection
 		static UnitListObject FirstSelected
 		{
@@ -447,6 +561,7 @@ namespace EditMap
 		{
 			List<UnitInstance> allUnits = new List<UnitInstance>();
 			ulo.Source.GetAllUnitInstances(ref allUnits);
+			allUnits.RemoveAll(u => !u.gameObject.activeSelf);
 
 			int unitsCount = allUnits.Count;
 

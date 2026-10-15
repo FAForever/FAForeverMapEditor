@@ -23,6 +23,7 @@ public class UnitListObject : MonoBehaviour {
 	public GameObject Header;
 	public GameObject SelectButton;
 	public GameObject RemoveButton;
+	public RectTransform VisibilityButton;
 
 	public Transform ExpandBtn;
 
@@ -35,6 +36,7 @@ public class UnitListObject : MonoBehaviour {
 	public System.Action<UnitListObject, bool> DoubleClickAction;
 	public System.Action<UnitListObject> RenameAction;
 	public System.Action<UnitListObject> ExpandAction;
+	public System.Action<UnitListObject, bool> VisibilityAction;
 
 	public void SetTab(int count)
 	{
@@ -58,10 +60,19 @@ public class UnitListObject : MonoBehaviour {
 			_expand = value;
 
 			ExpandBtn.localRotation = Quaternion.Euler(Vector3.back * (_expand ? (90) : (0)));
-			Pivot.gameObject.SetActive(_expand);
+			UpdateChildrenVisibility();
 
 		}
 	}
+
+	bool HasChildGroups => Source != null && Source.UnitGroups.Count > 0;
+
+	void UpdateChildrenVisibility()
+	{
+		ExpandBtn.gameObject.SetActive(HasChildGroups);
+		Pivot.gameObject.SetActive(_expand && HasChildGroups);
+	}
+
 	public void SetGroup(MapLua.SaveLua.Army Owner, MapLua.SaveLua.Army.UnitsGroup Data, MapLua.SaveLua.Army.UnitsGroup Parent, bool root)
 	{
 		this.Owner = Owner;
@@ -86,6 +97,8 @@ public class UnitListObject : MonoBehaviour {
 			RemoveButton.SetActive(true);
 			//UnitsCount.gameObject.SetActive(true);
 		}
+
+		UpdateVisibility();
 		UpdateValues(Source.Units.Count, Source.UnitGroups.Count);
 
 
@@ -114,6 +127,21 @@ public class UnitListObject : MonoBehaviour {
 	public void AddNew()
 	{
 		AddAction(this);
+	}
+
+	public void OnVisibilityClick()
+	{
+		VisibilityAction(this, Input.GetKey(KeyCode.LeftAlt) || Input.GetKey(KeyCode.RightAlt));
+	}
+
+	static readonly Color VisibilityHiddenByParent = new(1, 1, 1, 0.35f);
+
+	public void UpdateVisibility()
+	{
+		Text label = VisibilityButton.GetComponentInChildren<Text>();
+
+		label.text = Source.Hidden ? "H" : "V";
+		label.color = (Source.IsVisible || Source.Hidden) ? Color.white : VisibilityHiddenByParent;
 	}
 
 	public void RemoveGroup()
@@ -184,7 +212,7 @@ public class UnitListObject : MonoBehaviour {
 		SelectButton.SetActive(true);
 		GroupName.gameObject.SetActive(true);
 		Header.SetActive(true);
-		Pivot.gameObject.SetActive(_expand);
+		UpdateChildrenVisibility();
 	}
 
 
