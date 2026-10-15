@@ -17,11 +17,6 @@ namespace EditMap
 		public GameObject CreationPrefab;
 
 		[Header("Units UI")]
-		public Text UnitTitle;
-		public Text UnitDesc;
-		public RawImage UnitBg;
-		public RawImage UnitIcon;
-		public GameObject CreateSelected;
 		public Toggle FreeRotation;
 		public Toggle RandomRotation;
 
@@ -37,16 +32,48 @@ namespace EditMap
 			SelectedUnitSource.Name = SelectedUnit.CodeName;
 			SelectedUnitSource.type = SelectedUnit.CodeName;
 
-			UnitTitle.text = SelectedUnit.CodeName;
-			UnitDesc.text = UnitBrowser.SortDescription(SelectedUnit);
-
-			UnitBg.texture = UnitBrowser.IconBackgrounds[SelectedUnit.Icon];
-			UnitIcon.texture = UnitBrowser.GetDragUnitIcon();
-			UnitIcon.enabled = UnitIcon.texture != Texture2D.whiteTexture;
+			UnitBrowser.SetSelected(ResourceBrowser.DragedObject.InstanceId);
 			ResourceBrowser.ClearDrag();
 		}
 
+		public void SelectBrowserUnit()
+		{
+			// click on same unit in unitbrowser to deselect
+			if (Creating && UnitBrowser.GetDragUnit().CodeName == SelectedUnit.CodeName)
+			{
+				ResourceBrowser.ClearDrag();
+				SelectedUnit = default;
+				UnitBrowser.ClearSelected();
+				ForceExitCreate();
+				return;
+			}
+
+			OnDropUnit();
+
+			if (!isActiveAndEnabled)
+			{
+				return;
+			}
+
+			if (Creating)
+			{
+				OnClickCreate(true);
+			}
+			else
+			{
+				SwitchCreate();
+			}
+		}
+
 		public void DestroyUnits(List<GameObject> MarkerObjects, bool RegisterUndo = true)
+		{
+			RemoveUnits(MarkerObjects, RegisterUndo);
+
+			SelectionManager.Current.CleanSelection();
+			GoToSelection();
+		}
+
+		void RemoveUnits(List<GameObject> MarkerObjects, bool RegisterUndo)
 		{
 			int Count = MarkerObjects.Count;
 
@@ -71,21 +98,16 @@ namespace EditMap
 				if (u.Parent != null)
 					u.Parent.RemoveUnit(u);
 			}
-
-			SelectionManager.Current.CleanSelection();
-			GoToSelection();
 		}
 
 		public void SelectUnit()
 		{
 			RenderUnitRanges.CreateRanges();
 
+			int selectedCount = SelectionManager.Current.Selection.Ids.Count;
+			SelectionSection.SetActive(selectedCount > 0);
 
-			if (SelectionManager.Current.Selection.Ids.Count <= 0)
-			{
-
-			}
-			else
+			if (selectedCount > 0)
 			{
 				UnitInstance Uinst = SelectionManager.Current.AffectedGameObjects[SelectionManager.Current.Selection.Ids[0]].GetComponent<UnitInstance>();
 
@@ -208,14 +230,13 @@ namespace EditMap
 		public void OnClickCreate(bool Value)
 		{
 			Creating = Value;
-			CreateSelected.SetActive(Creating);
 			if (Creating)
 			{
 				SelectionManager.Current.ClearAffectedGameObjects(false);
 				PlacementManager.InstantiateAction = CreatePrefabAction;
 				PlacementManager.MinRotAngle = FreeRotation.isOn ? (0) : (90);
 				PlacementManager.SnapToWater = false;
-				PlacementManager.BeginPlacement(CreationPrefab, Place);
+				PlacementManager.BeginDragPlacement(CreationPrefab, Place, RemoveUnits);
 			}
 			else
 			{
@@ -282,6 +303,8 @@ namespace EditMap
 				return;
 
 			}
+
+			EnsureTargetGroupVisible();
 
 			if (Positions.Length > 0 && RegisterUndo)
 			{
@@ -443,6 +466,8 @@ namespace EditMap
 
 			if (Count == 0)
 				return;
+
+			EnsureTargetGroupVisible();
 
 			for (int i = 0; i < Count; i++)
 			{
@@ -612,6 +637,7 @@ namespace EditMap
 			if (Data == null || Data.Units == null || Data.Units.Length == 0)
 				return;
 
+			EnsureTargetGroupVisible();
 			Undo.RegisterUndo(new UndoHistory.HistoryUnitsRemove(), new UndoHistory.HistoryUnitsRemove.UnitsRemoveParam(new SaveLua.Army.UnitsGroup[] { FirstSelected.Source }));
 
 			GameObject[] CreatedUnits = ReadUnitsStorage(Data);
@@ -652,6 +678,7 @@ namespace EditMap
 					ShowGroupError();
 					return;
 				}
+				EnsureTargetGroupVisible();
 				Undo.RegisterUndo(new UndoHistory.HistoryUnitsRemove(), new UndoHistory.HistoryUnitsRemove.UnitsRemoveParam(new SaveLua.Army.UnitsGroup[] { FirstSelected.Source }));
 
 				GameObject[] CreatedUnits = ReadUnitsStorage(CopyData);
@@ -680,6 +707,7 @@ namespace EditMap
 						ShowGroupError();
 						return;
 					}
+					EnsureTargetGroupVisible();
 					Undo.RegisterUndo(new UndoHistory.HistoryUnitsRemove(), new UndoHistory.HistoryUnitsRemove.UnitsRemoveParam(new SaveLua.Army.UnitsGroup[] { FirstSelected.Source }));
 
 					GameObject[] CreatedUnits = ReadUnitsStorage(DuplicateData);

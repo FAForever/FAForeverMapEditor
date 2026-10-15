@@ -77,6 +77,9 @@ namespace MapLua
 				#region Editor Values
 				public bool Expanded;
 				public bool IsWreckage = false;
+				public bool Hidden;
+
+				public bool IsVisible => !Hidden && (Parent == null || Parent.IsVisible);
 				#endregion
 
 				#region Parents
@@ -451,6 +454,10 @@ namespace MapLua
 					UnitInstance ui = GetGamedataFile.LoadUnit(type).CreateUnitObject(this, Parent);
 
 					ui.IsWreckage = Parent.IsWreckage ? 1 : 0;
+					if (!Parent.IsVisible)
+					{
+						ui.gameObject.SetActive(false);
+					}
 					if (AllNames.Contains(Name))
 					{
 						Name = GetFreeName("UNIT_");

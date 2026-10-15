@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using UnityEngine;
 using UnityEngine.UI;
 using Selection;
 using Ozone.UI;
@@ -19,6 +20,7 @@ namespace EditMap
 		public UiTextField PrefixInputField;
 		public Text SelectedUnitsGroup;
 		public Text UnitStats;
+		public GameObject SelectionSection;
 		public UiTextField UnitName;
 
 		[Header("Objects")]
@@ -59,12 +61,9 @@ namespace EditMap
 		{
 			UnitsControler.StopUnitsUpdate();
 
-			GameObject[] AllUnits = new GameObject[UnitInstance.AllUnitInstances.Count];
-			UnitInstance.AllUnitInstances.CopyTo(AllUnits);
-
-			for(int i = 0; i < AllUnits.Length; i++)
+			foreach (UnitInstance unit in FindAllMapUnits())
 			{
-				Destroy(AllUnits[i]);
+				Destroy(unit.gameObject);
 			}
 		}
 
@@ -97,6 +96,12 @@ namespace EditMap
 				ReparrentUnits();
 
 				Generate();
+				RefreshVisibility();
+			}
+
+			if (Input.GetKeyDown(KeyCode.B) && !CameraControler.IsInputFieldFocused())
+			{
+				SwitchCreate();
 			}
 		}
 
@@ -118,19 +123,19 @@ namespace EditMap
 
 		}
 
-		public static bool UnitsPageChange = false;
-		public override bool ChangePage(int PageId)
+		static List<UnitInstance> FindAllMapUnits()
 		{
-			UnitsPageChange = true;
-			bool pageChanged = base.ChangePage(PageId);
+			List<UnitInstance> units = new();
 
-			if (pageChanged)
+			foreach (UnitInstance unit in FindObjectsOfType<UnitInstance>(true))
 			{
-				ForceExitCreate();
+				if (unit.Owner != null && unit.UnitRenderer != null)
+				{
+					units.Add(unit);
+				}
 			}
-			
-			UnitsPageChange = false;
-			return pageChanged;
+
+			return units;
 		}
 
 		public static void GetTotalUnitsReclaim(out float Mass, out float Energy)
@@ -138,9 +143,8 @@ namespace EditMap
 			Mass = 0;
 			Energy = 0;
 
-			foreach(GameObject obj in UnitInstance.AllUnitInstances)
+			foreach(UnitInstance UI in FindAllMapUnits())
 			{
-				UnitInstance UI = obj.GetComponent<UnitInstance>();
 				Mass += UI.UnitRenderer.BP.BuildCostMass * UI.UnitRenderer.BP.Wreckage_MassMult;
 				Energy += UI.UnitRenderer.BP.BuildCostEnergy * UI.UnitRenderer.BP.Wreckage_EnergyMult;
 			}

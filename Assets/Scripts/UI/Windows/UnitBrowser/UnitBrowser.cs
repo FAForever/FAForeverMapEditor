@@ -28,18 +28,84 @@ namespace FAF.MapEditor
 		[Header("UI")]
 		public GameObject Prefab;
 		public Transform Pivot;
-		public GameObject Loading;
 		public Texture2D CursorImage;
 		public LayoutGroup Layout;
 		public ContentSizeFitter SizeFitter;
 		public UiTextField Search;
-		public Dropdown Faction;
+		public RectTransform FilterRowsRoot;
 
 		#region Init
 		public void Instantiate()
 		{
 			Current = this;
+			InitFilterRows();
 			ReadAllUnits();
+		}
+
+		static readonly Dictionary<string, Func<GetGamedataFile.UnitDB, bool>> FilterMatches = new()
+		{
+			["UEF"] = u => u.FactionName == "UEF",
+			["AEON"] = u => u.FactionName == "AEON",
+			["CYBRAN"] = u => u.FactionName == "CYBRAN",
+			["SERAPHIM"] = u => u.FactionName == "SERAPHIM",
+			["CIV"] = u => u.FactionName == "OTHER",
+			["T1"] = u => u.TechLevel == "TECH1",
+			["T2"] = u => u.TechLevel == "TECH2",
+			["T3"] = u => u.TechLevel == "TECH3",
+			["EXP"] = u => u.TechLevel == "TECH4" || u.CategoriesHash.Contains("EXPERIMENTAL"),
+			["LAND"] = u => u.CategoriesHash.Contains("LAND"),
+			["AIR"] = u => u.CategoriesHash.Contains("AIR"),
+			["NAVAL"] = u => u.CategoriesHash.Contains("NAVAL"),
+			["STRUCTURE"] = u => u.CategoriesHash.Contains("STRUCTURE"),
+		};
+
+		readonly List<UnitFilterButton[]> FilterRows = new();
+
+		// getting fancy and using faction logos for the filters, so we need to load them from gamedata
+		void InitFilterRows()
+		{
+			foreach (Transform row in FilterRowsRoot)
+			{
+				UnitFilterButton[] buttons = row.GetComponentsInChildren<UnitFilterButton>(true);
+				foreach (UnitFilterButton button in buttons)
+				{
+					button.Toggled = SortUnits;
+					if (EnvPaths.GamedataExist && !string.IsNullOrEmpty(button.IconPath))
+					{
+						button.SetIcon(GetGamedataFile.LoadTexture2D(button.IconPath, false, true, true));
+					}
+				}
+				FilterRows.Add(buttons);
+			}
+		}
+
+		bool MatchesFilterRows(GetGamedataFile.UnitDB unit)
+		{
+			foreach (UnitFilterButton[] row in FilterRows)
+			{
+				bool anyOn = false;
+				bool matched = false;
+
+				foreach (UnitFilterButton filter in row)
+				{
+					if (filter.On)
+					{
+						anyOn = true;
+						if (FilterMatches[filter.Key](unit))
+						{
+							matched = true;
+							break;
+						}
+					}
+				}
+
+				if (anyOn && !matched)
+				{
+					return false;
+				}
+			}
+
+			return true;
 		}
 		#endregion
 
@@ -81,9 +147,24 @@ namespace FAF.MapEditor
 			return Current.LoadedUnits[ResourceBrowser.DragedObject.InstanceId];
 		}
 
-		public static Texture GetDragUnitIcon()
+		int SelectedId = -1;
+
+		public static void SetSelected(int instanceId)
 		{
-			return Current.LoadedButtons[ResourceBrowser.DragedObject.InstanceId].RawImages[1].texture;
+			ClearSelected();
+
+			Current.SelectedId = instanceId;
+			Current.LoadedButtons[instanceId].Selected.SetActive(true);
+		}
+
+		public static void ClearSelected()
+		{
+			if (Current.SelectedId >= 0)
+			{
+				Current.LoadedButtons[Current.SelectedId].Selected.SetActive(false);
+			}
+
+			Current.SelectedId = -1;
 		}
 
 		//Icons
@@ -199,13 +280,12 @@ namespace FAF.MapEditor
 		Coroutine GeneratingList;
 		IEnumerator GenerateList()
 		{
-			Loading.SetActive(true);
 			Layout.enabled = true;
 			SizeFitter.enabled = true;
 
 			int GenerateCount = 0;
 
-			for(int i = 0; i < FoundUnits.Count; i++)
+			for(int i = LoadedUnits.Count; i < FoundUnits.Count; i++)
 			{
 
 				GetGamedataFile.UnitDB UnitDB = GetGamedataFile.LoadUnitBlueprintPreview(FoundUnits[i]);
@@ -221,7 +301,7 @@ namespace FAF.MapEditor
 				NewResObject.NameField.text = UnitDB.CodeName;
 				NewResObject.CustomTexts[0].text = SortDescription(UnitDB);
 				NewResObject.CustomTexts[1].text = UnitDB.Name;
-				NewButton.SetActive(CheckSorting(UnitDB));
+				ApplyRowSorting(NewResObject, UnitDB);
 
 				LoadedButtons.Add(NewResObject);
 				LoadedUnits.Add(UnitDB);
@@ -239,29 +319,44 @@ namespace FAF.MapEditor
 			IsGenerated = true;
 
 			yield return null;
-			Loading.SetActive(false);
-			Layout.enabled = false;
-			SizeFitter.enabled = false;
 			GeneratingList = null;
 			SortUnits();
 		}
 
+		private void OnDisable()
+		{
+			GeneratingList = null;
+		}
 
 		public void SortUnits()
 		{
 			Layout.enabled = true;
 			SizeFitter.enabled = true;
 
+			VisibleCount = 0;
 			int count = LoadedUnits.Count;
 			for(int i = 0; i < count; i++)
 			{
-				LoadedButtons[i].gameObject.SetActive(CheckSorting(LoadedUnits[i]));
+				ApplyRowSorting(LoadedButtons[i], LoadedUnits[i]);
 			}
 
 			LayoutRebuilder.ForceRebuildLayoutImmediate(Pivot.GetComponent<RectTransform>());
+		}
 
-			Layout.enabled = false;
-			SizeFitter.enabled = false;
+		int VisibleCount;
+
+		static readonly Color RowColorOne = new(1, 1, 1, 0.04f);
+		static readonly Color RowColorTwo = new(1, 1, 1, 0f);
+
+		void ApplyRowSorting(ResourceObject row, GetGamedataFile.UnitDB unit)
+		{
+			bool show = CheckSorting(unit);
+			row.gameObject.SetActive(show);
+			if (show)
+			{
+				row.GetComponent<Image>().color = VisibleCount % 2 == 0 ? RowColorOne : RowColorTwo;
+				VisibleCount++;
+			}
 		}
 
 
@@ -278,30 +373,7 @@ namespace FAF.MapEditor
 
 		bool CheckSorting(GetGamedataFile.UnitDB UnitDB)
 		{
-			bool FactionCorrect = false;
-			switch (Faction.value)
-			{
-				case 0:
-					FactionCorrect = true;
-					break;
-				case 1:
-					FactionCorrect = UnitDB.FactionName == "UEF";
-					break;
-				case 2:
-					FactionCorrect = UnitDB.FactionName == "AEON";
-					break;
-				case 3:
-					FactionCorrect = UnitDB.FactionName == "CYBRAN";
-					break;
-				case 4:
-					FactionCorrect = UnitDB.FactionName == "SERAPHIM";
-					break;
-				case 5:
-					FactionCorrect = UnitDB.FactionName == "OTHER";
-					break;
-			}
-
-			if (!FactionCorrect)
+			if (!MatchesFilterRows(UnitDB))
 				return false;
 
 
@@ -469,7 +541,7 @@ namespace FAF.MapEditor
 
 			}
 
-			return FactionCorrect;
+			return true;
 		}
 		#endregion
 
