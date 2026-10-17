@@ -52,6 +52,7 @@ uniform int _ShowNormals;
 uniform int _ShowRoughness;
 uniform int _ShowAO;
 uniform int _ShowMask;
+uniform int _ShowFogOfWar;
 uniform half LightingMultiplier;
 uniform fixed4 SunColor;
 uniform fixed4 SunDirection;
@@ -252,6 +253,9 @@ half4 CalculateLight (unity_v2f_deferred i)
     if (_ShowRoughness) color.rgb = roughness.xxx;
     if (_ShowAO) color.rgb = ambientOcclusion.xxx;
     if (_ShowMask) color.rgb = albedo.rgb;
+    half2 center = half2(_GridScale, - _GridScale) * 0.5;
+    if (_ShowFogOfWar && length(wpos.xz - center) > 5) color.rgb = color.rgb * 0.67;
+    
 
     color.a = 1;
     if(_Area > 0){
