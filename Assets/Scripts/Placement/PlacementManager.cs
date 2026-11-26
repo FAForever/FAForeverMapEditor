@@ -23,7 +23,8 @@ public class PlacementManager : MonoBehaviour {
 	}
 
 
-	static System.Action<Vector3[], Quaternion[], Vector3[]> CurrentPlaceAction;
+	static System.Action<Vector3[], Quaternion[], Vector3[], bool> CurrentPlaceAction;
+	static System.Action<List<GameObject>, bool> CurrentRemoveAction;
 	public static System.Action<GameObject> InstantiateAction;
 	public static int MinRotAngle = 90;
 	public GameObject PlacementObject;
@@ -36,6 +37,11 @@ public class PlacementManager : MonoBehaviour {
 	private static readonly Collider[] NearbyColliders = new Collider[128];
 	private const float NearbyDistanceThreshold = 1f;
 	private GetGamedataFile.UnitBluePrint PreviewUnitBP;
+
+	private bool DragActive;
+	private Vector3 DragOrigin;
+	private Vector2 DragStep;
+	private Vector2Int DragCell;
 
 	static bool _SnapToWater = false;
 	public static bool SnapToWater
@@ -57,6 +63,18 @@ public class PlacementManager : MonoBehaviour {
 	static Vector3 OldScale;
 	public static void BeginPlacement(GameObject Prefab, System.Action<Vector3[], Quaternion[], Vector3[]> PlaceAction, bool ResetTransform = true)
 	{
+		StartPlacement(Prefab, (Positions, Rotations, Scales, RegisterUndo) => PlaceAction(Positions, Rotations, Scales), ResetTransform, null);
+	}
+
+	public static void BeginDragPlacement(GameObject Prefab, System.Action<Vector3[], Quaternion[], Vector3[], bool> PlaceAction,
+		System.Action<List<GameObject>, bool> RemoveAction)
+	{
+		StartPlacement(Prefab, PlaceAction, true, RemoveAction);
+	}
+
+	static void StartPlacement(GameObject Prefab, System.Action<Vector3[], Quaternion[], Vector3[], bool> PlaceAction, bool ResetTransform,
+		System.Action<List<GameObject>, bool> RemoveAction)
+	{
 		if (!ResetTransform && Current.PlacementObject)
 		{
 			OldRot = Current.PlacementObject.transform.rotation;
@@ -75,11 +93,17 @@ public class PlacementManager : MonoBehaviour {
 		InstantiateAction?.Invoke(Current.PlacementObject);
 		Current.PreviewUnitBP = GetUnitBP(Current.PlacementObject);
 
+		if (Current.PreviewUnitBP != null)
+		{
+			Current.PlacementObject.GetComponent<UnitInstance>().Col.enabled = false;
+		}
+
 		Current.PlacementObject.transform.rotation = OldRot;
 		Current.PlacementObject.transform.localScale = OldScale;
 
 		Current.PlacementObject.SetActive(false);
 		CurrentPlaceAction = PlaceAction;
+		CurrentRemoveAction = RemoveAction;
 		Current.GenerateSymmetry();
 		Current.enabled = true;
 		ChangeControlerType.ChangeCurrentControler(0);
@@ -90,6 +114,7 @@ public class PlacementManager : MonoBehaviour {
 	public static void Clear()
 	{
 		Current.PreviewUnitBP = null;
+		Current.DragActive = false;
 		Destroy(Current.PlacementObject);
 		for (int i = 0; i < Current.PlacementSymmetry.Length; i++)
 			if (Current.PlacementSymmetry[i])
@@ -109,6 +134,11 @@ public class PlacementManager : MonoBehaviour {
 		{
 			enabled = false;
 			return;
+		}
+
+		if (!Input.GetMouseButton(0))
+		{
+			DragActive = false;
 		}
 
 		if (!SelectionManager.Current.IsPointerOnGameplay())
@@ -221,6 +251,16 @@ public class PlacementManager : MonoBehaviour {
 			else if (Input.GetMouseButtonDown(0))
 			{
 				Place();
+				BeginDrag();
+			}
+			else if (Input.GetMouseButtonDown(1) && CurrentRemoveAction != null
+				&& Physics.Raycast(ray, out RaycastHit unitHit, 1000, 1 << SelectionManager.Current.DisableLayer))
+			{
+				CurrentRemoveAction(new List<GameObject> { unitHit.collider.gameObject }, true);
+			}
+			else if (DragActive)
+			{
+				ContinueDrag();
 			}
 		}
 		else if (PlacementObject.activeSelf)
@@ -349,7 +389,7 @@ public class PlacementManager : MonoBehaviour {
 		}
 	}
 
-	void Place()
+	void Place(bool RegisterUndo = true)
 	{
 		Vector3[] Positions = new Vector3[SymmetryMatrix.Length + 1];
 		Quaternion[] Rotations = new Quaternion[SymmetryMatrix.Length + 1];
@@ -366,7 +406,88 @@ public class PlacementManager : MonoBehaviour {
 			Scales[i + 1] = PlacementObject.transform.localScale;
 		}
 
-		CurrentPlaceAction(Positions, Rotations, Scales);
+		CurrentPlaceAction(Positions, Rotations, Scales, RegisterUndo);
+	}
+
+	private void BeginDrag()
+	{
+		if (PreviewUnitBP == null)
+		{
+			return;
+		}
+
+		Vector3 footprint = GetSkirtRect(PlacementObject.transform, PreviewUnitBP).Bounds.size;
+		// DragStep = new Vector2(Mathf.Max(footprint.z, 0.1f), Mathf.Max(footprint.x, 0.1f));
+		DragStep = new Vector2(Mathf.Max(footprint.x, 0.1f), Mathf.Max(footprint.z, 0.1f));
+		DragOrigin = PlacementObject.transform.position;
+		DragCell = Vector2Int.zero;
+		DragActive = true;
+	}
+
+	private void ContinueDrag()
+	{
+		Vector3 target = PlacementObject.transform.position;
+		// int targetX = Mathf.RoundToInt((target.x + DragOrigin.x));
+		// int targetZ = Mathf.RoundToInt((target.z +  DragOrigin.z));
+		Vector2Int targetCell = new(
+			Mathf.RoundToInt((target.x - DragOrigin.x) / DragStep.x),
+			Mathf.RoundToInt((target.z - DragOrigin.z) / DragStep.y));
+
+		// kept getting gaps in drag placement if mouse skipped,
+		// so instead loop through delta between two mouse pos
+		while (DragCell != targetCell)
+		{
+			Vector2Int remaining = targetCell - DragCell;
+			if (Mathf.Abs(remaining.x) >= Mathf.Abs(remaining.y))
+			{
+				DragCell.x += System.Math.Sign(remaining.x);
+			}
+			else
+			{
+				DragCell.y += System.Math.Sign(remaining.y);
+			}
+
+			Vector3 cellPos = GetDragCellPosition(DragCell);
+			if (!Input.GetKey(KeyCode.LeftShift) && IsUnitAt(cellPos))
+			{
+				continue;
+			}
+
+			PlacementObject.transform.position = cellPos;
+			UpdateSymmetryObjects();
+			Place(false);
+		}
+
+		PlacementObject.transform.position = GetDragCellPosition(DragCell);
+		UpdateSymmetryObjects();
+	}
+
+	private bool IsUnitAt(Vector3 position)
+	{
+		Bounds cell = new(position, new Vector3(DragStep.x - 0.01f, 1000f, DragStep.y - 0.01f));
+
+		Physics.SyncTransforms();
+		int count = Physics.OverlapBoxNonAlloc(position, cell.extents + new Vector3(NearbyDistanceThreshold, 0, NearbyDistanceThreshold), NearbyColliders,
+			Quaternion.identity, 1 << SelectionManager.Current.DisableLayer);
+
+		for (int i = 0; i < count; i++)
+		{
+			GameObject obj = NearbyColliders[i].gameObject;
+			GetGamedataFile.UnitBluePrint bp = GetUnitBP(obj);
+
+			if (bp != null && cell.Intersects(GetSkirtRect(obj.transform, bp).Bounds))
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	private Vector3 GetDragCellPosition(Vector2Int cell)
+	{
+		Vector3 cellPos = DragOrigin + new Vector3(cell.x * DragStep.x, 0, cell.y * DragStep.y);
+		return ScmapEditor.SnapToTerrain(cellPos, SnapToWater);
 	}
 
 	public delegate void DropAction();

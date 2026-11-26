@@ -98,6 +98,11 @@ namespace EditMap
 
 				Generate();
 			}
+
+			if (Input.GetKeyDown(KeyCode.B) && !CameraControler.IsInputFieldFocused())
+			{
+				SwitchCreate();
+			}
 		}
 
 		GameObject[] AllObjects;
